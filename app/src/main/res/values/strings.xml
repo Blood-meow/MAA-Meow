@@ -780,7 +780,7 @@
     <string name="bottom_nav_home">首页</string>
     <string name="bottom_nav_background_task">后台任务</string>
     <string name="bottom_nav_schedule">定时</string>
-    <string name="bottom_nav_notification">通知</string>
+    <string name="bottom_nav_settings">设置</string>
     <string name="navigation_toast_switch_background_mode">当前是前台模式，请先切换到后台模式</string>
 
     <!-- shared panel / toolbox -->
