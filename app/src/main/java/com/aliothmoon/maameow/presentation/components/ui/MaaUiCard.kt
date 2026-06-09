@@ -16,6 +16,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.aliothmoon.maameow.theme.MaaDesignTokens
+import com.aliothmoon.maameow.theme.ThemeColors
 
 @Composable
 fun MaaUiCard(
@@ -27,9 +28,9 @@ fun MaaUiCard(
     content: @Composable ColumnScope.() -> Unit
 ) {
     val miuix = isMiuixUi
-    val shape = if (miuix) RoundedCornerShape(20.dp) else MaterialTheme.shapes.medium
+    val shape = if (miuix) RoundedCornerShape(22.dp) else MaterialTheme.shapes.medium
     val background = if (miuix) {
-        MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.58f)
+        ThemeColors.surfaceContainer.copy(alpha = 0.72f)
     } else {
         containerColor
     }
@@ -50,7 +51,7 @@ fun MaaUiCard(
                 Text(
                     text = title,
                     style = if (miuix) MaterialTheme.typography.titleMedium else MaterialTheme.typography.labelLarge,
-                    color = contentColor,
+                    color = if (miuix) ThemeColors.onSurface else contentColor,
                     modifier = Modifier.padding(bottom = MaaDesignTokens.Spacing.sm)
                 )
             }

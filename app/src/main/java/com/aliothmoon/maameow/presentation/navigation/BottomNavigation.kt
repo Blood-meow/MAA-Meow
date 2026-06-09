@@ -1,17 +1,12 @@
 package com.aliothmoon.maameow.presentation.navigation
 
 import androidx.annotation.StringRes
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.blur
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.border
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
@@ -21,11 +16,17 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.rounded.Cottage as MiuixHomeIcon
+import androidx.compose.material.icons.rounded.DateRange as MiuixDateRangeIcon
+import androidx.compose.material.icons.rounded.PlayArrow as MiuixPlayArrowIcon
+import androidx.compose.material.icons.rounded.Settings as MiuixSettingsIcon
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -35,41 +36,52 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.aliothmoon.maameow.R
 import com.aliothmoon.maameow.constant.Routes
 import com.aliothmoon.maameow.presentation.components.ui.isMiuixUi
 import com.aliothmoon.maameow.theme.MaaDesignTokens
+import com.aliothmoon.maameow.theme.ThemeColors
 
 sealed class BottomNavTab(
     val route: String,
     @param:StringRes val labelRes: Int,
-    val icon: ImageVector
+    val icon: ImageVector,
+    val miuixIcon: ImageVector = icon
 ) {
     data object HOME : BottomNavTab(
         route = Routes.HOME,
         labelRes = R.string.bottom_nav_home,
-        icon = Icons.Default.Home
+        icon = Icons.Default.Home,
+        miuixIcon = MiuixHomeIcon
     )
 
     data object BACKGROUND : BottomNavTab(
         route = Routes.BACKGROUND_TASK,
         labelRes = R.string.bottom_nav_background_task,
-        icon = Icons.Default.PlayArrow
+        icon = Icons.Default.PlayArrow,
+        miuixIcon = MiuixPlayArrowIcon
     )
 
     data object SCHEDULE : BottomNavTab(
         route = Routes.SCHEDULE,
         labelRes = R.string.bottom_nav_schedule,
-        icon = Icons.Default.DateRange
+        icon = Icons.Default.DateRange,
+        miuixIcon = MiuixDateRangeIcon
     )
 
     data object SETTINGS : BottomNavTab(
         route = Routes.SETTINGS,
         labelRes = R.string.bottom_nav_settings,
-        icon = Icons.Default.Settings
+        icon = Icons.Default.Settings,
+        miuixIcon = MiuixSettingsIcon
     )
 
     companion object {
@@ -86,33 +98,31 @@ fun AppBottomNavigation(
     onTabSelected: (BottomNavTab) -> Unit
 ) {
     val miuix = isMiuixUi
-    val barShape = RoundedCornerShape(if (floating) {
-        if (miuix) 32.dp else 28.dp
-    } else {
-        0.dp
-    })
-    val containerColor = if (liquidGlass) {
-        MaterialTheme.colorScheme.surface.copy(alpha = if (miuix) 0.80f else 0.72f)
-    } else {
-        MaterialTheme.colorScheme.surface
+    val effectiveFloating = floating || miuix
+    val effectiveLiquidGlass = liquidGlass || miuix
+    val barShape = if (effectiveFloating) CircleShape else RoundedCornerShape(0.dp)
+    val containerColor = when {
+        effectiveLiquidGlass && miuix -> ThemeColors.surfaceContainer.copy(alpha = 0.68f)
+        effectiveLiquidGlass -> ThemeColors.surface.copy(alpha = 0.72f)
+        else -> ThemeColors.surface
     }
+    val horizontalPadding = if (effectiveFloating) if (miuix) 16.dp else 18.dp else 0.dp
+    val verticalPadding = if (effectiveFloating) if (miuix) 8.dp else 10.dp else 0.dp
+
     Surface(
         color = Color.Transparent,
-        shadowElevation = if (floating) { if (miuix) 14.dp else 10.dp } else 0.dp
+        shadowElevation = if (effectiveFloating) if (miuix) 14.dp else 10.dp else 0.dp
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .windowInsetsPadding(WindowInsets.navigationBars)
-                .padding(
-                    horizontal = if (floating) { if (miuix) 16.dp else 18.dp } else 0.dp,
-                    vertical = if (floating) { if (miuix) 8.dp else 10.dp } else 0.dp
-                )
+                .padding(horizontal = horizontalPadding, vertical = verticalPadding)
         ) {
-            if (!floating) {
+            if (!effectiveFloating) {
                 HorizontalDivider(
                     thickness = MaaDesignTokens.Separator.thickness,
-                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+                    color = ThemeColors.outlineVariant.copy(alpha = 0.3f)
                 )
             }
             Box(
@@ -121,13 +131,13 @@ fun AppBottomNavigation(
                     .clip(barShape)
                     .background(containerColor)
                     .then(
-                        if (liquidGlass) {
+                        if (effectiveLiquidGlass) {
                             Modifier.border(
                                 width = MaaDesignTokens.Separator.thickness,
                                 brush = Brush.verticalGradient(
                                     colors = listOf(
-                                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.18f),
-                                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.06f)
+                                        ThemeColors.onSurface.copy(alpha = if (miuix) 0.24f else 0.18f),
+                                        ThemeColors.onSurface.copy(alpha = if (miuix) 0.08f else 0.06f)
                                     )
                                 ),
                                 shape = barShape
@@ -137,55 +147,60 @@ fun AppBottomNavigation(
                         }
                     )
             ) {
-                if (blurEnabled && liquidGlass) {
+                if (blurEnabled && effectiveLiquidGlass) {
                     Box(
                         modifier = Modifier
                             .matchParentSize()
-                            .blur(22.dp)
-                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.06f))
+                            .blur(if (miuix) 26.dp else 22.dp)
+                            .background(ThemeColors.primary.copy(alpha = if (miuix) 0.08f else 0.06f))
                     )
                 }
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = if (miuix) 18.dp else 24.dp, vertical = if (floating) { if (miuix) 10.dp else 8.dp } else 6.dp),
+                        .padding(
+                            horizontal = if (miuix) 18.dp else 24.dp,
+                            vertical = if (effectiveFloating) if (miuix) 10.dp else 8.dp else 6.dp
+                        ),
                     horizontalArrangement = Arrangement.SpaceEvenly,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     BottomNavTab.all.forEach { tab ->
-                    val label = stringResource(tab.labelRes)
-                    val selected = currentRoute == tab.route
-                    val contentColor = if (selected)
-                        MaterialTheme.colorScheme.primary
-                    else
-                        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                        val label = stringResource(tab.labelRes)
+                        val selected = currentRoute == tab.route
+                        val contentColor = if (selected) {
+                            ThemeColors.primary
+                        } else {
+                            ThemeColors.onSurfaceVariant.copy(alpha = 0.7f)
+                        }
 
-                    Column(
-                        modifier = Modifier
-                            .clickable(
-                                interactionSource = remember { MutableInteractionSource() },
-                                indication = null
-                            ) { onTabSelected(tab) }
-                            .heightIn(min = if (miuix) 52.dp else 48.dp)
-                            .padding(horizontal = if (miuix) 16.dp else 20.dp, vertical = 2.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
+                        Column(
+                            modifier = Modifier
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null
+                                ) { onTabSelected(tab) }
+                                .heightIn(min = if (miuix) 52.dp else 48.dp)
+                                .padding(horizontal = if (miuix) 14.dp else 20.dp, vertical = 2.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(if (miuix) 1.dp else 0.dp)
+                        ) {
                             Icon(
-                            imageVector = tab.icon,
-                            contentDescription = label,
-                            modifier = Modifier.size(if (miuix) 22.dp else 20.dp),
-                            tint = contentColor
-                        )
-                                Text(
-                            text = label,
-                            style = if (miuix) MaterialTheme.typography.labelSmall else MaterialTheme.typography.labelMedium,
-                            color = contentColor
-                        )
+                                imageVector = if (miuix) tab.miuixIcon else tab.icon,
+                                contentDescription = label,
+                                modifier = Modifier.size(if (miuix) 22.dp else 20.dp),
+                                tint = contentColor
+                            )
+                            Text(
+                                text = label,
+                                style = if (miuix) MaterialTheme.typography.labelSmall else MaterialTheme.typography.labelMedium,
+                                fontWeight = if (miuix && selected) FontWeight.Medium else FontWeight.Normal,
+                                color = contentColor
+                            )
+                        }
                     }
                 }
             }
         }
     }
-}
-
 }

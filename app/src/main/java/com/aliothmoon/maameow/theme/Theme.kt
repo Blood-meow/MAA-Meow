@@ -15,6 +15,7 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Modifier
@@ -22,6 +23,9 @@ import androidx.compose.ui.node.DelegatableNode
 import androidx.compose.ui.node.DrawModifierNode
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import com.aliothmoon.maameow.data.preferences.AppSettingsManager
+import top.yukonga.miuix.kmp.theme.ColorSchemeMode
+import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.theme.ThemeController
 
 private val LightBackground = Color(0xFFF5F2ED)
 private val LightSurface = Color(0xFFF9F7F3)
@@ -186,14 +190,30 @@ fun MaaMeowTheme(
         }
     }
 
-    CompositionLocalProvider(
-        LocalIndication provides NoIndication
-    ) {
-        MaterialTheme(
-            colorScheme = colorScheme,
-            typography = Typography,
-            shapes = MaaShapes,
-            content = content
+    val miuixMode = when (themeMode) {
+        AppSettingsManager.ThemeMode.SYSTEM -> ColorSchemeMode.System
+        AppSettingsManager.ThemeMode.WHITE -> ColorSchemeMode.Light
+        AppSettingsManager.ThemeMode.DARK,
+        AppSettingsManager.ThemeMode.PURE_DARK -> ColorSchemeMode.Dark
+    }
+    val miuixKeyColor = if (monetEnabled) null else BlueLight.primary
+    val miuixController = remember(miuixMode, miuixKeyColor) {
+        ThemeController(
+            colorSchemeMode = miuixMode,
+            keyColor = miuixKeyColor
         )
+    }
+
+    MiuixTheme(controller = miuixController) {
+        CompositionLocalProvider(
+            LocalIndication provides NoIndication
+        ) {
+            MaterialTheme(
+                colorScheme = colorScheme,
+                typography = Typography,
+                shapes = MaaShapes,
+                content = content
+            )
+        }
     }
 }

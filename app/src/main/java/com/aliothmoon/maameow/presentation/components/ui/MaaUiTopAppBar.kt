@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import com.aliothmoon.maameow.R
+import com.aliothmoon.maameow.theme.ThemeColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -58,9 +59,10 @@ fun MaaUiTopAppBar(
         }
     }
     val colors = TopAppBarDefaults.topAppBarColors(
-        containerColor = MaterialTheme.colorScheme.background,
-        titleContentColor = MaterialTheme.colorScheme.onBackground,
-        actionIconContentColor = MaterialTheme.colorScheme.primary
+        containerColor = ThemeColors.background,
+        titleContentColor = ThemeColors.onSurface,
+        navigationIconContentColor = ThemeColors.primary,
+        actionIconContentColor = ThemeColors.primary
     )
     if (isMiuixUi) {
         LargeTopAppBar(
