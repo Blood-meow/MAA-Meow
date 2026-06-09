@@ -319,6 +319,14 @@ fun SettingsView(
                         onLanguageSelected = { viewModel.setLanguage(it) }
                     )
                     SettingsDivider(contentColor)
+                    SettingClickItem(
+                        title = stringResource(R.string.notification_settings_title),
+                        description = stringResource(R.string.settings_notification_desc),
+                        contentColor = contentColor
+                    ) {
+                        navController.navigate(Routes.NOTIFICATION)
+                    }
+                    SettingsDivider(contentColor)
                     SettingBackgroundResolutionItem(
                         contentColor = contentColor,
                         selectedPreference = backgroundResolution,

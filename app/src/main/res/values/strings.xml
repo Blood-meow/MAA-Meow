@@ -241,6 +241,7 @@
     <string name="settings_debug_mode_desc">启用后记录详细日志信息</string>
 
     <!-- settings: other section -->
+    <string name="settings_notification_desc">管理内部通知、外部推送渠道和测试通知</string>
     <string name="settings_section_other">其他设置</string>
     <string name="settings_startup_backend_title">启动模式</string>
     <string name="settings_startup_backend_desc">选择应用获取系统权限的方式</string>
