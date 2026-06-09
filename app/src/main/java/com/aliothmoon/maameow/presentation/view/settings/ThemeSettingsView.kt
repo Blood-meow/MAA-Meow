@@ -54,6 +54,7 @@ private fun ThemeSectionHeader(title: String) {
     )
 }
 
+@Composable
 fun ThemeSettingsView(
     navController: NavController,
     viewModel: SettingsViewModel = koinViewModel()
