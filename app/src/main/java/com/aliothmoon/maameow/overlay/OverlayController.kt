@@ -211,8 +211,9 @@ class OverlayController(
             }
             setContent {
                 val themeMode by appSettings.themeMode.collectAsStateWithLifecycle()
+                val monetEnabled by appSettings.uiMonetEnabled.collectAsStateWithLifecycle()
 
-                MaaMeowTheme(themeMode = themeMode) {
+                MaaMeowTheme(themeMode = themeMode, monetEnabled = monetEnabled) {
                     CompositionLocalProvider(LocalFloatingWindowContext provides true) {
                         val isLocked by _isLocked.collectAsStateWithLifecycle()
                         ExpandedControlPanel(

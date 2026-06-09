@@ -343,6 +343,15 @@ class AppSettingsManager(private val context: Context) {
             context.dataStore.edit { it[uiLiquidGlassEnabled] = enabled.toString() }
         }
     }
+    val uiMonetEnabled: StateFlow<Boolean> = settings
+        .map { it.uiMonetEnabled.toBooleanStrictOrNull() ?: false }
+        .distinctUntilChanged()
+        .stateIn(scope, SharingStarted.Eagerly, initialSettings.uiMonetEnabled.toBooleanStrictOrNull() ?: false)
+    suspend fun setUiMonetEnabled(enabled: Boolean) {
+        with(AppSettingsSchema) {
+            context.dataStore.edit { it[uiMonetEnabled] = enabled.toString() }
+        }
+    }
 
     // 内部通知级别
     enum class EventNotificationLevel(@param:androidx.annotation.StringRes val labelRes: Int) {

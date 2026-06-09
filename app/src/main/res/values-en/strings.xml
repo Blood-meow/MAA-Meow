@@ -49,6 +49,8 @@
     <string name="settings_startup_backend_desc">Choose how the app obtains system permissions</string>
     <string name="settings_theme_settings_title">Theme settings</string>
     <string name="settings_theme_settings_desc">Configure theme mode, blur, floating bottom bar, and liquid glass effects</string>
+    <string name="settings_theme_monet_title">Monet dynamic color</string>
+    <string name="settings_theme_monet_desc">Use Android 12+ wallpaper-based dynamic colors</string>
     <string name="settings_theme_mode_section">Theme mode</string>
     <string name="settings_theme_effect_section">UI effects</string>
     <string name="settings_theme_blur_title">Blur</string>

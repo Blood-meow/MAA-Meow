@@ -206,6 +206,11 @@ class SettingsViewModel(
     fun setUiLiquidGlassEnabled(enabled: Boolean) {
         viewModelScope.launch { appSettingsManager.setUiLiquidGlassEnabled(enabled) }
     }
+    val uiMonetEnabled: StateFlow<Boolean> = appSettingsManager.uiMonetEnabled
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+    fun setUiMonetEnabled(enabled: Boolean) {
+        viewModelScope.launch { appSettingsManager.setUiMonetEnabled(enabled) }
+    }
 
     val backgroundResolution: StateFlow<DefaultDisplayConfig.ResolutionPreference> =
         appSettingsManager.backgroundResolution

@@ -247,6 +247,8 @@
     <string name="settings_startup_backend_desc">选择应用获取系统权限的方式</string>
     <string name="settings_theme_settings_title">主题设置</string>
     <string name="settings_theme_settings_desc">配置主题模式、模糊、悬浮底栏与液态玻璃效果</string>
+    <string name="settings_theme_monet_title">Monet 动态色</string>
+    <string name="settings_theme_monet_desc">Android 12 及以上使用系统壁纸动态配色</string>
     <string name="settings_theme_mode_section">主题模式</string>
     <string name="settings_theme_effect_section">界面效果</string>
     <string name="settings_theme_blur_title">模糊效果</string>

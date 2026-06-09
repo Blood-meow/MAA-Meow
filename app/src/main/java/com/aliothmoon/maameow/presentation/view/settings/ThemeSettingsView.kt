@@ -49,6 +49,7 @@ fun ThemeSettingsView(
     val blurEnabled by viewModel.uiBlurEnabled.collectAsStateWithLifecycle()
     val floatingBottomBar by viewModel.uiFloatingBottomBar.collectAsStateWithLifecycle()
     val liquidGlassEnabled by viewModel.uiLiquidGlassEnabled.collectAsStateWithLifecycle()
+    val monetEnabled by viewModel.uiMonetEnabled.collectAsStateWithLifecycle()
     Scaffold(
         topBar = {
             TopAppBar(
@@ -80,6 +81,14 @@ fun ThemeSettingsView(
                         contentColor = contentColor,
                         selectedMode = themeMode,
                         onModeSelected = viewModel::setThemeMode
+                    )
+                    SettingsDivider(contentColor)
+                    ThemeSwitchItem(
+                        title = stringResource(R.string.settings_theme_monet_title),
+                        description = stringResource(R.string.settings_theme_monet_desc),
+                        contentColor = contentColor,
+                        checked = monetEnabled,
+                        onCheckedChange = viewModel::setUiMonetEnabled
                     )
                 }
             }
