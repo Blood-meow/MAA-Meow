@@ -43,6 +43,7 @@ import com.aliothmoon.maameow.presentation.view.settings.ErrorLogView
 import com.aliothmoon.maameow.presentation.view.settings.LogHistoryView
 import com.aliothmoon.maameow.presentation.view.settings.SettingsView
 import com.aliothmoon.maameow.presentation.view.settings.TaskOverrideEditorView
+import com.aliothmoon.maameow.presentation.view.settings.ThemeSettingsView
 import com.aliothmoon.maameow.presentation.viewmodel.BackgroundTaskViewModel
 import com.aliothmoon.maameow.schedule.model.CountdownState
 import com.aliothmoon.maameow.schedule.ui.CountdownDialog
@@ -75,6 +76,9 @@ fun AppNavigation(
     val announcementReadVersion by appSettings.announcementReadVersion.collectAsStateWithLifecycle()
     val language by appSettings.language.collectAsStateWithLifecycle()
     val overlayControlMode by appSettings.overlayControlMode.collectAsStateWithLifecycle()
+    val uiBlurEnabled by appSettings.uiBlurEnabled.collectAsStateWithLifecycle()
+    val uiFloatingBottomBar by appSettings.uiFloatingBottomBar.collectAsStateWithLifecycle()
+    val uiLiquidGlassEnabled by appSettings.uiLiquidGlassEnabled.collectAsStateWithLifecycle()
     val pendingScheduledExecution by backgroundTaskViewModel.coordinator.pendingExecution.collectAsStateWithLifecycle()
     val scheduledCountdownState by backgroundTaskViewModel.coordinator.countdownState.collectAsStateWithLifecycle()
 
@@ -134,6 +138,9 @@ fun AppNavigation(
                 if (showBottomBar) {
                     AppBottomNavigation(
                         currentRoute = currentNavRoute ?: Routes.HOME,
+                        blurEnabled = uiBlurEnabled,
+                        floating = uiFloatingBottomBar,
+                        liquidGlass = uiLiquidGlassEnabled,
                         onTabSelected = { tab ->
                             if (tab.route == currentNavRoute) return@AppBottomNavigation
 
@@ -234,6 +241,23 @@ fun AppNavigation(
                         )
                     }
 
+                    composable(
+                        route = Routes.THEME_SETTINGS,
+                        enterTransition = {
+                            slideInHorizontally(initialOffsetX = { it }, animationSpec = tween(350))
+                        },
+                        exitTransition = {
+                            slideOutHorizontally(targetOffsetX = { it }, animationSpec = tween(350))
+                        },
+                        popEnterTransition = {
+                            slideInHorizontally(initialOffsetX = { -it / 3 }, animationSpec = tween(350))
+                        },
+                        popExitTransition = {
+                            slideOutHorizontally(targetOffsetX = { it }, animationSpec = tween(350))
+                        }
+                    ) {
+                        ThemeSettingsView(navController = navController)
+                    }
                     composable(
                         route = Routes.LOG_HISTORY,
                         enterTransition = {

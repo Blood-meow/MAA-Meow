@@ -316,6 +316,33 @@ class AppSettingsManager(private val context: Context) {
             context.dataStore.edit { it[themeMode] = mode.name }
         }
     }
+    val uiBlurEnabled: StateFlow<Boolean> = settings
+        .map { it.uiBlurEnabled.toBooleanStrictOrNull() ?: true }
+        .distinctUntilChanged()
+        .stateIn(scope, SharingStarted.Eagerly, initialSettings.uiBlurEnabled.toBooleanStrictOrNull() ?: true)
+    suspend fun setUiBlurEnabled(enabled: Boolean) {
+        with(AppSettingsSchema) {
+            context.dataStore.edit { it[uiBlurEnabled] = enabled.toString() }
+        }
+    }
+    val uiFloatingBottomBar: StateFlow<Boolean> = settings
+        .map { it.uiFloatingBottomBar.toBooleanStrictOrNull() ?: true }
+        .distinctUntilChanged()
+        .stateIn(scope, SharingStarted.Eagerly, initialSettings.uiFloatingBottomBar.toBooleanStrictOrNull() ?: true)
+    suspend fun setUiFloatingBottomBar(enabled: Boolean) {
+        with(AppSettingsSchema) {
+            context.dataStore.edit { it[uiFloatingBottomBar] = enabled.toString() }
+        }
+    }
+    val uiLiquidGlassEnabled: StateFlow<Boolean> = settings
+        .map { it.uiLiquidGlassEnabled.toBooleanStrictOrNull() ?: true }
+        .distinctUntilChanged()
+        .stateIn(scope, SharingStarted.Eagerly, initialSettings.uiLiquidGlassEnabled.toBooleanStrictOrNull() ?: true)
+    suspend fun setUiLiquidGlassEnabled(enabled: Boolean) {
+        with(AppSettingsSchema) {
+            context.dataStore.edit { it[uiLiquidGlassEnabled] = enabled.toString() }
+        }
+    }
 
     // 内部通知级别
     enum class EventNotificationLevel(@param:androidx.annotation.StringRes val labelRes: Int) {

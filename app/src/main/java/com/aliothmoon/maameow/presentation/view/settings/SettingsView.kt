@@ -16,14 +16,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.rounded.Build
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -38,11 +35,9 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -91,7 +86,6 @@ fun SettingsView(
     val allowForegroundScheduledTask by viewModel.allowForegroundScheduledTask.collectAsStateWithLifecycle()
     val tasksOverrideEnabled by viewModel.tasksOverrideEnabled.collectAsStateWithLifecycle()
     val updateChannel by viewModel.updateChannel.collectAsStateWithLifecycle()
-    val themeMode by viewModel.themeMode.collectAsStateWithLifecycle()
     val backgroundResolution by viewModel.backgroundResolution.collectAsStateWithLifecycle()
     val language by viewModel.language.collectAsStateWithLifecycle()
     val backupMessage by viewModel.backupMessage.collectAsStateWithLifecycle()
@@ -307,11 +301,13 @@ fun SettingsView(
                         onBackendSelected = { viewModel.setStartupBackend(it) }
                     )
                     SettingsDivider(contentColor)
-                    SettingThemeModeItem(
-                        contentColor = contentColor,
-                        selectedMode = themeMode,
-                        onModeSelected = { viewModel.setThemeMode(it) }
-                    )
+                    SettingClickItem(
+                        title = stringResource(R.string.settings_theme_settings_title),
+                        description = stringResource(R.string.settings_theme_settings_desc),
+                        contentColor = contentColor
+                    ) {
+                        navController.navigate(Routes.THEME_SETTINGS)
+                    }
                     SettingsDivider(contentColor)
                     SettingLanguageItem(
                         contentColor = contentColor,
@@ -475,60 +471,6 @@ fun SettingsView(
 
             item {
                 Spacer(modifier = Modifier.height(16.dp))
-            }
-        }
-    }
-}
-
-@Composable
-private fun SettingThemeModeItem(
-    contentColor: Color,
-    selectedMode: AppSettingsManager.ThemeMode,
-    onModeSelected: (AppSettingsManager.ThemeMode) -> Unit
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = MaaDesignTokens.Spacing.listItemVertical),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Text(
-            text = stringResource(R.string.settings_theme_title),
-            style = MaterialTheme.typography.bodyLarge,
-            color = contentColor
-        )
-        Row(modifier = Modifier.fillMaxWidth()) {
-            val modes = listOf(
-                AppSettingsManager.ThemeMode.SYSTEM to stringResource(R.string.settings_theme_system),
-                AppSettingsManager.ThemeMode.WHITE to stringResource(R.string.settings_theme_white),
-                AppSettingsManager.ThemeMode.DARK to stringResource(R.string.settings_theme_dark),
-                AppSettingsManager.ThemeMode.PURE_DARK to stringResource(R.string.settings_theme_pure_dark)
-            )
-            modes.forEach { (mode, label) ->
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center,
-                    modifier = Modifier
-                        .weight(1f)
-                        .clip(RoundedCornerShape(8.dp))
-                        .selectable(
-                            selected = mode == selectedMode,
-                            onClick = { onModeSelected(mode) },
-                            role = Role.RadioButton
-                        )
-                ) {
-                    RadioButton(
-                        selected = mode == selectedMode,
-                        onClick = null
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = label,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = contentColor,
-                        maxLines = 1
-                    )
-                }
             }
         }
     }

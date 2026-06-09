@@ -47,6 +47,16 @@
     <string name="settings_section_other">Other</string>
     <string name="settings_startup_backend_title">Startup Mode</string>
     <string name="settings_startup_backend_desc">Choose how the app obtains system permissions</string>
+    <string name="settings_theme_settings_title">Theme settings</string>
+    <string name="settings_theme_settings_desc">Configure theme mode, blur, floating bottom bar, and liquid glass effects</string>
+    <string name="settings_theme_mode_section">Theme mode</string>
+    <string name="settings_theme_effect_section">UI effects</string>
+    <string name="settings_theme_blur_title">Blur</string>
+    <string name="settings_theme_blur_desc">Enable a soft blur layer for liquid glass surfaces</string>
+    <string name="settings_theme_floating_bar_title">Floating bottom bar</string>
+    <string name="settings_theme_floating_bar_desc">Use a KernelSU-style floating bottom button bar</string>
+    <string name="settings_theme_liquid_glass_title">Liquid glass</string>
+    <string name="settings_theme_liquid_glass_desc">Enable translucent glass material with highlight borders</string>
     <string name="settings_theme_title">Theme</string>
     <string name="settings_theme_system">System</string>
     <string name="settings_theme_white">Light</string>

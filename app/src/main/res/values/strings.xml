@@ -245,6 +245,16 @@
     <string name="settings_section_other">其他设置</string>
     <string name="settings_startup_backend_title">启动模式</string>
     <string name="settings_startup_backend_desc">选择应用获取系统权限的方式</string>
+    <string name="settings_theme_settings_title">主题设置</string>
+    <string name="settings_theme_settings_desc">配置主题模式、模糊、悬浮底栏与液态玻璃效果</string>
+    <string name="settings_theme_mode_section">主题模式</string>
+    <string name="settings_theme_effect_section">界面效果</string>
+    <string name="settings_theme_blur_title">模糊效果</string>
+    <string name="settings_theme_blur_desc">为液态玻璃组件启用柔和模糊层</string>
+    <string name="settings_theme_floating_bar_title">悬浮底栏</string>
+    <string name="settings_theme_floating_bar_desc">使用 KernelSU 风格的悬浮底部按钮栏</string>
+    <string name="settings_theme_liquid_glass_title">液态玻璃</string>
+    <string name="settings_theme_liquid_glass_desc">启用半透明玻璃材质与高光边框</string>
     <string name="settings_theme_title">主题模式</string>
     <string name="settings_theme_system">随系统</string>
     <string name="settings_theme_white">白色</string>

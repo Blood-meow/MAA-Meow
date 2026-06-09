@@ -191,6 +191,21 @@ class SettingsViewModel(
             appSettingsManager.setThemeMode(mode)
         }
     }
+    val uiBlurEnabled: StateFlow<Boolean> = appSettingsManager.uiBlurEnabled
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
+    fun setUiBlurEnabled(enabled: Boolean) {
+        viewModelScope.launch { appSettingsManager.setUiBlurEnabled(enabled) }
+    }
+    val uiFloatingBottomBar: StateFlow<Boolean> = appSettingsManager.uiFloatingBottomBar
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
+    fun setUiFloatingBottomBar(enabled: Boolean) {
+        viewModelScope.launch { appSettingsManager.setUiFloatingBottomBar(enabled) }
+    }
+    val uiLiquidGlassEnabled: StateFlow<Boolean> = appSettingsManager.uiLiquidGlassEnabled
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
+    fun setUiLiquidGlassEnabled(enabled: Boolean) {
+        viewModelScope.launch { appSettingsManager.setUiLiquidGlassEnabled(enabled) }
+    }
 
     val backgroundResolution: StateFlow<DefaultDisplayConfig.ResolutionPreference> =
         appSettingsManager.backgroundResolution
