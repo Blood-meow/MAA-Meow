@@ -1,6 +1,16 @@
 package com.aliothmoon.maameow.presentation.navigation
 
 import androidx.annotation.StringRes
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -33,6 +43,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,6 +51,7 @@ import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -168,14 +180,33 @@ fun AppBottomNavigation(
                     BottomNavTab.all.forEach { tab ->
                         val label = stringResource(tab.labelRes)
                         val selected = currentRoute == tab.route
-                        val contentColor = if (selected) {
-                            ThemeColors.primary
-                        } else {
-                            ThemeColors.onSurfaceVariant.copy(alpha = 0.7f)
-                        }
+                        val transitionSpec = tween<Float>(durationMillis = 260, easing = FastOutSlowInEasing)
+                        val animatedColor by animateColorAsState(
+                            targetValue = if (selected) {
+                                ThemeColors.primary
+                            } else {
+                                ThemeColors.onSurfaceVariant.copy(alpha = 0.7f)
+                            },
+                            animationSpec = tween(durationMillis = 220, easing = FastOutSlowInEasing),
+                            label = "bottomNavContentColor"
+                        )
+                        val iconSize by animateDpAsState(
+                            targetValue = if (miuix && selected) 24.dp else if (miuix) 22.dp else if (selected) 21.dp else 20.dp,
+                            animationSpec = tween(durationMillis = 260, easing = FastOutSlowInEasing),
+                            label = "bottomNavIconSize"
+                        )
+                        val itemScale by animateFloatAsState(
+                            targetValue = if (selected) 1.04f else 1f,
+                            animationSpec = transitionSpec,
+                            label = "bottomNavItemScale"
+                        )
 
                         Column(
                             modifier = Modifier
+                                .graphicsLayer {
+                                    scaleX = itemScale
+                                    scaleY = itemScale
+                                }
                                 .clickable(
                                     interactionSource = remember { MutableInteractionSource() },
                                     indication = null
@@ -188,15 +219,23 @@ fun AppBottomNavigation(
                             Icon(
                                 imageVector = if (miuix) tab.miuixIcon else tab.icon,
                                 contentDescription = label,
-                                modifier = Modifier.size(if (miuix) 22.dp else 20.dp),
-                                tint = contentColor
+                                modifier = Modifier.size(iconSize),
+                                tint = animatedColor
                             )
-                            Text(
-                                text = label,
-                                style = if (miuix) MaterialTheme.typography.labelSmall else MaterialTheme.typography.labelMedium,
-                                fontWeight = if (miuix && selected) FontWeight.Medium else FontWeight.Normal,
-                                color = contentColor
-                            )
+                            AnimatedVisibility(
+                                visible = !miuix || selected,
+                                enter = fadeIn(animationSpec = tween(durationMillis = 160)) +
+                                    scaleIn(initialScale = 0.92f, animationSpec = transitionSpec),
+                                exit = fadeOut(animationSpec = tween(durationMillis = 120)) +
+                                    scaleOut(targetScale = 0.92f, animationSpec = tween(durationMillis = 120))
+                            ) {
+                                Text(
+                                    text = label,
+                                    style = if (miuix) MaterialTheme.typography.labelSmall else MaterialTheme.typography.labelMedium,
+                                    fontWeight = if (miuix && selected) FontWeight.Medium else FontWeight.Normal,
+                                    color = animatedColor
+                                )
+                            }
                         }
                     }
                 }

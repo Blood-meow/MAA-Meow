@@ -1,10 +1,17 @@
 package com.aliothmoon.maameow.presentation.navigation
 
 import android.widget.Toast
-import androidx.activity.compose.BackHandler
+import androidx.activity.compose.ExperimentalActivityComposeApi
+import androidx.activity.compose.PredictiveBackHandler
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.Box
@@ -21,6 +28,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.IntOffset
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -50,9 +58,12 @@ import com.aliothmoon.maameow.schedule.ui.CountdownDialog
 import com.aliothmoon.maameow.schedule.ui.ScheduleEditView
 import com.aliothmoon.maameow.schedule.ui.ScheduleListView
 import com.aliothmoon.maameow.schedule.ui.ScheduleTriggerLogView
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
+@OptIn(ExperimentalActivityComposeApi::class)
 @Composable
 fun AppNavigation(
     backgroundTaskViewModel: BackgroundTaskViewModel,
@@ -128,14 +139,33 @@ fun AppNavigation(
         }
     }
 
-    // 主 Tab 切换动画定义 - 使用极短的渐变色来平滑过渡，防止重叠感
-    val tabEnterTransition = fadeIn(animationSpec = tween(150))
-    val tabExitTransition = fadeOut(animationSpec = tween(150))
+    // 主 Tab 切换动画定义 - 使用轻量的淡入淡出，降低主入口切换时的重叠感
+    val tabTransitionSpec = tween<Float>(durationMillis = 220, easing = FastOutSlowInEasing)
+    val tabEnterTransition = fadeIn(animationSpec = tabTransitionSpec) + scaleIn(
+        initialScale = 0.98f,
+        animationSpec = tabTransitionSpec
+    )
+    val tabExitTransition = fadeOut(animationSpec = tween(durationMillis = 120)) + scaleOut(
+        targetScale = 1.01f,
+        animationSpec = tween(durationMillis = 120)
+    )
+    val forwardEnterTransition = maaForwardEnterTransition()
+    val forwardExitTransition = maaForwardExitTransition()
+    val popEnterTransition = maaPopEnterTransition()
+    val popExitTransition = maaPopExitTransition()
 
     Box(modifier = Modifier.fillMaxSize()) {
         MaaUiScaffold(
             bottomBar = {
-                if (showBottomBar) {
+                AnimatedVisibility(
+                    visible = showBottomBar,
+                    enter = fadeIn(animationSpec = tween(durationMillis = 180, easing = FastOutSlowInEasing)) +
+                        slideInHorizontally(
+                            initialOffsetX = { it / 8 },
+                            animationSpec = tween(durationMillis = 260, easing = FastOutSlowInEasing)
+                        ),
+                    exit = fadeOut(animationSpec = tween(durationMillis = 120))
+                ) {
                     AppBottomNavigation(
                         currentRoute = currentNavRoute ?: Routes.HOME,
                         blurEnabled = uiBlurEnabled,
@@ -188,10 +218,10 @@ fun AppNavigation(
                         route = Routes.BACKGROUND_TASK,
                         enterTransition = { tabEnterTransition },
                         exitTransition = { tabExitTransition },
-                        popEnterTransition = { tabEnterTransition },
-                        popExitTransition = { tabExitTransition }
+                        popEnterTransition = { popEnterTransition },
+                        popExitTransition = { popExitTransition }
                     ) {
-                        BackHandler { navController.popBackStack() }
+                        PredictivePopBackHandler { navController.popBackStack() }
                         BackgroundTaskView(
                             onFullscreenChanged = { isFullscreen = it },
                             viewModel = backgroundTaskViewModel,
@@ -202,10 +232,10 @@ fun AppNavigation(
                         route = Routes.SCHEDULE,
                         enterTransition = { tabEnterTransition },
                         exitTransition = { tabExitTransition },
-                        popEnterTransition = { tabEnterTransition },
-                        popExitTransition = { tabExitTransition }
+                        popEnterTransition = { popEnterTransition },
+                        popExitTransition = { popExitTransition }
                     ) {
-                        BackHandler { navController.popBackStack() }
+                        PredictivePopBackHandler { navController.popBackStack() }
                         ScheduleListView(navController = navController)
                     }
 
@@ -213,27 +243,19 @@ fun AppNavigation(
                         route = Routes.NOTIFICATION,
                         enterTransition = { tabEnterTransition },
                         exitTransition = { tabExitTransition },
-                        popEnterTransition = { tabEnterTransition },
-                        popExitTransition = { tabExitTransition }
+                        popEnterTransition = { popEnterTransition },
+                        popExitTransition = { popExitTransition }
                     ) {
-                        BackHandler { navController.popBackStack() }
+                        PredictivePopBackHandler { navController.popBackStack() }
                         NotificationSettingsView()
                     }
 
                     composable(
                         route = Routes.SETTINGS,
-                        enterTransition = {
-                            slideInHorizontally(initialOffsetX = { it }, animationSpec = tween(350))
-                        },
-                        exitTransition = {
-                            slideOutHorizontally(targetOffsetX = { it }, animationSpec = tween(350))
-                        },
-                        popEnterTransition = {
-                            slideInHorizontally(initialOffsetX = { -it / 3 }, animationSpec = tween(350))
-                        },
-                        popExitTransition = {
-                            slideOutHorizontally(targetOffsetX = { it }, animationSpec = tween(350))
-                        }
+                        enterTransition = { forwardEnterTransition },
+                        exitTransition = { forwardExitTransition },
+                        popEnterTransition = { popEnterTransition },
+                        popExitTransition = { popExitTransition }
                     ) {
                         SettingsView(
                             navController = navController,
@@ -243,72 +265,44 @@ fun AppNavigation(
 
                     composable(
                         route = Routes.THEME_SETTINGS,
-                        enterTransition = {
-                            slideInHorizontally(initialOffsetX = { it }, animationSpec = tween(350))
-                        },
-                        exitTransition = {
-                            slideOutHorizontally(targetOffsetX = { it }, animationSpec = tween(350))
-                        },
-                        popEnterTransition = {
-                            slideInHorizontally(initialOffsetX = { -it / 3 }, animationSpec = tween(350))
-                        },
-                        popExitTransition = {
-                            slideOutHorizontally(targetOffsetX = { it }, animationSpec = tween(350))
-                        }
+                        enterTransition = { forwardEnterTransition },
+                        exitTransition = { forwardExitTransition },
+                        popEnterTransition = { popEnterTransition },
+                        popExitTransition = { popExitTransition }
                     ) {
+                        PredictivePopBackHandler { navController.popBackStack() }
                         ThemeSettingsView(navController = navController)
                     }
                     composable(
                         route = Routes.LOG_HISTORY,
-                        enterTransition = {
-                            slideInHorizontally(initialOffsetX = { it }, animationSpec = tween(350))
-                        },
-                        exitTransition = {
-                            slideOutHorizontally(targetOffsetX = { it }, animationSpec = tween(350))
-                        },
-                        popEnterTransition = {
-                            slideInHorizontally(initialOffsetX = { -it / 3 }, animationSpec = tween(350))
-                        },
-                        popExitTransition = {
-                            slideOutHorizontally(targetOffsetX = { it }, animationSpec = tween(350))
-                        }
+                        enterTransition = { forwardEnterTransition },
+                        exitTransition = { forwardExitTransition },
+                        popEnterTransition = { popEnterTransition },
+                        popExitTransition = { popExitTransition }
                     ) {
+                        PredictivePopBackHandler { navController.popBackStack() }
                         LogHistoryView(navController = navController)
                     }
 
                     composable(
                         route = Routes.ERROR_LOG,
-                        enterTransition = {
-                            slideInHorizontally(initialOffsetX = { it }, animationSpec = tween(350))
-                        },
-                        exitTransition = {
-                            slideOutHorizontally(targetOffsetX = { it }, animationSpec = tween(350))
-                        },
-                        popEnterTransition = {
-                            slideInHorizontally(initialOffsetX = { -it / 3 }, animationSpec = tween(350))
-                        },
-                        popExitTransition = {
-                            slideOutHorizontally(targetOffsetX = { it }, animationSpec = tween(350))
-                        }
+                        enterTransition = { forwardEnterTransition },
+                        exitTransition = { forwardExitTransition },
+                        popEnterTransition = { popEnterTransition },
+                        popExitTransition = { popExitTransition }
                     ) {
+                        PredictivePopBackHandler { navController.popBackStack() }
                         ErrorLogView(navController = navController)
                     }
 
                     composable(
                         route = Routes.SCHEDULE_EDIT,
-                        enterTransition = {
-                            slideInHorizontally(initialOffsetX = { it }, animationSpec = tween(350))
-                        },
-                        exitTransition = {
-                            slideOutHorizontally(targetOffsetX = { it }, animationSpec = tween(350))
-                        },
-                        popEnterTransition = {
-                            slideInHorizontally(initialOffsetX = { -it / 3 }, animationSpec = tween(350))
-                        },
-                        popExitTransition = {
-                            slideOutHorizontally(targetOffsetX = { it }, animationSpec = tween(350))
-                        }
+                        enterTransition = { forwardEnterTransition },
+                        exitTransition = { forwardExitTransition },
+                        popEnterTransition = { popEnterTransition },
+                        popExitTransition = { popExitTransition }
                     ) { backStackEntry ->
+                        PredictivePopBackHandler { navController.popBackStack() }
                         val strategyId = backStackEntry.arguments?.getString("strategyId")
                             .let { if (it == "new") null else it }
                         ScheduleEditView(navController = navController, strategyId = strategyId)
@@ -316,37 +310,23 @@ fun AppNavigation(
 
                     composable(
                         route = Routes.SCHEDULE_TRIGGER_LOG,
-                        enterTransition = {
-                            slideInHorizontally(initialOffsetX = { it }, animationSpec = tween(350))
-                        },
-                        exitTransition = {
-                            slideOutHorizontally(targetOffsetX = { it }, animationSpec = tween(350))
-                        },
-                        popEnterTransition = {
-                            slideInHorizontally(initialOffsetX = { -it / 3 }, animationSpec = tween(350))
-                        },
-                        popExitTransition = {
-                            slideOutHorizontally(targetOffsetX = { it }, animationSpec = tween(350))
-                        }
+                        enterTransition = { forwardEnterTransition },
+                        exitTransition = { forwardExitTransition },
+                        popEnterTransition = { popEnterTransition },
+                        popExitTransition = { popExitTransition }
                     ) {
+                        PredictivePopBackHandler { navController.popBackStack() }
                         ScheduleTriggerLogView(navController = navController)
                     }
 
                     composable(
                         route = Routes.TASK_OVERRIDE_EDITOR,
-                        enterTransition = {
-                            slideInHorizontally(initialOffsetX = { it }, animationSpec = tween(350))
-                        },
-                        exitTransition = {
-                            slideOutHorizontally(targetOffsetX = { it }, animationSpec = tween(350))
-                        },
-                        popEnterTransition = {
-                            slideInHorizontally(initialOffsetX = { -it / 3 }, animationSpec = tween(350))
-                        },
-                        popExitTransition = {
-                            slideOutHorizontally(targetOffsetX = { it }, animationSpec = tween(350))
-                        }
+                        enterTransition = { forwardEnterTransition },
+                        exitTransition = { forwardExitTransition },
+                        popEnterTransition = { popEnterTransition },
+                        popExitTransition = { popExitTransition }
                     ) {
+                        PredictivePopBackHandler { navController.popBackStack() }
                         TaskOverrideEditorView(navController = navController)
                     }
                 }
@@ -391,6 +371,58 @@ fun AppNavigation(
                     }
                 },
             )
+        }
+    }
+}
+
+@Composable
+private fun maaForwardEnterTransition(): EnterTransition {
+    val animationSpec = tween<IntOffset>(durationMillis = 360, easing = FastOutSlowInEasing)
+    val fadeSpec = tween<Float>(durationMillis = 260, easing = FastOutSlowInEasing)
+    return slideInHorizontally(
+        initialOffsetX = { it / 5 },
+        animationSpec = animationSpec
+    ) + fadeIn(animationSpec = fadeSpec) + scaleIn(
+        initialScale = 0.985f,
+        animationSpec = tween(durationMillis = 360, easing = FastOutSlowInEasing)
+    )
+}
+
+@Composable
+private fun maaForwardExitTransition(): ExitTransition {
+    return slideOutHorizontally(
+        targetOffsetX = { -it / 12 },
+        animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing)
+    ) + fadeOut(animationSpec = tween(durationMillis = 180))
+}
+
+@Composable
+private fun maaPopEnterTransition(): EnterTransition {
+    return slideInHorizontally(
+        initialOffsetX = { -it / 8 },
+        animationSpec = tween(durationMillis = 320, easing = FastOutSlowInEasing)
+    ) + fadeIn(animationSpec = tween(durationMillis = 240, easing = FastOutSlowInEasing))
+}
+
+@Composable
+private fun maaPopExitTransition(): ExitTransition {
+    return slideOutHorizontally(
+        targetOffsetX = { it },
+        animationSpec = tween(durationMillis = 320, easing = FastOutSlowInEasing)
+    ) + fadeOut(animationSpec = tween(durationMillis = 220)) + scaleOut(
+        targetScale = 0.985f,
+        animationSpec = tween(durationMillis = 320, easing = FastOutSlowInEasing)
+    )
+}
+
+@OptIn(ExperimentalActivityComposeApi::class)
+@Composable
+private fun PredictivePopBackHandler(onBack: () -> Unit) {
+    PredictiveBackHandler { progress ->
+        try {
+            progress.collect()
+            onBack()
+        } catch (_: CancellationException) {
         }
     }
 }
