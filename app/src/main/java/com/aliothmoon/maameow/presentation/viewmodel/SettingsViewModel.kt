@@ -191,6 +191,12 @@ class SettingsViewModel(
             appSettingsManager.setThemeMode(mode)
         }
     }
+    val uiStyle: StateFlow<AppSettingsManager.UiStyle> = appSettingsManager.uiStyle
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), AppSettingsManager.UiStyle.MATERIAL)
+    fun setUiStyle(style: AppSettingsManager.UiStyle) {
+        viewModelScope.launch { appSettingsManager.setUiStyle(style) }
+    }
+
     val uiBlurEnabled: StateFlow<Boolean> = appSettingsManager.uiBlurEnabled
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
     fun setUiBlurEnabled(enabled: Boolean) {

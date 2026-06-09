@@ -298,6 +298,10 @@ class AppSettingsManager(private val context: Context) {
         SYSTEM, WHITE, DARK, PURE_DARK
     }
 
+    enum class UiStyle {
+        MATERIAL, MIUIX
+    }
+
     val themeMode: StateFlow<ThemeMode> = settings
         .map {
             runCatching { ThemeMode.valueOf(it.themeMode) }.getOrDefault(ThemeMode.SYSTEM)
@@ -316,6 +320,20 @@ class AppSettingsManager(private val context: Context) {
             context.dataStore.edit { it[themeMode] = mode.name }
         }
     }
+    val uiStyle: StateFlow<UiStyle> = settings
+        .map { runCatching { UiStyle.valueOf(it.uiStyle) }.getOrDefault(UiStyle.MATERIAL) }
+        .distinctUntilChanged()
+        .stateIn(
+            scope, SharingStarted.Eagerly,
+            runCatching { UiStyle.valueOf(initialSettings.uiStyle) }.getOrDefault(UiStyle.MATERIAL)
+        )
+
+    suspend fun setUiStyle(style: UiStyle) {
+        with(AppSettingsSchema) {
+            context.dataStore.edit { it[uiStyle] = style.name }
+        }
+    }
+
     val uiBlurEnabled: StateFlow<Boolean> = settings
         .map { it.uiBlurEnabled.toBooleanStrictOrNull() ?: true }
         .distinctUntilChanged()

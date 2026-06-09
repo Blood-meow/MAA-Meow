@@ -18,7 +18,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -40,6 +39,7 @@ import com.aliothmoon.maameow.R
 import com.aliothmoon.maameow.data.preferences.AppSettingsManager
 import com.aliothmoon.maameow.presentation.components.InfoCard
 import com.aliothmoon.maameow.presentation.components.TopAppBar
+import com.aliothmoon.maameow.presentation.components.ui.MaaUiScaffold
 import com.aliothmoon.maameow.presentation.viewmodel.SettingsViewModel
 import com.aliothmoon.maameow.theme.MaaDesignTokens
 import org.koin.androidx.compose.koinViewModel
@@ -59,12 +59,13 @@ fun ThemeSettingsView(
     viewModel: SettingsViewModel = koinViewModel()
 ) {
     val themeMode by viewModel.themeMode.collectAsStateWithLifecycle()
+    val uiStyle by viewModel.uiStyle.collectAsStateWithLifecycle()
     val blurEnabled by viewModel.uiBlurEnabled.collectAsStateWithLifecycle()
     val floatingBottomBar by viewModel.uiFloatingBottomBar.collectAsStateWithLifecycle()
     val liquidGlassEnabled by viewModel.uiLiquidGlassEnabled.collectAsStateWithLifecycle()
     val monetEnabled by viewModel.uiMonetEnabled.collectAsStateWithLifecycle()
     val pageScale by viewModel.uiPageScale.collectAsStateWithLifecycle()
-    Scaffold(
+    MaaUiScaffold(
         topBar = {
             TopAppBar(
                 title = stringResource(R.string.settings_theme_settings_title),
@@ -81,6 +82,25 @@ fun ThemeSettingsView(
             contentPadding = PaddingValues(vertical = 8.dp)
         ) {
             item {
+                ThemeSectionHeader(stringResource(R.string.settings_theme_style_section))
+                InfoCard(
+                    title = "",
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    contentColor = contentColor,
+                    contentPadding = PaddingValues(
+                        horizontal = MaaDesignTokens.Card.innerPadding,
+                        vertical = MaaDesignTokens.Spacing.listItemVertical
+                    )
+                ) {
+                    UiStyleItem(
+                        contentColor = contentColor,
+                        selectedStyle = uiStyle,
+                        onStyleSelected = viewModel::setUiStyle
+                    )
+                }
+            }
+            item {
+                Spacer(modifier = Modifier.height(MaaDesignTokens.Spacing.sectionGap))
                 ThemeSectionHeader(stringResource(R.string.settings_theme_mode_section))
                 InfoCard(
                     title = "",
@@ -150,6 +170,63 @@ fun ThemeSettingsView(
                 }
             }
             item { Spacer(modifier = Modifier.height(16.dp)) }
+        }
+    }
+}
+
+@Composable
+private fun UiStyleItem(
+    contentColor: Color,
+    selectedStyle: AppSettingsManager.UiStyle,
+    onStyleSelected: (AppSettingsManager.UiStyle) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = MaaDesignTokens.Spacing.listItemVertical),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Text(
+            text = stringResource(R.string.settings_theme_ui_style_title),
+            style = MaterialTheme.typography.bodyLarge,
+            color = contentColor
+        )
+        Text(
+            text = stringResource(R.string.settings_theme_ui_style_desc),
+            style = MaterialTheme.typography.bodySmall,
+            color = contentColor.copy(alpha = 0.7f)
+        )
+        Row(modifier = Modifier.fillMaxWidth()) {
+            val styles = listOf(
+                AppSettingsManager.UiStyle.MATERIAL to stringResource(R.string.settings_theme_ui_style_material),
+                AppSettingsManager.UiStyle.MIUIX to stringResource(R.string.settings_theme_ui_style_miuix)
+            )
+            styles.forEach { (style, label) ->
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center,
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(8.dp))
+                        .selectable(
+                            selected = style == selectedStyle,
+                            onClick = { onStyleSelected(style) },
+                            role = Role.RadioButton
+                        )
+                ) {
+                    RadioButton(
+                        selected = style == selectedStyle,
+                        onClick = null
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = label,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = contentColor,
+                        maxLines = 1
+                    )
+                }
+            }
         }
     }
 }

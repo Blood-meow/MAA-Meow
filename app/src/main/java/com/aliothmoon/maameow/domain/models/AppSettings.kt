@@ -36,6 +36,7 @@ data class AppSettings(
     @PrefKey(default = "false") val showTouchPreview: String = "false",
 
     @PrefKey(default = "SYSTEM") val themeMode: String = "SYSTEM",
+    @PrefKey(default = "MATERIAL") val uiStyle: String = "MATERIAL",
     @PrefKey(default = "true") val uiBlurEnabled: String = "true",
     @PrefKey(default = "true") val uiFloatingBottomBar: String = "true",
     @PrefKey(default = "true") val uiLiquidGlassEnabled: String = "true",

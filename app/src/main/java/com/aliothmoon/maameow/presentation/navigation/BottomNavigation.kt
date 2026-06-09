@@ -40,6 +40,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.aliothmoon.maameow.R
 import com.aliothmoon.maameow.constant.Routes
+import com.aliothmoon.maameow.presentation.components.ui.isMiuixUi
 import com.aliothmoon.maameow.theme.MaaDesignTokens
 
 sealed class BottomNavTab(
@@ -84,23 +85,28 @@ fun AppBottomNavigation(
     liquidGlass: Boolean = true,
     onTabSelected: (BottomNavTab) -> Unit
 ) {
-    val barShape = RoundedCornerShape(if (floating) 28.dp else 0.dp)
+    val miuix = isMiuixUi
+    val barShape = RoundedCornerShape(if (floating) {
+        if (miuix) 32.dp else 28.dp
+    } else {
+        0.dp
+    })
     val containerColor = if (liquidGlass) {
-        MaterialTheme.colorScheme.surface.copy(alpha = 0.72f)
+        MaterialTheme.colorScheme.surface.copy(alpha = if (miuix) 0.80f else 0.72f)
     } else {
         MaterialTheme.colorScheme.surface
     }
     Surface(
         color = Color.Transparent,
-        shadowElevation = if (floating) 10.dp else 0.dp
+        shadowElevation = if (floating) { if (miuix) 14.dp else 10.dp } else 0.dp
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .windowInsetsPadding(WindowInsets.navigationBars)
                 .padding(
-                    horizontal = if (floating) 18.dp else 0.dp,
-                    vertical = if (floating) 10.dp else 0.dp
+                    horizontal = if (floating) { if (miuix) 16.dp else 18.dp } else 0.dp,
+                    vertical = if (floating) { if (miuix) 8.dp else 10.dp } else 0.dp
                 )
         ) {
             if (!floating) {
@@ -142,7 +148,7 @@ fun AppBottomNavigation(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 24.dp, vertical = if (floating) 8.dp else 6.dp),
+                        .padding(horizontal = if (miuix) 18.dp else 24.dp, vertical = if (floating) { if (miuix) 10.dp else 8.dp } else 6.dp),
                     horizontalArrangement = Arrangement.SpaceEvenly,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -160,19 +166,19 @@ fun AppBottomNavigation(
                                 interactionSource = remember { MutableInteractionSource() },
                                 indication = null
                             ) { onTabSelected(tab) }
-                            .heightIn(min = 48.dp)
-                            .padding(horizontal = 20.dp, vertical = 2.dp),
+                            .heightIn(min = if (miuix) 52.dp else 48.dp)
+                            .padding(horizontal = if (miuix) 16.dp else 20.dp, vertical = 2.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                             Icon(
                             imageVector = tab.icon,
                             contentDescription = label,
-                            modifier = Modifier.size(20.dp),
+                            modifier = Modifier.size(if (miuix) 22.dp else 20.dp),
                             tint = contentColor
                         )
                                 Text(
                             text = label,
-                            style = MaterialTheme.typography.labelMedium,
+                            style = if (miuix) MaterialTheme.typography.labelSmall else MaterialTheme.typography.labelMedium,
                             color = contentColor
                         )
                     }

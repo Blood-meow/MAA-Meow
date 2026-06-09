@@ -51,6 +51,11 @@
     <string name="settings_theme_settings_desc">Configure theme mode, blur, floating bottom bar, and liquid glass effects</string>
     <string name="settings_theme_monet_title">Monet dynamic color</string>
     <string name="settings_theme_monet_desc">Use Android 12+ wallpaper-based dynamic colors</string>
+    <string name="settings_theme_style_section">UI architecture</string>
+    <string name="settings_theme_ui_style_title">UI style</string>
+    <string name="settings_theme_ui_style_desc">Switch between Material and Miuix styles. Miuix uses MIUI/KernelSU-like large titles, rounder cards, and denser bottom navigation.</string>
+    <string name="settings_theme_ui_style_material">Material</string>
+    <string name="settings_theme_ui_style_miuix">Miuix</string>
     <string name="settings_theme_mode_section">Theme mode</string>
     <string name="settings_theme_page_scale_title">Page scale</string>
     <string name="settings_theme_page_scale_desc">Adjust overall page density, matching KernelSU Page Scale</string>

@@ -10,7 +10,6 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -36,6 +35,7 @@ import com.aliothmoon.maameow.domain.service.ExternalNotificationService
 import com.aliothmoon.maameow.overlay.OverlayController
 import com.aliothmoon.maameow.presentation.components.AnnouncementDialog
 import com.aliothmoon.maameow.presentation.components.ResourceLoadingOverlay
+import com.aliothmoon.maameow.presentation.components.ui.MaaUiScaffold
 import com.aliothmoon.maameow.presentation.view.background.BackgroundTaskView
 import com.aliothmoon.maameow.presentation.view.home.HomeView
 import com.aliothmoon.maameow.presentation.view.notification.NotificationSettingsView
@@ -133,7 +133,7 @@ fun AppNavigation(
     val tabExitTransition = fadeOut(animationSpec = tween(150))
 
     Box(modifier = Modifier.fillMaxSize()) {
-        Scaffold(
+        MaaUiScaffold(
             bottomBar = {
                 if (showBottomBar) {
                     AppBottomNavigation(

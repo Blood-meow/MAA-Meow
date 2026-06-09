@@ -23,6 +23,7 @@ import com.aliothmoon.maameow.domain.service.MaaCompositionService
 import com.aliothmoon.maameow.domain.state.MaaExecutionState
 import com.aliothmoon.maameow.overlay.screensaver.HardwareScreenOffManager
 import com.aliothmoon.maameow.overlay.screensaver.ScreenSaverOverlayManager
+import com.aliothmoon.maameow.presentation.components.ui.LocalUiStyle
 import com.aliothmoon.maameow.presentation.navigation.AppNavigation
 import com.aliothmoon.maameow.presentation.viewmodel.BackgroundTaskViewModel
 import com.aliothmoon.maameow.schedule.model.ScheduledExecutionRequest
@@ -63,11 +64,15 @@ class MainActivity : AppCompatActivity() {
         setContent {
             val themeMode by appSettingsManager.themeMode.collectAsStateWithLifecycle()
             val monetEnabled by appSettingsManager.uiMonetEnabled.collectAsStateWithLifecycle()
+            val uiStyle by appSettingsManager.uiStyle.collectAsStateWithLifecycle()
             val pageScale by appSettingsManager.uiPageScale.collectAsStateWithLifecycle()
             val systemDensity = LocalDensity.current
             val scaledDensity = Density(systemDensity.density * pageScale, systemDensity.fontScale)
             MaaMeowTheme(themeMode = themeMode, monetEnabled = monetEnabled) {
-                CompositionLocalProvider(LocalDensity provides scaledDensity) {
+                CompositionLocalProvider(
+                    LocalDensity provides scaledDensity,
+                    LocalUiStyle provides uiStyle
+                ) {
                     AppNavigation(backgroundTaskViewModel = backgroundTaskViewModel)
                 }
             }
