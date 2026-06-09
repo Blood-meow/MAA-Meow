@@ -45,6 +45,15 @@ import com.aliothmoon.maameow.theme.MaaDesignTokens
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
+private fun ThemeSectionHeader(title: String) {
+    Text(
+        text = title,
+        style = MaterialTheme.typography.labelLarge,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+    )
+}
+
 fun ThemeSettingsView(
     navController: NavController,
     viewModel: SettingsViewModel = koinViewModel()
@@ -72,7 +81,7 @@ fun ThemeSettingsView(
             contentPadding = PaddingValues(vertical = 8.dp)
         ) {
             item {
-                SectionHeader(stringResource(R.string.settings_theme_mode_section))
+                ThemeSectionHeader(stringResource(R.string.settings_theme_mode_section))
                 InfoCard(
                     title = "",
                     modifier = Modifier.padding(horizontal = 16.dp),
@@ -105,7 +114,7 @@ fun ThemeSettingsView(
             }
             item {
                 Spacer(modifier = Modifier.height(MaaDesignTokens.Spacing.sectionGap))
-                SectionHeader(stringResource(R.string.settings_theme_effect_section))
+                ThemeSectionHeader(stringResource(R.string.settings_theme_effect_section))
                 InfoCard(
                     title = "",
                     modifier = Modifier.padding(horizontal = 16.dp),
