@@ -52,6 +52,8 @@
     <string name="settings_theme_monet_title">Monet dynamic color</string>
     <string name="settings_theme_monet_desc">Use Android 12+ wallpaper-based dynamic colors</string>
     <string name="settings_theme_mode_section">Theme mode</string>
+    <string name="settings_theme_page_scale_title">Page scale</string>
+    <string name="settings_theme_page_scale_desc">Adjust overall page density, matching KernelSU Page Scale</string>
     <string name="settings_theme_effect_section">UI effects</string>
     <string name="settings_theme_blur_title">Blur</string>
     <string name="settings_theme_blur_desc">Enable a soft blur layer for liquid glass surfaces</string>

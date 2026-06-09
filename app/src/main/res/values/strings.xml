@@ -250,6 +250,8 @@
     <string name="settings_theme_monet_title">Monet 动态色</string>
     <string name="settings_theme_monet_desc">Android 12 及以上使用系统壁纸动态配色</string>
     <string name="settings_theme_mode_section">主题模式</string>
+    <string name="settings_theme_page_scale_title">界面大小</string>
+    <string name="settings_theme_page_scale_desc">调整页面整体缩放比例，参考 KernelSU 的 Page Scale</string>
     <string name="settings_theme_effect_section">界面效果</string>
     <string name="settings_theme_blur_title">模糊效果</string>
     <string name="settings_theme_blur_desc">为液态玻璃组件启用柔和模糊层</string>

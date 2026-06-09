@@ -352,6 +352,15 @@ class AppSettingsManager(private val context: Context) {
             context.dataStore.edit { it[uiMonetEnabled] = enabled.toString() }
         }
     }
+    val uiPageScale: StateFlow<Float> = settings
+        .map { it.uiPageScale.toFloatOrNull()?.coerceIn(0.8f, 1.3f) ?: 1.0f }
+        .distinctUntilChanged()
+        .stateIn(scope, SharingStarted.Eagerly, initialSettings.uiPageScale.toFloatOrNull()?.coerceIn(0.8f, 1.3f) ?: 1.0f)
+    suspend fun setUiPageScale(scale: Float) {
+        with(AppSettingsSchema) {
+            context.dataStore.edit { it[uiPageScale] = scale.coerceIn(0.8f, 1.3f).toString() }
+        }
+    }
 
     // 内部通知级别
     enum class EventNotificationLevel(@param:androidx.annotation.StringRes val labelRes: Int) {

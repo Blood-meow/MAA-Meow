@@ -19,10 +19,14 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -50,6 +54,7 @@ fun ThemeSettingsView(
     val floatingBottomBar by viewModel.uiFloatingBottomBar.collectAsStateWithLifecycle()
     val liquidGlassEnabled by viewModel.uiLiquidGlassEnabled.collectAsStateWithLifecycle()
     val monetEnabled by viewModel.uiMonetEnabled.collectAsStateWithLifecycle()
+    val pageScale by viewModel.uiPageScale.collectAsStateWithLifecycle()
     Scaffold(
         topBar = {
             TopAppBar(
@@ -89,6 +94,12 @@ fun ThemeSettingsView(
                         contentColor = contentColor,
                         checked = monetEnabled,
                         onCheckedChange = viewModel::setUiMonetEnabled
+                    )
+                    SettingsDivider(contentColor)
+                    PageScaleItem(
+                        contentColor = contentColor,
+                        scale = pageScale,
+                        onScaleChange = viewModel::setUiPageScale
                     )
                 }
             }
@@ -188,6 +199,50 @@ private fun ThemeModeItem(
     }
 }
 
+
+@Composable
+private fun PageScaleItem(
+    contentColor: Color,
+    scale: Float,
+    onScaleChange: (Float) -> Unit
+) {
+    var sliderValue by remember(scale) { mutableFloatStateOf(scale) }
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = MaaDesignTokens.Spacing.listItemVertical),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = stringResource(R.string.settings_theme_page_scale_title),
+                style = MaterialTheme.typography.bodyLarge,
+                color = contentColor
+            )
+            Text(
+                text = "${(sliderValue * 100).toInt()}%",
+                style = MaterialTheme.typography.bodyMedium,
+                color = contentColor.copy(alpha = 0.7f)
+            )
+        }
+        Text(
+            text = stringResource(R.string.settings_theme_page_scale_desc),
+            style = MaterialTheme.typography.bodySmall,
+            color = contentColor.copy(alpha = 0.7f)
+        )
+        Slider(
+            value = sliderValue,
+            onValueChange = { sliderValue = it },
+            onValueChangeFinished = { onScaleChange(sliderValue) },
+            valueRange = 0.8f..1.3f,
+            steps = 4
+        )
+    }
+}
 @Composable
 private fun ThemeSwitchItem(
     title: String,

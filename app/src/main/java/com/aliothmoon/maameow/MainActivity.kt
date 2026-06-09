@@ -8,8 +8,11 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
@@ -59,9 +62,14 @@ class MainActivity : AppCompatActivity() {
         })
         setContent {
             val themeMode by appSettingsManager.themeMode.collectAsStateWithLifecycle()
-
-            MaaMeowTheme(themeMode = themeMode) {
-                AppNavigation(backgroundTaskViewModel = backgroundTaskViewModel)
+            val monetEnabled by appSettingsManager.uiMonetEnabled.collectAsStateWithLifecycle()
+            val pageScale by appSettingsManager.uiPageScale.collectAsStateWithLifecycle()
+            val systemDensity = LocalDensity.current
+            val scaledDensity = Density(systemDensity.density * pageScale, systemDensity.fontScale)
+            MaaMeowTheme(themeMode = themeMode, monetEnabled = monetEnabled) {
+                CompositionLocalProvider(LocalDensity provides scaledDensity) {
+                    AppNavigation(backgroundTaskViewModel = backgroundTaskViewModel)
+                }
             }
         }
     }
