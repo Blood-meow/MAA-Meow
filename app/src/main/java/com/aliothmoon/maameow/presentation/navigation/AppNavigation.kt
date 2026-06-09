@@ -1,7 +1,6 @@
 package com.aliothmoon.maameow.presentation.navigation
 
 import android.widget.Toast
-import androidx.activity.compose.ExperimentalActivityComposeApi
 import androidx.activity.compose.PredictiveBackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
@@ -63,7 +62,6 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
-@OptIn(ExperimentalActivityComposeApi::class)
 @Composable
 fun AppNavigation(
     backgroundTaskViewModel: BackgroundTaskViewModel,
@@ -415,7 +413,6 @@ private fun maaPopExitTransition(): ExitTransition {
     )
 }
 
-@OptIn(ExperimentalActivityComposeApi::class)
 @Composable
 private fun PredictivePopBackHandler(onBack: () -> Unit) {
     PredictiveBackHandler { progress ->
