@@ -156,13 +156,13 @@ fun AppBottomNavigation(
                     Icon(
                         imageVector = if (miuix) tab.miuixIcon else tab.icon,
                         contentDescription = label,
-                        tint = if (selected) MiuixTheme.colorScheme.onSurface else MiuixTheme.colorScheme.onSurfaceVariant
+                        tint = if (selected) MiuixTheme.colorScheme.onSurface else ThemeColors.onSurfaceVariant
                     )
                     Text(
                         text = label,
                         fontSize = 11.sp,
                         lineHeight = 14.sp,
-                        color = if (selected) MiuixTheme.colorScheme.onSurface else MiuixTheme.colorScheme.onSurfaceVariant,
+                        color = if (selected) MiuixTheme.colorScheme.onSurface else ThemeColors.onSurfaceVariant,
                         maxLines = 1,
                         softWrap = false,
                         overflow = TextOverflow.Visible
