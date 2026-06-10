@@ -15,7 +15,13 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.calculateBottomPadding
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -28,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -43,6 +50,7 @@ import com.aliothmoon.maameow.overlay.OverlayController
 import com.aliothmoon.maameow.presentation.components.AnnouncementDialog
 import com.aliothmoon.maameow.presentation.components.ResourceLoadingOverlay
 import com.aliothmoon.maameow.presentation.components.ui.MaaUiScaffold
+import com.aliothmoon.maameow.presentation.components.ui.isMiuixUi
 import com.aliothmoon.maameow.presentation.view.background.BackgroundTaskView
 import com.aliothmoon.maameow.presentation.view.home.HomeView
 import com.aliothmoon.maameow.presentation.view.notification.NotificationSettingsView
@@ -137,16 +145,9 @@ fun AppNavigation(
         }
     }
 
-    // 主 Tab 切换动画定义 - 使用轻量的淡入淡出，降低主入口切换时的重叠感
-    val tabTransitionSpec = tween<Float>(durationMillis = 220, easing = FastOutSlowInEasing)
-    val tabEnterTransition = fadeIn(animationSpec = tabTransitionSpec) + scaleIn(
-        initialScale = 0.98f,
-        animationSpec = tabTransitionSpec
-    )
-    val tabExitTransition = fadeOut(animationSpec = tween(durationMillis = 120)) + scaleOut(
-        targetScale = 1.01f,
-        animationSpec = tween(durationMillis = 120)
-    )
+    val tabRoutes = BottomNavTab.all.map { it.route }
+    val isMiuix = isMiuixUi
+    val usesFloatingBottomBar = showBottomBar && (uiFloatingBottomBar || isMiuix)
     val forwardEnterTransition = maaForwardEnterTransition()
     val forwardExitTransition = maaForwardExitTransition()
     val popEnterTransition = maaPopEnterTransition()
@@ -166,9 +167,9 @@ fun AppNavigation(
                 ) {
                     AppBottomNavigation(
                         currentRoute = currentNavRoute ?: Routes.HOME,
-                        blurEnabled = uiBlurEnabled,
-                        floating = uiFloatingBottomBar,
-                        liquidGlass = uiLiquidGlassEnabled,
+                        blurEnabled = isMiuix && uiBlurEnabled,
+                        floating = isMiuix && uiFloatingBottomBar,
+                        liquidGlass = isMiuix && uiLiquidGlassEnabled,
                         onTabSelected = { tab ->
                             if (tab.route == currentNavRoute) return@AppBottomNavigation
 
@@ -196,7 +197,20 @@ fun AppNavigation(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(bottom = paddingValues.calculateBottomPadding())
+                    .padding(
+                        bottom = if (usesFloatingBottomBar) {
+                            0.dp
+                        } else {
+                            paddingValues.calculateBottomPadding()
+                        }
+                    )
+                    .then(
+                        if (usesFloatingBottomBar) {
+                            Modifier.windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))
+                        } else {
+                            Modifier
+                        }
+                    )
             ) {
                 NavHost(
                     navController = navController,
@@ -204,20 +218,20 @@ fun AppNavigation(
                 ) {
                     composable(
                         route = Routes.HOME,
-                        enterTransition = { tabEnterTransition },
-                        exitTransition = { tabExitTransition },
-                        popEnterTransition = { tabEnterTransition },
-                        popExitTransition = { tabExitTransition }
+                        enterTransition = { maaTabEnterTransition(tabRoutes, initialState.destination.route, targetState.destination.route) },
+                        exitTransition = { maaTabExitTransition(tabRoutes, initialState.destination.route, targetState.destination.route) },
+                        popEnterTransition = { maaTabEnterTransition(tabRoutes, initialState.destination.route, targetState.destination.route) },
+                        popExitTransition = { maaTabExitTransition(tabRoutes, initialState.destination.route, targetState.destination.route) }
                     ) {
                         HomeView(navController = navController)
                     }
 
                     composable(
                         route = Routes.BACKGROUND_TASK,
-                        enterTransition = { tabEnterTransition },
-                        exitTransition = { tabExitTransition },
-                        popEnterTransition = { popEnterTransition },
-                        popExitTransition = { popExitTransition }
+                        enterTransition = { maaTabEnterTransition(tabRoutes, initialState.destination.route, targetState.destination.route) },
+                        exitTransition = { maaTabExitTransition(tabRoutes, initialState.destination.route, targetState.destination.route) },
+                        popEnterTransition = { maaTabEnterTransition(tabRoutes, initialState.destination.route, targetState.destination.route) },
+                        popExitTransition = { maaTabExitTransition(tabRoutes, initialState.destination.route, targetState.destination.route) }
                     ) {
                         PredictivePopBackHandler { navController.popBackStack() }
                         BackgroundTaskView(
@@ -228,10 +242,10 @@ fun AppNavigation(
 
                     composable(
                         route = Routes.SCHEDULE,
-                        enterTransition = { tabEnterTransition },
-                        exitTransition = { tabExitTransition },
-                        popEnterTransition = { popEnterTransition },
-                        popExitTransition = { popExitTransition }
+                        enterTransition = { maaTabEnterTransition(tabRoutes, initialState.destination.route, targetState.destination.route) },
+                        exitTransition = { maaTabExitTransition(tabRoutes, initialState.destination.route, targetState.destination.route) },
+                        popEnterTransition = { maaTabEnterTransition(tabRoutes, initialState.destination.route, targetState.destination.route) },
+                        popExitTransition = { maaTabExitTransition(tabRoutes, initialState.destination.route, targetState.destination.route) }
                     ) {
                         PredictivePopBackHandler { navController.popBackStack() }
                         ScheduleListView(navController = navController)
@@ -239,8 +253,8 @@ fun AppNavigation(
 
                     composable(
                         route = Routes.NOTIFICATION,
-                        enterTransition = { tabEnterTransition },
-                        exitTransition = { tabExitTransition },
+                        enterTransition = { forwardEnterTransition },
+                        exitTransition = { forwardExitTransition },
                         popEnterTransition = { popEnterTransition },
                         popExitTransition = { popExitTransition }
                     ) {
@@ -250,10 +264,10 @@ fun AppNavigation(
 
                     composable(
                         route = Routes.SETTINGS,
-                        enterTransition = { forwardEnterTransition },
-                        exitTransition = { forwardExitTransition },
-                        popEnterTransition = { popEnterTransition },
-                        popExitTransition = { popExitTransition }
+                        enterTransition = { maaTabEnterTransition(tabRoutes, initialState.destination.route, targetState.destination.route) },
+                        exitTransition = { maaTabExitTransition(tabRoutes, initialState.destination.route, targetState.destination.route) },
+                        popEnterTransition = { maaTabEnterTransition(tabRoutes, initialState.destination.route, targetState.destination.route) },
+                        popExitTransition = { maaTabExitTransition(tabRoutes, initialState.destination.route, targetState.destination.route) }
                     ) {
                         SettingsView(
                             navController = navController,
@@ -371,6 +385,31 @@ fun AppNavigation(
             )
         }
     }
+}
+
+@Composable
+private fun maaTabEnterTransition(tabRoutes: List<String>, initialRoute: String?, targetRoute: String?): EnterTransition {
+    val initialIndex = tabRoutes.indexOf(initialRoute ?: Routes.HOME).coerceAtLeast(0)
+    val targetIndex = tabRoutes.indexOf(targetRoute ?: Routes.HOME).coerceAtLeast(0)
+    val direction = if (targetIndex >= initialIndex) 1 else -1
+    return slideInHorizontally(
+        initialOffsetX = { direction * it / 4 },
+        animationSpec = tween(durationMillis = 280, easing = FastOutSlowInEasing)
+    ) + fadeIn(animationSpec = tween(durationMillis = 220, easing = FastOutSlowInEasing)) + scaleIn(
+        initialScale = 0.985f,
+        animationSpec = tween(durationMillis = 280, easing = FastOutSlowInEasing)
+    )
+}
+
+@Composable
+private fun maaTabExitTransition(tabRoutes: List<String>, initialRoute: String?, targetRoute: String?): ExitTransition {
+    val initialIndex = tabRoutes.indexOf(initialRoute ?: Routes.HOME).coerceAtLeast(0)
+    val targetIndex = tabRoutes.indexOf(targetRoute ?: Routes.HOME).coerceAtLeast(0)
+    val direction = if (targetIndex >= initialIndex) -1 else 1
+    return slideOutHorizontally(
+        targetOffsetX = { direction * it / 8 },
+        animationSpec = tween(durationMillis = 220, easing = FastOutSlowInEasing)
+    ) + fadeOut(animationSpec = tween(durationMillis = 160, easing = FastOutSlowInEasing))
 }
 
 @Composable

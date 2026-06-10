@@ -98,9 +98,9 @@ fun ThemeSettingsView(
                 MaaMeowThemePreview(
                     themeMode = themeMode,
                     uiStyle = uiStyle,
-                    blurEnabled = blurEnabled,
-                    floatingBottomBar = floatingBottomBar,
-                    liquidGlassEnabled = liquidGlassEnabled,
+                    blurEnabled = uiStyle == AppSettingsManager.UiStyle.MIUIX && blurEnabled,
+                    floatingBottomBar = uiStyle == AppSettingsManager.UiStyle.MIUIX && floatingBottomBar,
+                    liquidGlassEnabled = uiStyle == AppSettingsManager.UiStyle.MIUIX && liquidGlassEnabled,
                     modifier = Modifier.padding(horizontal = 16.dp)
                 )
             }
@@ -148,39 +148,41 @@ fun ThemeSettingsView(
                 )
             }
 
-            item {
-                SettingsSectionCard(
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    rows = listOf(
-                        {
-                            ThemeSwitchRow(
-                                icon = Icons.Rounded.BlurOn,
-                                title = stringResource(R.string.settings_theme_blur_title),
-                                summary = stringResource(R.string.settings_theme_blur_desc),
-                                checked = blurEnabled,
-                                onCheckedChange = viewModel::setUiBlurEnabled
-                            )
-                        },
-                        {
-                            ThemeSwitchRow(
-                                icon = Icons.Rounded.ViewAgenda,
-                                title = stringResource(R.string.settings_theme_floating_bar_title),
-                                summary = stringResource(R.string.settings_theme_floating_bar_desc),
-                                checked = floatingBottomBar,
-                                onCheckedChange = viewModel::setUiFloatingBottomBar
-                            )
-                        },
-                        {
-                            ThemeSwitchRow(
-                                icon = Icons.Rounded.WaterDrop,
-                                title = stringResource(R.string.settings_theme_liquid_glass_title),
-                                summary = stringResource(R.string.settings_theme_liquid_glass_desc),
-                                checked = liquidGlassEnabled,
-                                onCheckedChange = viewModel::setUiLiquidGlassEnabled
-                            )
-                        }
+            if (uiStyle == AppSettingsManager.UiStyle.MIUIX) {
+                item {
+                    SettingsSectionCard(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        rows = listOf(
+                            {
+                                ThemeSwitchRow(
+                                    icon = Icons.Rounded.BlurOn,
+                                    title = stringResource(R.string.settings_theme_blur_title),
+                                    summary = stringResource(R.string.settings_theme_blur_desc),
+                                    checked = blurEnabled,
+                                    onCheckedChange = viewModel::setUiBlurEnabled
+                                )
+                            },
+                            {
+                                ThemeSwitchRow(
+                                    icon = Icons.Rounded.ViewAgenda,
+                                    title = stringResource(R.string.settings_theme_floating_bar_title),
+                                    summary = stringResource(R.string.settings_theme_floating_bar_desc),
+                                    checked = floatingBottomBar,
+                                    onCheckedChange = viewModel::setUiFloatingBottomBar
+                                )
+                            },
+                            {
+                                ThemeSwitchRow(
+                                    icon = Icons.Rounded.WaterDrop,
+                                    title = stringResource(R.string.settings_theme_liquid_glass_title),
+                                    summary = stringResource(R.string.settings_theme_liquid_glass_desc),
+                                    checked = liquidGlassEnabled,
+                                    onCheckedChange = viewModel::setUiLiquidGlassEnabled
+                                )
+                            }
+                        )
                     )
-                )
+                }
             }
 
             item {
