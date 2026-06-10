@@ -57,14 +57,15 @@ import androidx.compose.ui.util.lerp
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
+import com.aliothmoon.maameow.ui.component.liquid.CombinedBackdrop
 import com.aliothmoon.maameow.ui.component.liquid.InnerShadow
 import com.aliothmoon.maameow.ui.component.liquid.innerShadow
 import com.aliothmoon.maameow.ui.component.liquid.lens
 import com.aliothmoon.maameow.ui.component.liquid.rememberCombinedBackdrop
 import com.aliothmoon.maameow.ui.component.liquid.vibrancy
-import com.aliothmoon.maameow.ui.component.liquid.DampedDragAnimation
-import com.aliothmoon.maameow.ui.component.liquid.InteractiveHighlight
-import com.aliothmoon.maameow.theme.isInDarkTheme
+import androidx.compose.foundation.isSystemInDarkTheme
+import com.aliothmoon.maameow.ui.component.miuix.animation.DampedDragAnimation
+import com.aliothmoon.maameow.ui.component.miuix.animation.InteractiveHighlight
 import top.yukonga.miuix.kmp.blur.Backdrop
 import top.yukonga.miuix.kmp.blur.blur
 import top.yukonga.miuix.kmp.blur.drawBackdrop
@@ -186,7 +187,7 @@ fun FloatingBottomBarAdvanced(
     isBlurEnabled: Boolean = true,
     content: @Composable RowScope.() -> Unit
 ) {
-    val isInDark = isInDarkTheme()
+    val isInDark = isSystemInDarkTheme()
     val pillShape = remember { CircleShape }
     val accentColor = MiuixTheme.colorScheme.primary
     val surfaceContainer = MiuixTheme.colorScheme.surfaceContainer

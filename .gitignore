@@ -43,3 +43,5 @@ android/.cxx
 
 ci_logs.txt
 *.log
+
+ci_logs*.txt
