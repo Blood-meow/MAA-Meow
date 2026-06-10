@@ -15,13 +15,7 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.calculateBottomPadding
-import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -146,8 +140,6 @@ fun AppNavigation(
     }
 
     val tabRoutes = BottomNavTab.all.map { it.route }
-    val isMiuix = isMiuixUi
-    val usesFloatingBottomBar = showBottomBar && (uiFloatingBottomBar || isMiuix)
     val forwardEnterTransition = maaForwardEnterTransition()
     val forwardExitTransition = maaForwardExitTransition()
     val popEnterTransition = maaPopEnterTransition()
@@ -197,20 +189,7 @@ fun AppNavigation(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(
-                        bottom = if (usesFloatingBottomBar) {
-                            0.dp
-                        } else {
-                            paddingValues.calculateBottomPadding()
-                        }
-                    )
-                    .then(
-                        if (usesFloatingBottomBar) {
-                            Modifier.windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))
-                        } else {
-                            Modifier
-                        }
-                    )
+                    .padding(bottom = paddingValues.calculateBottomPadding())
             ) {
                 NavHost(
                     navController = navController,
@@ -387,7 +366,6 @@ fun AppNavigation(
     }
 }
 
-@Composable
 private fun maaTabEnterTransition(tabRoutes: List<String>, initialRoute: String?, targetRoute: String?): EnterTransition {
     val initialIndex = tabRoutes.indexOf(initialRoute ?: Routes.HOME).coerceAtLeast(0)
     val targetIndex = tabRoutes.indexOf(targetRoute ?: Routes.HOME).coerceAtLeast(0)
@@ -401,7 +379,6 @@ private fun maaTabEnterTransition(tabRoutes: List<String>, initialRoute: String?
     )
 }
 
-@Composable
 private fun maaTabExitTransition(tabRoutes: List<String>, initialRoute: String?, targetRoute: String?): ExitTransition {
     val initialIndex = tabRoutes.indexOf(initialRoute ?: Routes.HOME).coerceAtLeast(0)
     val targetIndex = tabRoutes.indexOf(targetRoute ?: Routes.HOME).coerceAtLeast(0)

@@ -29,14 +29,14 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Cottage
+import androidx.compose.material.icons.rounded.DateRange
+import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.rounded.Cottage as MiuixHomeIcon
-import androidx.compose.material.icons.rounded.DateRange as MiuixDateRangeIcon
-import androidx.compose.material.icons.rounded.PlayArrow as MiuixPlayArrowIcon
-import androidx.compose.material.icons.rounded.Settings as MiuixSettingsIcon
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -72,28 +72,28 @@ sealed class BottomNavTab(
         route = Routes.HOME,
         labelRes = R.string.bottom_nav_home,
         icon = Icons.Default.Home,
-        miuixIcon = MiuixHomeIcon
+        miuixIcon = Icons.Rounded.Cottage
     )
 
     data object BACKGROUND : BottomNavTab(
         route = Routes.BACKGROUND_TASK,
         labelRes = R.string.bottom_nav_background_task,
         icon = Icons.Default.PlayArrow,
-        miuixIcon = MiuixPlayArrowIcon
+        miuixIcon = Icons.Rounded.PlayArrow
     )
 
     data object SCHEDULE : BottomNavTab(
         route = Routes.SCHEDULE,
         labelRes = R.string.bottom_nav_schedule,
         icon = Icons.Default.DateRange,
-        miuixIcon = MiuixDateRangeIcon
+        miuixIcon = Icons.Rounded.DateRange
     )
 
     data object SETTINGS : BottomNavTab(
         route = Routes.SETTINGS,
         labelRes = R.string.bottom_nav_settings,
         icon = Icons.Default.Settings,
-        miuixIcon = MiuixSettingsIcon
+        miuixIcon = Icons.Rounded.Settings
     )
 
     companion object {

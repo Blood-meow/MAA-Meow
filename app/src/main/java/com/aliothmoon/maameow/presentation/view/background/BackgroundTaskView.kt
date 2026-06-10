@@ -2,9 +2,9 @@ package com.aliothmoon.maameow.presentation.view.background
 
 import androidx.compose.runtime.Composable
 import com.aliothmoon.maameow.domain.service.MaaCompositionService
-import com.aliothmoon.maameow.domain.service.PermissionManager
+import com.aliothmoon.maameow.manager.PermissionManager
 import com.aliothmoon.maameow.domain.service.UnifiedStateDispatcher
-import com.aliothmoon.maameow.overlay.AppWatchdog
+import com.aliothmoon.maameow.domain.service.AppWatchdog
 import com.aliothmoon.maameow.overlay.screensaver.ScreenSaverOverlayManager
 import com.aliothmoon.maameow.presentation.components.ui.isMiuixUi
 import com.aliothmoon.maameow.presentation.viewmodel.BackgroundTaskViewModel
