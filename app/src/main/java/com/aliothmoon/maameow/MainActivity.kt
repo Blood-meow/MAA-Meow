@@ -65,12 +65,14 @@ class MainActivity : AppCompatActivity() {
             val monetEnabled by appSettingsManager.uiMonetEnabled.collectAsStateWithLifecycle()
             val uiStyle by appSettingsManager.uiStyle.collectAsStateWithLifecycle()
             val keyColor by appSettingsManager.uiKeyColor.collectAsStateWithLifecycle()
+            val fontSizeScale by appSettingsManager.fontSizeScale.collectAsStateWithLifecycle()
             val systemDensity = LocalDensity.current
             MaaMeowTheme(
                 themeMode = themeMode,
                 monetEnabled = monetEnabled,
                 uiStyle = uiStyle,
-                keyColor = keyColor
+                keyColor = keyColor,
+                fontSizeScale = fontSizeScale
             ) {
                     AppNavigation(backgroundTaskViewModel = backgroundTaskViewModel)
                 }

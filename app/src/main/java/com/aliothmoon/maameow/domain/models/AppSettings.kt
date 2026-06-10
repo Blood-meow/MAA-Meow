@@ -70,4 +70,6 @@ data class AppSettings(
     @PrefKey(default = "false") val tasksOverrideEnabled: String = "false",
 
     @PrefKey(default = "false") val allowForegroundScheduledTask: String = "false",
+
+    @PrefKey(default = "100") val fontSizeScale: String = "100",
 )

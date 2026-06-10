@@ -1360,4 +1360,7 @@
     <string name="overlay_floatball_state_running">运行中</string>
     <string name="overlay_floatball_state_stopping">停止中</string>
     <string name="overlay_floatball_state_error">错误</string>
+    <string name="settings_font_size_title">字体大小</string>
+    <string name="settings_font_size_summary">调整全局字体缩放比例</string>
+    <string name="settings_font_size_preview">示例文字：明日方舟自动战斗助手</string>
 </resources>

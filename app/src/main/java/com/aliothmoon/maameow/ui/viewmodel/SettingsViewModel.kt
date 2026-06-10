@@ -224,6 +224,12 @@ class SettingsViewModel(
         viewModelScope.launch { appSettingsManager.setUiKeyColor(color) }
     }
 
+    val fontSizeScale: StateFlow<Int> = appSettingsManager.fontSizeScale
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 100)
+    fun setFontSizeScale(scale: Int) {
+        viewModelScope.launch { appSettingsManager.setFontSizeScale(scale) }
+    }
+
     val backgroundResolution: StateFlow<DefaultDisplayConfig.ResolutionPreference> =
         appSettingsManager.backgroundResolution
             .stateIn(

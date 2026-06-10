@@ -381,6 +381,16 @@ class AppSettingsManager(private val context: Context) {
         }
     }
 
+    val fontSizeScale: StateFlow<Int> = settings
+        .map { it.fontSizeScale.toIntOrNull() ?: 100 }
+        .distinctUntilChanged()
+        .stateIn(scope, SharingStarted.Eagerly, initialSettings.fontSizeScale.toIntOrNull() ?: 100)
+    suspend fun setFontSizeScale(scale: Int) {
+        with(AppSettingsSchema) {
+            context.dataStore.edit { it[fontSizeScale] = scale.toString() }
+        }
+    }
+
     // 内部通知级别
     enum class EventNotificationLevel(@param:androidx.annotation.StringRes val labelRes: Int) {
         OFF(R.string.notification_level_off),

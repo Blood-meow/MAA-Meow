@@ -173,6 +173,7 @@ fun MaaMeowTheme(
     monetEnabled: Boolean = false,
     uiStyle: AppSettingsManager.UiStyle = AppSettingsManager.UiStyle.MATERIAL,
     keyColor: Long = 0L,
+    fontSizeScale: Int = 100,
     content: @Composable () -> Unit
 ) {
     val systemDarkTheme = isSystemInDarkTheme()
@@ -226,8 +227,13 @@ fun MaaMeowTheme(
         )
     }
 
+    val scaledDensity = LocalDensity.current.let { Density(it.density, it.fontScale * fontSizeScale / 100f) }
     val themedContent: @Composable () -> Unit = {
-        CompositionLocalProvider(LocalUiStyle provides uiStyle, LocalIsPureDark provides isPureDark) {
+        CompositionLocalProvider(
+            LocalUiStyle provides uiStyle,
+            LocalIsPureDark provides isPureDark,
+            LocalDensity provides scaledDensity
+        ) {
             content()
         }
     }
