@@ -66,8 +66,6 @@ import top.yukonga.miuix.kmp.shader.isRenderEffectSupported
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-import com.aliothmoon.maameow.ui.component.bottombar.FloatingBottomBar
-import com.aliothmoon.maameow.ui.component.bottombar.FloatingBottomBarItem
 import top.yukonga.miuix.kmp.blur.Backdrop
 import top.yukonga.miuix.kmp.blur.LayerBackdrop
 import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop

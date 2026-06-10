@@ -147,9 +147,8 @@ fun AppNavigation(
 
     val tabRoutes = BottomNavTab.all.map { it.route }
     val blurBackdrop: LayerBackdrop? = rememberLayerBackdrop()
-    val blurBackdrop: LayerBackdrop? = rememberLayerBackdrop()
     val forwardEnterTransition = maaForwardEnterTransition()
-    val forwardExitTransition = maaForwardExitTransition()
+            val forwardExitTransition = maaForwardExitTransition()
     val popEnterTransition = maaPopEnterTransition()
     val popExitTransition = maaPopExitTransition()
 
