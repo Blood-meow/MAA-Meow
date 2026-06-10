@@ -182,7 +182,7 @@ fun FloatingBottomBar(
             valueRange = 0f..(tabsCount - 1).toFloat(),
             visibilityThreshold = 0.001f,
             initialScale = 1f,
-            pressedScale = 64f / 56f,
+            pressedScale = 78f / 56f,
             canDrag = { offset ->
                 val anim = holder.instance ?: return@DampedDragAnimation true
                 if (tabWidthPx == 0f) return@DampedDragAnimation false
