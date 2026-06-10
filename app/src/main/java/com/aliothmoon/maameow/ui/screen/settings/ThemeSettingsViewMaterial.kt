@@ -59,7 +59,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.aliothmoon.maameow.R
 import com.aliothmoon.maameow.data.preferences.AppSettingsManager
-import com.aliothmoon.maameow.ui.component.TopAppBar
+import com.aliothmoon.maameow.ui.component.material.TopAppBar
 import com.aliothmoon.maameow.ui.component.material.MaaUiScaffold
 import com.aliothmoon.maameow.ui.viewmodel.SettingsViewModel
 import com.aliothmoon.maameow.ui.theme.MaaDesignTokens

@@ -1,4 +1,4 @@
-package com.aliothmoon.maameow.ui.component
+package com.aliothmoon.maameow.ui.component.dialog
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Build

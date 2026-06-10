@@ -1,4 +1,4 @@
-package com.aliothmoon.maameow.ui.component
+package com.aliothmoon.maameow.ui.component.material
 
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility

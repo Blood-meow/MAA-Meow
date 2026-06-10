@@ -85,8 +85,8 @@ import com.aliothmoon.maameow.domain.service.MaaCompositionService
 import com.aliothmoon.maameow.domain.service.UnifiedStateDispatcher
 import com.aliothmoon.maameow.domain.state.MaaExecutionState
 import com.aliothmoon.maameow.manager.PermissionManager
-import com.aliothmoon.maameow.ui.component.AdaptiveTaskPromptDialog
-import com.aliothmoon.maameow.ui.component.ShizukuPermissionDialog
+import com.aliothmoon.maameow.ui.component.dialog.AdaptiveTaskPromptDialog
+import com.aliothmoon.maameow.ui.component.dialog.ShizukuPermissionDialog
 import com.aliothmoon.maameow.ui.screen.panel.PanelHeader
 import com.aliothmoon.maameow.ui.screen.panel.LogPanel
 import com.aliothmoon.maameow.ui.screen.panel.PanelDialogType

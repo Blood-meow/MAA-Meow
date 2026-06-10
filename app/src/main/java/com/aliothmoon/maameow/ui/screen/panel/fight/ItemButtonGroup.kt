@@ -2,7 +2,7 @@ package com.aliothmoon.maameow.ui.screen.panel.fight
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.aliothmoon.maameow.ui.component.SelectableChipGroup
+import com.aliothmoon.maameow.ui.component.material.SelectableChipGroup
 
 /**
  * 材料选择按钮组

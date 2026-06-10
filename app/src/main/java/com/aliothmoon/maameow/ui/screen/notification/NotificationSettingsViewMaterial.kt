@@ -38,8 +38,8 @@ import com.aliothmoon.maameow.data.preferences.AppSettingsManager
 import com.aliothmoon.maameow.data.preferences.AppSettingsManager.EventNotificationLevel
 import com.aliothmoon.maameow.domain.service.MaaEventNotifier
 import com.aliothmoon.maameow.ui.component.ITextField
-import com.aliothmoon.maameow.ui.component.InfoCard
-import com.aliothmoon.maameow.ui.component.TopAppBar
+import com.aliothmoon.maameow.ui.component.material.InfoCard
+import com.aliothmoon.maameow.ui.component.material.TopAppBar
 import com.aliothmoon.maameow.ui.viewmodel.NotificationSettingsViewModel
 import com.aliothmoon.maameow.ui.theme.MaaDesignTokens
 import kotlinx.coroutines.launch

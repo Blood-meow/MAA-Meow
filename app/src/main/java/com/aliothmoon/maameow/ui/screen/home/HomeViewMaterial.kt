@@ -72,10 +72,10 @@ import com.aliothmoon.maameow.domain.state.ResourceInitState
 import com.aliothmoon.maameow.manager.PermissionManager
 import com.aliothmoon.maameow.manager.RemoteServiceManager
 import com.aliothmoon.maameow.manager.ShizukuInstallHelper
-import com.aliothmoon.maameow.ui.component.AdaptiveTaskPromptDialog
-import com.aliothmoon.maameow.ui.component.ChangelogDialog
-import com.aliothmoon.maameow.ui.component.ResourceInitDialog
-import com.aliothmoon.maameow.ui.component.UpdateCard
+import com.aliothmoon.maameow.ui.component.dialog.AdaptiveTaskPromptDialog
+import com.aliothmoon.maameow.ui.component.dialog.ChangelogDialog
+import com.aliothmoon.maameow.ui.component.dialog.ResourceInitDialog
+import com.aliothmoon.maameow.ui.component.material.UpdateCard
 import com.aliothmoon.maameow.ui.state.StatusColorType
 import com.aliothmoon.maameow.ui.viewmodel.HomeViewModel
 import com.aliothmoon.maameow.ui.viewmodel.UpdateViewModel

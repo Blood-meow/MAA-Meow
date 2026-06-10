@@ -36,7 +36,7 @@ import com.aliothmoon.maameow.domain.models.RunMode
 import com.aliothmoon.maameow.domain.service.MaaCompositionService
 import com.aliothmoon.maameow.domain.state.MaaExecutionState
 import com.aliothmoon.maameow.ui.LocalFloatingWindowContext
-import com.aliothmoon.maameow.ui.component.AdaptiveTaskPromptDialog
+import com.aliothmoon.maameow.ui.component.dialog.AdaptiveTaskPromptDialog
 import com.aliothmoon.maameow.ui.component.ResourceLoadingOverlay
 import com.aliothmoon.maameow.ui.screen.panel.PanelDialogType.ERROR
 import com.aliothmoon.maameow.ui.screen.panel.PanelDialogType.SUCCESS

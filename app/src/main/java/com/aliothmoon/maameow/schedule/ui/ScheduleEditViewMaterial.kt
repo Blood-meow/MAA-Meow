@@ -64,7 +64,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.aliothmoon.maameow.R
-import com.aliothmoon.maameow.ui.component.TopAppBar
+import com.aliothmoon.maameow.ui.component.material.TopAppBar
 import com.aliothmoon.maameow.ui.component.tip.ExpandableTipContent
 import com.aliothmoon.maameow.ui.component.tip.ExpandableTipIcon
 import com.aliothmoon.maameow.schedule.model.ScheduleType

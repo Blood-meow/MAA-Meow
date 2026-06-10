@@ -51,7 +51,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.aliothmoon.maameow.R
 import com.aliothmoon.maameow.data.model.TaskProfile
-import com.aliothmoon.maameow.ui.component.AdaptiveTaskPromptDialog
+import com.aliothmoon.maameow.ui.component.dialog.AdaptiveTaskPromptDialog
 import com.aliothmoon.maameow.ui.component.ITextField
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState

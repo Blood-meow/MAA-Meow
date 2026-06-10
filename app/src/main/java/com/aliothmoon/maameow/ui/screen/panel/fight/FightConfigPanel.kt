@@ -54,7 +54,7 @@ import com.aliothmoon.maameow.domain.enums.UiUsageConstants
 import com.aliothmoon.maameow.ui.component.CheckBoxWithExpandableTip
 import com.aliothmoon.maameow.ui.component.CheckBoxWithLabel
 import com.aliothmoon.maameow.ui.component.ITextFieldWithFocus
-import com.aliothmoon.maameow.ui.component.SelectableChipGroup
+import com.aliothmoon.maameow.ui.component.material.SelectableChipGroup
 import com.aliothmoon.maameow.ui.component.tip.ExpandableTipContent
 import com.aliothmoon.maameow.ui.component.tip.ExpandableTipIcon
 import com.aliothmoon.maameow.ui.theme.MaaThemeAlphas

@@ -41,7 +41,7 @@ import com.aliothmoon.maameow.data.preferences.AppSettingsManager
 import com.aliothmoon.maameow.domain.models.RunMode
 import com.aliothmoon.maameow.domain.service.ExternalNotificationService
 import com.aliothmoon.maameow.overlay.OverlayController
-import com.aliothmoon.maameow.ui.component.AnnouncementDialog
+import com.aliothmoon.maameow.ui.component.dialog.AnnouncementDialog
 import com.aliothmoon.maameow.ui.component.ResourceLoadingOverlay
 import com.aliothmoon.maameow.ui.component.material.MaaUiScaffold
 import com.aliothmoon.maameow.ui.isMiuixUi

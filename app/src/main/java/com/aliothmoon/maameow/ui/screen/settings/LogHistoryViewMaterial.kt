@@ -23,7 +23,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material3.AlertDialog
-import com.aliothmoon.maameow.ui.component.AdaptiveTaskPromptDialog
+import com.aliothmoon.maameow.ui.component.dialog.AdaptiveTaskPromptDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -54,7 +54,7 @@ import com.aliothmoon.maameow.R
 import com.aliothmoon.maameow.data.log.LogEntry
 import com.aliothmoon.maameow.data.log.LogFileInfo
 import com.aliothmoon.maameow.domain.service.LogExportService
-import com.aliothmoon.maameow.ui.component.TopAppBar
+import com.aliothmoon.maameow.ui.component.material.TopAppBar
 import com.aliothmoon.maameow.ui.viewmodel.LogHistoryViewModel
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel

@@ -1,4 +1,4 @@
-package com.aliothmoon.maameow.ui.component
+package com.aliothmoon.maameow.ui.component.dialog
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween

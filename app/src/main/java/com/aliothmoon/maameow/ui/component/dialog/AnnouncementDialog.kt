@@ -1,4 +1,4 @@
-package com.aliothmoon.maameow.ui.component
+package com.aliothmoon.maameow.ui.component.dialog
 
 import android.content.res.Configuration
 import android.graphics.BitmapFactory

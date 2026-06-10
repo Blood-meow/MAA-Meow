@@ -34,7 +34,7 @@ import com.aliothmoon.maameow.R
 import com.aliothmoon.maameow.data.model.ReclamationConfig
 import com.aliothmoon.maameow.ui.component.CheckBoxWithLabel
 import com.aliothmoon.maameow.ui.component.ITextField
-import com.aliothmoon.maameow.ui.component.SelectableChipGroup
+import com.aliothmoon.maameow.ui.component.material.SelectableChipGroup
 import kotlinx.coroutines.launch
 
 @Composable

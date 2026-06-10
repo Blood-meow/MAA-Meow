@@ -53,7 +53,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.aliothmoon.maameow.R
 import com.aliothmoon.maameow.data.model.LogItem
-import com.aliothmoon.maameow.ui.component.AdaptiveTaskPromptDialog
+import com.aliothmoon.maameow.ui.component.dialog.AdaptiveTaskPromptDialog
 
 /**
  * 日志面板

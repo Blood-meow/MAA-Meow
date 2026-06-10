@@ -58,11 +58,11 @@ import com.aliothmoon.maameow.domain.models.RemoteBackend
 import com.aliothmoon.maameow.domain.service.LogExportService
 import com.aliothmoon.maameow.domain.service.ResourceInitService
 import com.aliothmoon.maameow.domain.state.ResourceInitState
-import com.aliothmoon.maameow.ui.component.AdaptiveTaskPromptDialog
-import com.aliothmoon.maameow.ui.component.InfoCard
+import com.aliothmoon.maameow.ui.component.dialog.AdaptiveTaskPromptDialog
+import com.aliothmoon.maameow.ui.component.material.InfoCard
 import com.aliothmoon.maameow.ui.component.ReInitializeConfirmDialog
-import com.aliothmoon.maameow.ui.component.ResourceInitDialog
-import com.aliothmoon.maameow.ui.component.TopAppBar
+import com.aliothmoon.maameow.ui.component.dialog.ResourceInitDialog
+import com.aliothmoon.maameow.ui.component.material.TopAppBar
 import com.aliothmoon.maameow.ui.viewmodel.SettingsViewModel
 import com.aliothmoon.maameow.ui.theme.MaaDesignTokens
 import com.aliothmoon.maameow.utils.Misc

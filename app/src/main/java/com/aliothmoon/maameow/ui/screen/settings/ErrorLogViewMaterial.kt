@@ -50,8 +50,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.aliothmoon.maameow.R
-import com.aliothmoon.maameow.ui.component.AdaptiveTaskPromptDialog
-import com.aliothmoon.maameow.ui.component.TopAppBar
+import com.aliothmoon.maameow.ui.component.dialog.AdaptiveTaskPromptDialog
+import com.aliothmoon.maameow.ui.component.material.TopAppBar
 import com.aliothmoon.maameow.ui.viewmodel.ErrorLogViewModel
 import org.koin.androidx.compose.koinViewModel
 import java.time.Instant

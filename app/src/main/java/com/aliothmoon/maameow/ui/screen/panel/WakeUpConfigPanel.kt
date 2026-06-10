@@ -25,7 +25,7 @@ import com.aliothmoon.maameow.domain.service.MaaCompositionService
 import com.aliothmoon.maameow.domain.state.MaaExecutionState
 import com.aliothmoon.maameow.ui.component.CheckBoxWithLabel
 import com.aliothmoon.maameow.ui.component.ITextField
-import com.aliothmoon.maameow.ui.component.SelectableChipGroup
+import com.aliothmoon.maameow.ui.component.material.SelectableChipGroup
 import com.aliothmoon.maameow.utils.i18n.wakeUpClientTypeDisplayName
 import org.koin.compose.koinInject
 

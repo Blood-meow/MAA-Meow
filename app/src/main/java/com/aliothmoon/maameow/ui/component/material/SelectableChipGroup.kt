@@ -1,4 +1,4 @@
-package com.aliothmoon.maameow.ui.component
+package com.aliothmoon.maameow.ui.component.material
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement

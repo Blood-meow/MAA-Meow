@@ -5,7 +5,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import com.aliothmoon.maameow.domain.enums.RoguelikeMode
 import com.aliothmoon.maameow.domain.enums.UiUsageConstants.Roguelike as RoguelikeUi
-import com.aliothmoon.maameow.ui.component.SelectableChipGroup
+import com.aliothmoon.maameow.ui.component.material.SelectableChipGroup
 
 /**
  * 分队按钮组

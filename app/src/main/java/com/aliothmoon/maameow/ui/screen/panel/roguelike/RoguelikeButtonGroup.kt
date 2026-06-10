@@ -3,7 +3,7 @@ package com.aliothmoon.maameow.ui.screen.panel.roguelike
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import com.aliothmoon.maameow.ui.component.SelectableChipGroup
+import com.aliothmoon.maameow.ui.component.material.SelectableChipGroup
 
 /**
  * 通用按钮组组件
