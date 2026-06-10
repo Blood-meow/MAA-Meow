@@ -48,6 +48,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
+import top.yukonga.miuix.kmp.preference.SliderPreference
+import com.aliothmoon.maameow.ui.isMiuixUi
 import androidx.compose.material3.Text
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.runtime.Composable
@@ -800,6 +802,42 @@ private fun FontSizeSlider(
     LaunchedEffect(fontSizeScale) { localSlider = fontSizeScale.toFloat() }
     val current = localSlider.toInt().coerceIn(80, 110)
     val previewScale = current / 100f
+    val miuix = isMiuixUi
+
+    if (miuix) {
+        // Miuix mode: native SliderPreference
+        Column {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .padding(horizontal = 16.dp, vertical = 14.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.settings_font_size_preview),
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontSize = (16f * previewScale).sp
+                )
+            }
+            SliderPreference(
+                value = localSlider,
+                onValueChange = { newValue: Float -> localSlider = newValue },
+                onValueChangeFinished = { onFontSizeChange(localSlider.toInt().coerceIn(80, 110)) },
+                title = stringResource(R.string.settings_font_size_title),
+                summary = stringResource(R.string.settings_font_size_summary),
+                valueText = current.toString(),
+                valueRange = 80f..110f,
+                steps = 29,
+                showKeyPoints = true,
+                keyPoints = listOf(80f, 90f, 100f, 110f)
+            )
+        }
+        return
+    }
+
+    // Material mode
 
     Column(
         modifier = Modifier
