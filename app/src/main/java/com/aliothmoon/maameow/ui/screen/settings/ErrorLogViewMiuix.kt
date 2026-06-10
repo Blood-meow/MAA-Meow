@@ -127,7 +127,7 @@ private fun ErrorLogListMiuix(
         topBar = {
             MiuixTopAppBar(
                 title = stringResource(R.string.settings_log_error_title),
-                navigationIcon = Icons.AutoMirrored.filled.ArrowBack,
+                navigationIcon = Icons.AutoMirrored.Filled.ArrowBack,
                 onNavigationClick = onBack,
                 actions = {
                     MiuixIconButton(onClick = onExport) {
@@ -172,6 +172,7 @@ private fun ErrorLogListMiuix(
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Medium,
                         color = MiuixTheme.colorScheme.onSurface
+                                    )
                                     Spacer(modifier = Modifier.height(4.dp))
                                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                         MiuixText(text = formatFileSize(logFile.size), style = MaterialTheme.typography.bodySmall, color = MiuixTheme.colorScheme.onSurfaceSecondary)
@@ -197,7 +198,7 @@ private fun ErrorLogDetailMiuix(
         topBar = {
             MiuixTopAppBar(
                 title = stringResource(R.string.log_detail_title),
-                navigationIcon = Icons.AutoMirrored.filled.ArrowBack,
+                navigationIcon = Icons.AutoMirrored.Filled.ArrowBack,
                 onNavigationClick = onBack
             )
         }
