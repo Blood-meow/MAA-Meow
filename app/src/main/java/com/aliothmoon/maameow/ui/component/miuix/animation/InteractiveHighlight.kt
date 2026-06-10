@@ -19,7 +19,6 @@ import androidx.compose.ui.util.fastCoerceIn
 import com.aliothmoon.maameow.ui.component.miuix.modifier.inspectDragGestures
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import org.intellij.lang.annotations.Language
 
 @SuppressLint("NewApi")
 class InteractiveHighlight(
@@ -34,7 +33,7 @@ class InteractiveHighlight(
     private var startPosition = Offset.Zero
     val offset: Offset get() = positionAnimation.value - startPosition
 
-    @Language("AGSL")
+    @Suppress("PrivatePropertyName")  // AGSL shader string
     private val shader = RuntimeShader(
         """
     uniform float2 size;
