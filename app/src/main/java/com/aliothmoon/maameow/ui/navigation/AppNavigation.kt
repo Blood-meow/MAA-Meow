@@ -134,24 +134,27 @@ fun AppNavigation(
     val isOnMainTab = currentNavRoute in mainTabRoutes || currentNavRoute == null
 
     Box(modifier = Modifier.fillMaxSize()) {
+        // MainScreen renders the HorizontalPager with all 4 tabs.
+        // Always keep in composition to preserve pager state, but hide when on sub-page.
+        MainScreen(
+            navController = navController,
+            backgroundTaskViewModel = backgroundTaskViewModel,
+            onFullscreenChanged = { isFullscreen = it },
+            onViewAnnouncement = { forceShowAnnouncement = true },
+            visible = isOnMainTab && !isFullscreen,
+        )
+
+        // NavHost for sub-pages only (theme settings, notifications, logs, etc.)
+        // Tab switching is handled entirely by MainScreen's HorizontalPager.
         NavHost(
             navController = navController,
             startDestination = Routes.HOME,
         ) {
-            // ── Main tabs handled by MainScreen (HorizontalPager) ──
-            composable(Routes.HOME) {
-                MainScreen(
-                    navController = navController,
-                    backgroundTaskViewModel = backgroundTaskViewModel,
-                    onFullscreenChanged = { isFullscreen = it },
-                    onViewAnnouncement = { forceShowAnnouncement = true },
-                    visible = isOnMainTab,
-                )
-            }
-            // Duplicate entries for other tab routes so NavHost recognizes them
-            composable(Routes.BACKGROUND_TASK) { /* handled by MainScreen */ }
-            composable(Routes.SCHEDULE) { /* handled by MainScreen */ }
-            composable(Routes.SETTINGS) { /* handled by MainScreen */ }
+            // Main tab routes - MainScreen handles rendering
+            composable(route = Routes.HOME) { /* MainScreen renders */ }
+            composable(route = Routes.BACKGROUND_TASK) { /* MainScreen renders */ }
+            composable(route = Routes.SCHEDULE) { /* MainScreen renders */ }
+            composable(route = Routes.SETTINGS) { /* MainScreen renders */ }
 
             // ── Sub-pages with forward navigation transitions ──
             composable(
