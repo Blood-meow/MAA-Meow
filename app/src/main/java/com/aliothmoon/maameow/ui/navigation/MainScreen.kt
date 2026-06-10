@@ -123,51 +123,21 @@ fun MainScreen(
     val uiBlurEnabled by appSettings.uiBlurEnabled.collectAsStateWithLifecycle()
     val uiFloatingBottomBar by appSettings.uiFloatingBottomBar.collectAsStateWithLifecycle()
 
-    val surfaceColor = MiuixTheme.colorScheme.surface
-    val backdrop = rememberLayerBackdrop {
-        drawRect(surfaceColor)
-        drawContent()
+    // Create backdrop only for Miuix mode (used by FloatingBottomBar blur effects)
+    val backdrop = if (miuix) {
+        val surfaceColor = MiuixTheme.colorScheme.surface
+        rememberLayerBackdrop {
+            drawRect(surfaceColor)
+            drawContent()
+        }
+    } else {
+        null
     }
 
     val settledPage = mainPagerState.pagerState.settledPage
     LaunchedEffect(settledPage) { mainPagerState.syncPage() }
     val currentPage = mainPagerState.pagerState.currentPage
     LaunchedEffect(currentPage) { mainPagerState.syncPage() }
-
-    val bottomBarContent: @Composable () -> Unit = {
-        AppBottomNavigation(
-            currentRoute = BottomNavTab.all[mainPagerState.selectedPage].route,
-            onTabSelected = { tab ->
-                val index = BottomNavTab.all.indexOf(tab)
-                if (index >= 0) mainPagerState.animateToPage(index)
-            },
-            backdrop = backdrop
-        )
-    }
-
-    val pagerContent: @Composable (Modifier) -> Unit = { mod ->
-        Box(modifier = mod) {
-            HorizontalPager(
-                state = mainPagerState.pagerState,
-                modifier = Modifier.fillMaxSize(),
-                beyondViewportPageCount = 3,
-                userScrollEnabled = true
-            ) { page ->
-                when (page) {
-                    0 -> HomeView(navController = navController)
-                    1 -> BackgroundTaskView(
-                        onFullscreenChanged = onFullscreenChanged,
-                        viewModel = backgroundTaskViewModel,
-                    )
-                    2 -> ScheduleListView(navController = navController)
-                    3 -> SettingsView(
-                        navController = navController,
-                        onViewAnnouncement = onViewAnnouncement,
-                    )
-                }
-            }
-        }
-    }
 
     if (miuix) {
         val useFloatingBar = uiFloatingBottomBar && visible
@@ -191,7 +161,7 @@ fun MainScreen(
 
         MiuixScaffold(bottomBar = bottomBar) { _ ->
             Box(
-                modifier = if (useFloatingBar && uiBlurEnabled) Modifier.layerBackdrop(backdrop) else Modifier
+                modifier = if (useFloatingBar && uiBlurEnabled && backdrop != null) Modifier.layerBackdrop(backdrop) else Modifier
             ) {
                 HorizontalPager(
                     state = mainPagerState.pagerState,
@@ -215,14 +185,45 @@ fun MainScreen(
             }
         }
     } else {
+        // Material mode: no blur, no backdrop, no FloatingBottomBar
         CompositionLocalProvider(LocalMainPagerState provides mainPagerState) {
-            Scaffold(bottomBar = if (visible) bottomBarContent else {{}}) { paddingValues ->
-                pagerContent(
-                    Modifier
+            Scaffold(
+                bottomBar = if (visible) ({
+                    AppBottomNavigation(
+                        currentRoute = BottomNavTab.all[mainPagerState.selectedPage].route,
+                        onTabSelected = { tab ->
+                            val index = BottomNavTab.all.indexOf(tab)
+                            if (index >= 0) mainPagerState.animateToPage(index)
+                        },
+                    )
+                }) else {{}}
+            ) { paddingValues ->
+                Box(
+                    modifier = Modifier
                         .fillMaxSize()
                         .padding(bottom = paddingValues.calculateBottomPadding())
                         .alpha(if (visible) 1f else 0.99f)
-                )
+                ) {
+                    HorizontalPager(
+                        state = mainPagerState.pagerState,
+                        modifier = Modifier.fillMaxSize(),
+                        beyondViewportPageCount = 3,
+                        userScrollEnabled = true
+                    ) { page ->
+                        when (page) {
+                            0 -> HomeView(navController = navController)
+                            1 -> BackgroundTaskView(
+                                onFullscreenChanged = onFullscreenChanged,
+                                viewModel = backgroundTaskViewModel,
+                            )
+                            2 -> ScheduleListView(navController = navController)
+                            3 -> SettingsView(
+                                navController = navController,
+                                onViewAnnouncement = onViewAnnouncement,
+                            )
+                        }
+                    }
+                }
             }
         }
     }
