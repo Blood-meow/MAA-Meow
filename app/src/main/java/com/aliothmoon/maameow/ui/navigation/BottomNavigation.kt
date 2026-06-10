@@ -179,16 +179,20 @@ fun AppBottomNavigation(
             Spacer(modifier = Modifier.height(navBarHeight))
         }
     } else {
-        Surface(
-            color = Color.Transparent,
-            shadowElevation = if (effectiveFloating) if (miuix) 14.dp else 10.dp else 0.dp
+        val navBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .windowInsetsPadding(WindowInsets.navigationBars)
-                    .padding(horizontal = horizontalPadding, vertical = verticalPadding)
+            Surface(
+                color = Color.Transparent,
+                shadowElevation = if (effectiveFloating) if (miuix) 14.dp else 10.dp else 0.dp
             ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = horizontalPadding, vertical = verticalPadding)
+                ) {
                 if (!effectiveFloating) {
                     HorizontalDivider(
                         thickness = MaaDesignTokens.Separator.thickness,
@@ -294,11 +298,14 @@ fun AppBottomNavigation(
                                         color = animatedColor
                                     )
                                 }
-                            }
-                        }
-                    }
+                }
                 }
             }
+            // Transparent spacer for gesture area
+            Spacer(modifier = Modifier.height(navBarHeight))
+        }
+    }
+}
         }
     }
 }
