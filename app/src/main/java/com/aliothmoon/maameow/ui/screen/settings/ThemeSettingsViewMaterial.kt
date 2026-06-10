@@ -32,6 +32,10 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.rounded.AspectRatio
 import androidx.compose.material.icons.rounded.BlurOn
 import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.Cottage
+import androidx.compose.material.icons.rounded.DateRange
+import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.Style
 import androidx.compose.material.icons.rounded.ViewAgenda
@@ -291,10 +295,11 @@ private fun MaaMeowThemePreview(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
-                        PreviewBottomDot(selected = true, icon = Icons.Filled.Home)
-                        PreviewBottomDot(selected = false, icon = Icons.Filled.PlayArrow)
-                        PreviewBottomDot(selected = false, icon = Icons.Filled.DateRange)
-                        PreviewBottomDot(selected = false, icon = Icons.Filled.Settings)
+                        val isMiuix = uiStyle == AppSettingsManager.UiStyle.MIUIX
+                        PreviewBottomDot(selected = true, icon = if (isMiuix) Icons.Rounded.Cottage else Icons.Filled.Home)
+                        PreviewBottomDot(selected = false, icon = if (isMiuix) Icons.Rounded.PlayArrow else Icons.Filled.PlayArrow)
+                        PreviewBottomDot(selected = false, icon = if (isMiuix) Icons.Rounded.DateRange else Icons.Filled.DateRange)
+                        PreviewBottomDot(selected = false, icon = if (isMiuix) Icons.Rounded.Settings else Icons.Filled.Settings)
                     }
                 }
             }
