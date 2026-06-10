@@ -69,6 +69,8 @@ import com.aliothmoon.maameow.ui.component.bottombar.FloatingBottomBar
 import com.aliothmoon.maameow.ui.component.bottombar.FloatingBottomBarItem
 import top.yukonga.miuix.kmp.blur.LayerBackdrop
 import top.yukonga.miuix.kmp.shader.isRenderEffectSupported
+import com.aliothmoon.maameow.ui.component.blur.BlurredBar
+import com.aliothmoon.maameow.ui.component.blur.rememberBlurBackdrop
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import com.aliothmoon.maameow.ui.theme.MaaDesignTokens
 import com.aliothmoon.maameow.ui.theme.ThemeColors

@@ -1,3 +1,4 @@
+// Adapted from KernelSU Manager (Apache 2.0) — Interactive touch highlight effect.
 package com.aliothmoon.maameow.ui.component.miuix.animation
 
 import android.annotation.SuppressLint
@@ -16,51 +17,69 @@ import androidx.compose.ui.graphics.ShaderBrush
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.util.fastCoerceIn
-import com.aliothmoon.maameow.ui.component.miuix.modifier.inspectDragGestures
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import com.aliothmoon.maameow.ui.component.miuix.modifier.inspectDragGestures
 
 @SuppressLint("NewApi")
 class InteractiveHighlight(
     val animationScope: CoroutineScope,
     val position: (size: Size, offset: Offset) -> Offset = { _, offset -> offset }
 ) {
-    private val pressProgressAnimationSpec = spring(0.5f, 300f, 0.001f)
-    private val positionAnimationSpec = spring(0.5f, 300f, Offset.VisibilityThreshold)
 
-    private val pressProgressAnimation = Animatable(0f, 0.001f)
-    private val positionAnimation = Animatable(Offset.Zero, Offset.VectorConverter, Offset.VisibilityThreshold)
+    private val pressProgressAnimationSpec =
+        spring(0.5f, 300f, 0.001f)
+    private val positionAnimationSpec =
+        spring(0.5f, 300f, Offset.VisibilityThreshold)
+
+    private val pressProgressAnimation =
+        Animatable(0f, 0.001f)
+    private val positionAnimation =
+        Animatable(Offset.Zero, Offset.VectorConverter, Offset.VisibilityThreshold)
+
     private var startPosition = Offset.Zero
     val offset: Offset get() = positionAnimation.value - startPosition
 
-    @Suppress("PrivatePropertyName")  // AGSL shader string
-    private val shader = RuntimeShader(
-        """
+    private val shader =
+        RuntimeShader(
+            """
     uniform float2 size;
     layout(color) uniform half4 color;
     uniform float radius;
     uniform float2 position;
+    
     half4 main(float2 coord) {
         float dist = distance(coord, position);
         float intensity = smoothstep(radius, radius * 0.5, dist);
         return color * intensity;
     }"""
-    )
+        )
 
     val modifier: Modifier =
         Modifier.drawWithContent {
             val progress = pressProgressAnimation.value
             if (progress > 0f) {
-                drawRect(Color.White.copy(0.06f * progress), blendMode = BlendMode.Plus)
+                drawRect(
+                    Color.White.copy(0.06f * progress),
+                    blendMode = BlendMode.Plus
+                )
                 shader.apply {
-                    val pos = position(size, positionAnimation.value)
+                    val position = position(size, positionAnimation.value)
                     setFloatUniform("size", size.width, size.height)
                     setColorUniform("color", Color.White.copy(0.12f * progress).toArgb())
                     setFloatUniform("radius", size.minDimension * 1.2f)
-                    setFloatUniform("position", pos.x.fastCoerceIn(0f, size.width), pos.y.fastCoerceIn(0f, size.height))
+                    setFloatUniform(
+                        "position",
+                        position.x.fastCoerceIn(0f, size.width),
+                        position.y.fastCoerceIn(0f, size.height)
+                    )
                 }
-                drawRect(ShaderBrush(shader), blendMode = BlendMode.Plus)
+                drawRect(
+                    ShaderBrush(shader),
+                    blendMode = BlendMode.Plus
+                )
             }
+
             drawContent()
         }
 

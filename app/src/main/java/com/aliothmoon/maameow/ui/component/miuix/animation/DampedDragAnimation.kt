@@ -1,3 +1,4 @@
+// Adapted from KernelSU Manager (Apache 2.0) — Damped drag animation for floating bottom bar.
 package com.aliothmoon.maameow.ui.component.miuix.animation
 
 import androidx.compose.animation.core.Animatable
@@ -9,12 +10,12 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.util.VelocityTracker
 import androidx.compose.ui.unit.IntSize
-import com.aliothmoon.maameow.ui.component.miuix.modifier.inspectDragGestures
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.android.awaitFrame
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import com.aliothmoon.maameow.ui.component.miuix.modifier.inspectDragGestures
 import kotlin.math.abs
 
 class DampedDragAnimation(
@@ -29,18 +30,31 @@ class DampedDragAnimation(
     val onDragStopped: DampedDragAnimation.() -> Unit,
     val onDrag: DampedDragAnimation.(size: IntSize, dragAmount: Offset) -> Unit,
 ) {
-    private val valueAnimationSpec = spring(1f, 1000f, visibilityThreshold)
-    private val velocityAnimationSpec = spring(0.5f, 300f, visibilityThreshold * 10f)
-    private val pressProgressAnimationSpec = spring(1f, 1000f, 0.001f)
-    private val scaleXAnimationSpec = spring(0.6f, 250f, 0.001f)
-    private val scaleYAnimationSpec = spring(0.7f, 250f, 0.001f)
 
-    private val valueAnimation = Animatable(initialValue, visibilityThreshold)
-    private val velocityAnimation = Animatable(0f, 5f)
-    private val pressProgressAnimation = Animatable(0f, 0.001f)
-    private val scaleXAnimation = Animatable(initialScale, 0.001f)
-    private val scaleYAnimation = Animatable(initialScale, 0.001f)
+    private val valueAnimationSpec =
+        spring(1f, 1000f, visibilityThreshold)
+    private val velocityAnimationSpec =
+        spring(0.5f, 300f, visibilityThreshold * 10f)
+    private val pressProgressAnimationSpec =
+        spring(1f, 1000f, 0.001f)
+    private val scaleXAnimationSpec =
+        spring(0.6f, 250f, 0.001f)
+    private val scaleYAnimationSpec =
+        spring(0.7f, 250f, 0.001f)
+
+    private val valueAnimation =
+        Animatable(initialValue, visibilityThreshold)
+    private val velocityAnimation =
+        Animatable(0f, 5f)
+    private val pressProgressAnimation =
+        Animatable(0f, 0.001f)
+    private val scaleXAnimation =
+        Animatable(initialScale, 0.001f)
+    private val scaleYAnimation =
+        Animatable(initialScale, 0.001f)
+
     private val mutatorMutex = MutatorMutex()
+
     private val velocityTracker = VelocityTracker()
 
     val value: Float get() = valueAnimation.value
@@ -67,8 +81,10 @@ class DampedDragAnimation(
         ) { change, dragAmount ->
             val position = change.position
             val previousPosition = change.previousPosition
+
             val isInside = canDrag(position)
             val wasInside = canDrag(previousPosition)
+
             if (isInside && wasInside) {
                 onDrag(size, dragAmount)
             }
@@ -100,9 +116,9 @@ class DampedDragAnimation(
     }
 
     fun updateValue(value: Float) {
-        val tv = value.coerceIn(valueRange)
+        val targetValue = value.coerceIn(valueRange)
         animationScope.launch {
-            launch { valueAnimation.animateTo(tv, valueAnimationSpec) { updateVelocity() } }
+            launch { valueAnimation.animateTo(targetValue, valueAnimationSpec) { updateVelocity() } }
         }
     }
 
@@ -110,8 +126,8 @@ class DampedDragAnimation(
         animationScope.launch {
             mutatorMutex.mutate {
                 press()
-                val tv = value.coerceIn(valueRange)
-                launch { valueAnimation.animateTo(tv, valueAnimationSpec) }
+                val targetValue = value.coerceIn(valueRange)
+                launch { valueAnimation.animateTo(targetValue, valueAnimationSpec) }
                 if (velocity != 0f) {
                     launch { velocityAnimation.animateTo(0f, velocityAnimationSpec) }
                 }
@@ -121,7 +137,10 @@ class DampedDragAnimation(
     }
 
     private fun updateVelocity() {
-        velocityTracker.addPosition(System.currentTimeMillis(), Offset(value, 0f))
+        velocityTracker.addPosition(
+            System.currentTimeMillis(),
+            Offset(value, 0f)
+        )
         val targetVelocity = velocityTracker.calculateVelocity().x / (valueRange.endInclusive - valueRange.start)
         animationScope.launch { velocityAnimation.animateTo(targetVelocity, velocityAnimationSpec) }
     }

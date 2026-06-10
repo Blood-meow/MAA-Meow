@@ -1,5 +1,7 @@
 package com.aliothmoon.maameow.ui.component.miuix.modifier
 
+// Adapted from KernelSU Manager (Apache 2.0)
+
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.ui.geometry.Offset
@@ -20,7 +22,9 @@ suspend fun PointerInputScope.inspectDragGestures(
 ) {
     awaitEachGesture {
         val initialDown = awaitFirstDown(false, PointerEventPass.Initial)
+
         val down = awaitFirstDown(false)
+
         onDragStart(down)
         onDrag(initialDown, Offset.Zero)
         val upEvent =

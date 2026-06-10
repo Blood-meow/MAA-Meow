@@ -1,5 +1,8 @@
 package com.aliothmoon.maameow.ui.component.liquid
 
+// Adapted from Kyant0/AndroidLiquidGlass — https://github.com/Kyant0/AndroidLiquidGlass (Apache 2.0).
+// Mirrored from compose-miuix-ui example.
+
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
@@ -16,6 +19,7 @@ class CombinedBackdrop(
 ) : Backdrop {
 
     override val isCoordinatesDependent: Boolean = first.isCoordinatesDependent || second.isCoordinatesDependent
+
     override val offsetResidualX: Float get() = first.offsetResidualX
     override val offsetResidualY: Float get() = first.offsetResidualY
 

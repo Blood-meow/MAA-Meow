@@ -1,3 +1,6 @@
+// InnerShadow — Depth shadow effect for liquid glass.
+// Adapted from tiann/KernelSU (Apache 2.0) — full ModifierNodeElement implementation.
+
 package com.aliothmoon.maameow.ui.component.liquid
 
 import androidx.compose.runtime.Immutable
@@ -49,17 +52,21 @@ private class InnerShadowElement(
     val shape: Shape,
     val shadow: () -> InnerShadow?,
 ) : ModifierNodeElement<InnerShadowNode>() {
+
     override fun create(): InnerShadowNode = InnerShadowNode(shape, shadow)
+
     override fun update(node: InnerShadowNode) {
         node.shape = shape
         node.shadow = shadow
         node.invalidateDraw()
     }
+
     override fun InspectorInfo.inspectableProperties() {
         name = "innerShadow"
         properties["shape"] = shape
         properties["shadow"] = shadow
     }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is InnerShadowElement) return false
@@ -67,6 +74,7 @@ private class InnerShadowElement(
         if (shadow != other.shadow) return false
         return true
     }
+
     override fun hashCode(): Int {
         var result = shape.hashCode()
         result = 31 * result + shadow.hashCode()
@@ -81,6 +89,7 @@ private class InnerShadowNode(
     DrawModifierNode {
 
     override val shouldAutoInvalidate: Boolean = false
+
     private var shadowLayer: GraphicsLayer? = null
     private val paint = Paint()
     private val clipPath = Path()
@@ -88,11 +97,14 @@ private class InnerShadowNode(
 
     override fun ContentDrawScope.draw() {
         drawContent()
+
         val shadow = shadow() ?: return
         val layer = shadowLayer ?: return
+
         val radius = shadow.radius.toPx()
         val offsetX = shadow.offset.x.toPx()
         val offsetY = shadow.offset.y.toPx()
+
         val outline = shape.createOutline(size, layoutDirection, this)
         clipPath.reset()
         when (outline) {
@@ -100,6 +112,7 @@ private class InnerShadowNode(
             is Outline.Rounded -> clipPath.addRoundRect(outline.roundRect)
             is Outline.Generic -> clipPath.addPath(outline.path)
         }
+
         paint.color = shadow.color
         layer.alpha = shadow.alpha
         layer.blendMode = shadow.blendMode
@@ -107,6 +120,7 @@ private class InnerShadowNode(
             layer.renderEffect = if (radius > 0f) BlurEffect(radius, radius, TileMode.Decal) else null
             prevRadius = radius
         }
+
         layer.record {
             drawContext.canvas.let { canvas ->
                 canvas.save()
@@ -118,6 +132,7 @@ private class InnerShadowNode(
                 canvas.restore()
             }
         }
+
         drawContext.canvas.let { canvas ->
             canvas.save()
             canvas.clipPath(clipPath)
