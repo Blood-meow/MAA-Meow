@@ -288,10 +288,10 @@ private fun MaaMeowThemePreview(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
-                        PreviewBottomDot(selected = true)
-                        PreviewBottomDot(selected = false)
-                        PreviewBottomDot(selected = false)
-                        PreviewBottomDot(selected = false)
+                        PreviewBottomDot(selected = true, icon = Icons.Filled.Home)
+                        PreviewBottomDot(selected = false, icon = Icons.Filled.PlayArrow)
+                        PreviewBottomDot(selected = false, icon = Icons.Filled.DateRange)
+                        PreviewBottomDot(selected = false, icon = Icons.Filled.Settings)
                     }
                 }
             }
@@ -377,13 +377,13 @@ private fun PreviewRunModeCard(uiStyleLabel: String) {
 }
 
 @Composable
-private fun PreviewBottomDot(selected: Boolean) {
+private fun PreviewBottomDot(selected: Boolean, icon: ImageVector) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(3.dp)
     ) {
         Icon(
-            imageVector = Icons.Filled.Home,
+            imageVector = icon,
             contentDescription = null,
             modifier = Modifier.size(if (selected) 18.dp else 16.dp),
             tint = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.55f)
