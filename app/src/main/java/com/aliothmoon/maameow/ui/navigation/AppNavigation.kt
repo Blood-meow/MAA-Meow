@@ -4,14 +4,9 @@ import android.widget.Toast
 import androidx.activity.compose.PredictiveBackHandler
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
-import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -25,7 +20,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.IntOffset
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -50,6 +44,7 @@ import com.aliothmoon.maameow.ui.screen.settings.ErrorLogView
 import com.aliothmoon.maameow.ui.screen.settings.LogHistoryView
 import com.aliothmoon.maameow.ui.screen.settings.TaskOverrideEditorView
 import com.aliothmoon.maameow.ui.screen.settings.ThemeSettingsView
+import com.aliothmoon.maameow.ui.theme.MaaAnimations
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
@@ -125,10 +120,10 @@ fun AppNavigation(
         }
     }
 
-    val forwardEnterTransition = maaForwardEnterTransition()
-    val forwardExitTransition = maaForwardExitTransition()
-    val popEnterTransition = maaPopEnterTransition()
-    val popExitTransition = maaPopExitTransition()
+    val forwardEnterTransition = MaaAnimations.sharedAxisForwardEnter()
+    val forwardExitTransition = MaaAnimations.sharedAxisForwardExit()
+    val popEnterTransition = MaaAnimations.sharedAxisPopEnter()
+    val popExitTransition = MaaAnimations.sharedAxisPopExit()
 
     // Is current route a main tab?
     val isOnMainTab = currentNavRoute in mainTabRoutes || currentNavRoute == null
@@ -279,41 +274,6 @@ fun AppNavigation(
     }
 }
 
-private fun maaForwardEnterTransition(): EnterTransition {
-    val animationSpec = tween<IntOffset>(durationMillis = 360, easing = FastOutSlowInEasing)
-    val fadeSpec = tween<Float>(durationMillis = 260, easing = FastOutSlowInEasing)
-    return slideInHorizontally(
-        initialOffsetX = { it / 5 },
-        animationSpec = animationSpec
-    ) + fadeIn(animationSpec = fadeSpec) + scaleIn(
-        initialScale = 0.985f,
-        animationSpec = tween(durationMillis = 360, easing = FastOutSlowInEasing)
-    )
-}
-
-private fun maaForwardExitTransition(): ExitTransition {
-    return slideOutHorizontally(
-        targetOffsetX = { -it / 12 },
-        animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing)
-    ) + fadeOut(animationSpec = tween(durationMillis = 180))
-}
-
-private fun maaPopEnterTransition(): EnterTransition {
-    return slideInHorizontally(
-        initialOffsetX = { -it / 8 },
-        animationSpec = tween(durationMillis = 320, easing = FastOutSlowInEasing)
-    ) + fadeIn(animationSpec = tween(durationMillis = 240, easing = FastOutSlowInEasing))
-}
-
-private fun maaPopExitTransition(): ExitTransition {
-    return slideOutHorizontally(
-        targetOffsetX = { it },
-        animationSpec = tween(durationMillis = 320, easing = FastOutSlowInEasing)
-    ) + fadeOut(animationSpec = tween(durationMillis = 220)) + scaleOut(
-        targetScale = 0.985f,
-        animationSpec = tween(durationMillis = 320, easing = FastOutSlowInEasing)
-    )
-}
 
 @Composable
 private fun PredictivePopBackHandler(onBack: () -> Unit) {
