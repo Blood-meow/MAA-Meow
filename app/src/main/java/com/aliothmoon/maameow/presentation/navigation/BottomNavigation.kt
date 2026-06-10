@@ -59,6 +59,19 @@ import androidx.compose.ui.unit.dp
 import com.aliothmoon.maameow.R
 import com.aliothmoon.maameow.constant.Routes
 import com.aliothmoon.maameow.presentation.components.ui.isMiuixUi
+import com.aliothmoon.maameow.ui.component.bottombar.FloatingBottomBar
+import com.aliothmoon.maameow.ui.component.bottombar.FloatingBottomBarItem
+import top.yukonga.miuix.kmp.blur.LayerBackdrop
+import top.yukonga.miuix.kmp.shader.isRenderEffectSupported
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.sp
+import top.yukonga.miuix.kmp.theme.MiuixTheme
+import com.aliothmoon.maameow.ui.component.bottombar.FloatingBottomBar
+import com.aliothmoon.maameow.ui.component.bottombar.FloatingBottomBarItem
+import top.yukonga.miuix.kmp.blur.Backdrop
+import top.yukonga.miuix.kmp.blur.LayerBackdrop
+import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
+import top.yukonga.miuix.kmp.shader.isRenderEffectSupported
 import com.aliothmoon.maameow.theme.MaaDesignTokens
 import com.aliothmoon.maameow.theme.ThemeColors
 
@@ -102,11 +115,15 @@ sealed class BottomNavTab(
 }
 
 @Composable
+    }
+    }
 fun AppBottomNavigation(
     currentRoute: String,
     blurEnabled: Boolean = true,
     floating: Boolean = true,
     liquidGlass: Boolean = true,
+    backdrop: LayerBackdrop? = null,
+    backdrop: LayerBackdrop? = null,
     onTabSelected: (BottomNavTab) -> Unit
 ) {
     val miuix = isMiuixUi
@@ -121,6 +138,86 @@ fun AppBottomNavigation(
     val horizontalPadding = if (effectiveFloating) if (miuix) 16.dp else 18.dp else 0.dp
     val verticalPadding = if (effectiveFloating) if (miuix) 8.dp else 10.dp else 0.dp
 
+    if (miuix && effectiveFloating && backdrop != null && isRenderEffectSupported()) {
+        FloatingBottomBar(
+            selectedIndex = {
+                BottomNavTab.all.indexOfFirst { it.route == currentRoute }.coerceAtLeast(0)
+            },
+            onSelected = { index ->
+                onTabSelected(BottomNavTab.all[index])
+            },
+            backdrop = backdrop,
+            tabsCount = BottomNavTab.all.size,
+            isBlurEnabled = blurEnabled,
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .padding(bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()),
+        ) {
+            BottomNavTab.all.forEach { tab ->
+                val label = stringResource(tab.labelRes)
+                val selected = currentRoute == tab.route
+                FloatingBottomBarItem(
+                    onClick = { onTabSelected(tab) },
+                    modifier = Modifier.defaultMinSize(minWidth = 76.dp)
+                ) {
+                    Icon(
+                        imageVector = if (miuix) tab.miuixIcon else tab.icon,
+                        contentDescription = label,
+                        tint = if (selected) MiuixTheme.colorScheme.onSurface else MiuixTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = label,
+                        fontSize = 11.sp,
+                        lineHeight = 14.sp,
+                        color = if (selected) MiuixTheme.colorScheme.onSurface else MiuixTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        softWrap = false,
+                        overflow = TextOverflow.Visible
+                    )
+                }
+            }
+        }
+    } else {
+    if (miuix && effectiveFloating && backdrop != null && isRenderEffectSupported()) {
+        FloatingBottomBar(
+            selectedIndex = {
+                BottomNavTab.all.indexOfFirst { it.route == currentRoute }.coerceAtLeast(0)
+            },
+            onSelected = { index ->
+                onTabSelected(BottomNavTab.all[index])
+            },
+            backdrop = backdrop,
+            tabsCount = BottomNavTab.all.size,
+            isBlurEnabled = blurEnabled,
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .padding(bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()),
+        ) {
+            BottomNavTab.all.forEach { tab ->
+                val label = stringResource(tab.labelRes)
+                val selected = currentRoute == tab.route
+                FloatingBottomBarItem(
+                    onClick = { onTabSelected(tab) },
+                    modifier = Modifier.defaultMinSize(minWidth = 76.dp)
+                ) {
+                    Icon(
+                        imageVector = if (miuix) tab.miuixIcon else tab.icon,
+                        contentDescription = label,
+                        tint = if (selected) MiuixTheme.colorScheme.onSurface else MiuixTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = label,
+                        fontSize = 11.sp,
+                        lineHeight = 14.sp,
+                        color = if (selected) MiuixTheme.colorScheme.onSurface else MiuixTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        softWrap = false,
+                        overflow = TextOverflow.Visible
+                    )
+                }
+            }
+        }
+    } else {
     Surface(
         color = Color.Transparent,
         shadowElevation = if (effectiveFloating) if (miuix) 14.dp else 10.dp else 0.dp

@@ -45,6 +45,12 @@ import com.aliothmoon.maameow.presentation.components.AnnouncementDialog
 import com.aliothmoon.maameow.presentation.components.ResourceLoadingOverlay
 import com.aliothmoon.maameow.presentation.components.ui.MaaUiScaffold
 import com.aliothmoon.maameow.presentation.components.ui.isMiuixUi
+import top.yukonga.miuix.kmp.blur.LayerBackdrop
+import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
+import top.yukonga.miuix.kmp.blur.Backdrop
+import top.yukonga.miuix.kmp.blur.LayerBackdrop
+import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
+import top.yukonga.miuix.kmp.shader.isRenderEffectSupported
 import com.aliothmoon.maameow.presentation.view.background.BackgroundTaskView
 import com.aliothmoon.maameow.presentation.view.home.HomeView
 import com.aliothmoon.maameow.presentation.view.notification.NotificationSettingsView
@@ -140,6 +146,8 @@ fun AppNavigation(
     }
 
     val tabRoutes = BottomNavTab.all.map { it.route }
+    val blurBackdrop: LayerBackdrop? = rememberLayerBackdrop()
+    val blurBackdrop: LayerBackdrop? = rememberLayerBackdrop()
     val forwardEnterTransition = maaForwardEnterTransition()
     val forwardExitTransition = maaForwardExitTransition()
     val popEnterTransition = maaPopEnterTransition()
@@ -162,6 +170,8 @@ fun AppNavigation(
                         blurEnabled = isMiuix && uiBlurEnabled,
                         floating = isMiuix && uiFloatingBottomBar,
                         liquidGlass = isMiuix && uiLiquidGlassEnabled,
+                        backdrop = blurBackdrop,
+                        backdrop = blurBackdrop,
                         onTabSelected = { tab ->
                             if (tab.route == currentNavRoute) return@AppBottomNavigation
 
