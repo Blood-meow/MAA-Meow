@@ -255,17 +255,10 @@ private fun MaaMeowThemePreview(
                         .padding(horizontal = 10.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    PreviewInfoCard(
-                        title = stringResource(R.string.home_screen_resolution),
-                        value = "1080 × 1920",
-                        accent = colors.primary
+                    PreviewScreenInfoCard(
+                        modeLabel = modeLabel,
+                        uiStyleLabel = uiStyleLabel
                     )
-                    PreviewInfoCard(
-                        title = stringResource(R.string.home_service_status),
-                        value = modeLabel,
-                        accent = colors.tertiary
-                    )
-                    PreviewRunModeCard(uiStyleLabel)
                 }
 
                 Surface(
@@ -308,78 +301,79 @@ private fun MaaMeowThemePreview(
 }
 
 @Composable
-private fun PreviewInfoCard(
-    title: String,
-    value: String,
-    accent: Color
+private fun PreviewScreenInfoCard(
+    modeLabel: String,
+    uiStyleLabel: String
 ) {
     Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(48.dp),
+        modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(14.dp),
-        color = MaterialTheme.colorScheme.surface
+        color = MaterialTheme.colorScheme.surface,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
     ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 10.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-                maxLines = 1
+            PreviewInfoRow(
+                label = stringResource(R.string.home_screen_resolution),
+                value = "1080 × 1920",
+                accent = MaterialTheme.colorScheme.primary
             )
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(7.dp)
-                        .clip(CircleShape)
-                        .background(accent)
-                )
-                Text(
-                    text = value,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1
-                )
-            }
+            PreviewInfoRow(
+                label = stringResource(R.string.home_resource_version_label),
+                value = "v2.0.0",
+                accent = MaterialTheme.colorScheme.tertiary
+            )
+            PreviewInfoRow(
+                label = stringResource(R.string.home_app_version_label),
+                value = "v1.0.0",
+                accent = MaterialTheme.colorScheme.secondary
+            )
+            PreviewInfoRow(
+                label = stringResource(R.string.home_service_status),
+                value = modeLabel,
+                accent = MaterialTheme.colorScheme.primary
+            )
         }
     }
 }
 
 @Composable
-private fun PreviewRunModeCard(uiStyleLabel: String) {
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(58.dp),
-        shape = RoundedCornerShape(14.dp),
-        color = MaterialTheme.colorScheme.surface
+private fun PreviewInfoRow(
+    label: String,
+    value: String,
+    accent: Color
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+            maxLines = 1
+        )
         Row(
-            modifier = Modifier.padding(horizontal = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(
-                    text = stringResource(R.string.home_run_mode_title),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    fontWeight = FontWeight.Medium
-                )
-                Text(
-                    text = uiStyleLabel,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            Switch(checked = true, onCheckedChange = null)
+            Box(
+                modifier = Modifier
+                    .size(7.dp)
+                    .clip(CircleShape)
+                    .background(accent)
+            )
+            Text(
+                text = value,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1
+            )
         }
     }
 }
