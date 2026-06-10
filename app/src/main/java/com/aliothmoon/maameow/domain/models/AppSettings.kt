@@ -41,6 +41,7 @@ data class AppSettings(
     @PrefKey(default = "true") val uiFloatingBottomBar: String = "true",
     @PrefKey(default = "true") val uiLiquidGlassEnabled: String = "true",
     @PrefKey(default = "false") val uiMonetEnabled: String = "false",
+    @PrefKey(default = "0") val uiKeyColor: String = "0",
 
     @PrefKey(default = "DEFAULT") val eventNotificationLevel: String = "DEFAULT",
 

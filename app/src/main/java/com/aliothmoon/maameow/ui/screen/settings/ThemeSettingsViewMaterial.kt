@@ -2,6 +2,7 @@ package com.aliothmoon.maameow.ui.screen.settings
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -46,6 +48,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -89,6 +92,8 @@ fun ThemeSettingsViewMaterial(
     val floatingBottomBar by viewModel.uiFloatingBottomBar.collectAsStateWithLifecycle()
     val liquidGlassEnabled by viewModel.uiLiquidGlassEnabled.collectAsStateWithLifecycle()
     val monetEnabled by viewModel.uiMonetEnabled.collectAsStateWithLifecycle()
+    val uiKeyColor by viewModel.uiKeyColor.collectAsStateWithLifecycle()
+    val uiKeyColor by viewModel.uiKeyColor.collectAsStateWithLifecycle()
 
     val context = LocalContext.current
     val (screenWidth, screenHeight) = Misc.getScreenSize(context)
@@ -157,13 +162,21 @@ fun ThemeSettingsViewMaterial(
                             )
                         },
                         {
-                            ThemeSwitchRow(
-                                icon = Icons.Rounded.Palette,
-                                title = stringResource(R.string.settings_theme_monet_title),
-                                summary = stringResource(R.string.settings_theme_monet_desc),
-                                checked = monetEnabled,
-                                onCheckedChange = viewModel::setUiMonetEnabled
-                            )
+                            Column {
+                                ThemeSwitchRow(
+                                    icon = Icons.Rounded.Palette,
+                                    title = stringResource(R.string.settings_theme_monet_title),
+                                    summary = stringResource(R.string.settings_theme_monet_desc),
+                                    checked = monetEnabled,
+                                    onCheckedChange = viewModel::setUiMonetEnabled
+                                )
+                                AnimatedVisibility(visible = monetEnabled) {
+                                    KeyColorPicker(
+                                        selectedColor = uiKeyColor,
+                                        onColorSelected = viewModel::setUiKeyColor
+                                    )
+                                }
+                            }
                         }
                     )
                 )
@@ -618,5 +631,77 @@ private fun SettingsIcon(icon: ImageVector) {
             tint = MaterialTheme.colorScheme.onSecondaryContainer,
             modifier = Modifier.size(22.dp)
         )
+    }
+}
+
+private val presetColors = listOf(
+    0L to Color(0xFF2B6BCA),       // Default (arknights blue)
+    0xFFF44336L to Color(0xFFF44336), // Red
+    0xFFE91E63L to Color(0xFFE91E63), // Pink
+    0xFF9C27B0L to Color(0xFF9C27B0), // Purple
+    0xFF673AB7L to Color(0xFF673AB7), // Deep Purple
+    0xFF3F51B5L to Color(0xFF3F51B5), // Indigo
+    0xFF2196F3L to Color(0xFF2196F3), // Blue
+    0xFF00BCD4L to Color(0xFF00BCD4), // Cyan
+    0xFF009688L to Color(0xFF009688), // Teal
+    0xFF4CAF50L to Color(0xFF4CAF50), // Green
+    0xFFFFEB3BL to Color(0xFFFFEB3B), // Yellow
+    0xFFFFC107L to Color(0xFFFFC107), // Amber
+    0xFFFF9800L to Color(0xFFFF9800), // Orange
+    0xFF795548L to Color(0xFF795548), // Brown
+    0xFF607D8FL to Color(0xFF607D8F), // Blue Grey
+    0xFFFF9CA8L to Color(0xFFFF9CA8), // Sakura
+)
+
+@Composable
+private fun KeyColorPicker(
+    selectedColor: Long,
+    onColorSelected: (Long) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
+    ) {
+        HorizontalDivider(
+            thickness = MaaDesignTokens.Separator.thickness,
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        Text(
+            text = stringResource(R.string.settings_key_color),
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            items(presetColors.size) { index ->
+                val (colorLong, colorObj) = presetColors[index]
+                val selected = colorLong == selectedColor
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(colorObj)
+                        .then(
+                            if (selected) Modifier.border(2.5.dp, MaterialTheme.colorScheme.onSurface, CircleShape)
+                            else Modifier
+                        )
+                        .clickable { onColorSelected(colorLong) },
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (selected) {
+                        Icon(
+                            Icons.Rounded.Check,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp),
+                            tint = Color.White
+                        )
+                    }
+                }
+            }
+        }
     }
 }

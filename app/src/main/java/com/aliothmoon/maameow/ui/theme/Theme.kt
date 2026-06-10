@@ -172,6 +172,7 @@ fun MaaMeowTheme(
     themeMode: AppSettingsManager.ThemeMode = AppSettingsManager.ThemeMode.SYSTEM,
     monetEnabled: Boolean = false,
     uiStyle: AppSettingsManager.UiStyle = AppSettingsManager.UiStyle.MATERIAL,
+    keyColor: Long = 0L,
     content: @Composable () -> Unit
 ) {
     val systemDarkTheme = isSystemInDarkTheme()
@@ -183,17 +184,21 @@ fun MaaMeowTheme(
         AppSettingsManager.ThemeMode.PURE_DARK -> true
     }
     val isPureDark = themeMode == AppSettingsManager.ThemeMode.PURE_DARK
-    val colorScheme = if (monetEnabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+    val seedColor = if (keyColor != 0L) Color(keyColor.toInt()) else null
+    val colorScheme = if (monetEnabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && seedColor == null) {
+        // System dynamic colors (wallpaper-based), no custom key color
         val dynamic = if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         if (isPureDark) {
-            dynamic.copy(
-                background = Color(0xFF000000),
-                surface = Color(0xFF000000),
-                surfaceVariant = Color(0xFF121212)
-            )
+            dynamic.copy(background = Color(0xFF000000), surface = Color(0xFF000000), surfaceVariant = Color(0xFF121212))
+        } else dynamic
+    } else if (seedColor != null && monetEnabled) {
+        // Custom key color with monet — generate scheme from seed
+        val base = if (darkTheme) {
+            createDarkColorScheme(primary = seedColor, primaryContainer = seedColor.copy(alpha = 0.3f), onPrimaryContainer = seedColor, isPureDark = isPureDark)
         } else {
-            dynamic
+            createLightColorScheme(primary = seedColor, primaryContainer = seedColor.copy(alpha = 0.15f), onPrimaryContainer = seedColor)
         }
+        base
     } else {
         when (themeMode) {
             AppSettingsManager.ThemeMode.SYSTEM -> if (systemDarkTheme) BlueDark else BlueLight
@@ -209,7 +214,11 @@ fun MaaMeowTheme(
         AppSettingsManager.ThemeMode.DARK,
         AppSettingsManager.ThemeMode.PURE_DARK -> ColorSchemeMode.Dark
     }
-    val miuixKeyColor = if (monetEnabled) null else BlueLight.primary
+    val miuixKeyColor = when {
+        !monetEnabled -> BlueLight.primary
+        keyColor != 0L -> Color(keyColor.toInt())
+        else -> null
+    }
     val miuixController = remember(miuixMode, miuixKeyColor) {
         ThemeController(
             colorSchemeMode = miuixMode,

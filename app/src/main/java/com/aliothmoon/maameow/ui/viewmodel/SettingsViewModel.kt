@@ -218,6 +218,12 @@ class SettingsViewModel(
         viewModelScope.launch { appSettingsManager.setUiMonetEnabled(enabled) }
     }
 
+    val uiKeyColor: StateFlow<Long> = appSettingsManager.uiKeyColor
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0L)
+    fun setUiKeyColor(color: Long) {
+        viewModelScope.launch { appSettingsManager.setUiKeyColor(color) }
+    }
+
     val backgroundResolution: StateFlow<DefaultDisplayConfig.ResolutionPreference> =
         appSettingsManager.backgroundResolution
             .stateIn(

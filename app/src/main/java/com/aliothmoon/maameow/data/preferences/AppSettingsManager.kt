@@ -371,6 +371,16 @@ class AppSettingsManager(private val context: Context) {
         }
     }
 
+    val uiKeyColor: StateFlow<Long> = settings
+        .map { it.uiKeyColor.toLongOrNull() ?: 0L }
+        .distinctUntilChanged()
+        .stateIn(scope, SharingStarted.Eagerly, initialSettings.uiKeyColor.toLongOrNull() ?: 0L)
+    suspend fun setUiKeyColor(color: Long) {
+        with(AppSettingsSchema) {
+            context.dataStore.edit { it[uiKeyColor] = color.toString() }
+        }
+    }
+
     // 内部通知级别
     enum class EventNotificationLevel(@param:androidx.annotation.StringRes val labelRes: Int) {
         OFF(R.string.notification_level_off),

@@ -249,7 +249,8 @@
     <string name="settings_theme_settings_desc">配置主题模式、模糊、悬浮底栏与液态玻璃效果</string>
     <string name="settings_theme_monet_title">Monet 动态色</string>
     <string name="settings_theme_monet_desc">Android 12 及以上使用系统壁纸动态配色</string>
-    <string name="settings_theme_style_section">UI 架构</string>
+
+    <string name="settings_key_color">主题色</string>    <string name="settings_theme_style_section">UI 架构</string>
     <string name="settings_theme_ui_style_title">界面风格</string>
     <string name="settings_theme_ui_style_desc">在 Material 与 Miuix 风格之间切换；Miuix 使用更接近 MIUI/KernelSU 的大标题、圆角卡片和底栏密度。</string>
     <string name="settings_theme_ui_style_material">Material</string>
