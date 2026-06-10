@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import com.aliothmoon.maameow.R
+import com.aliothmoon.maameow.ui.isMiuixUi
 import com.aliothmoon.maameow.ui.theme.ThemeColors
 
 @OptIn(ExperimentalMaterial3Api::class)
