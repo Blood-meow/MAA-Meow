@@ -60,7 +60,7 @@ import com.aliothmoon.maameow.domain.service.ResourceInitService
 import com.aliothmoon.maameow.domain.state.ResourceInitState
 import com.aliothmoon.maameow.ui.component.dialog.AdaptiveTaskPromptDialog
 import com.aliothmoon.maameow.ui.component.material.InfoCard
-import com.aliothmoon.maameow.ui.component.ReInitializeConfirmDialog
+import com.aliothmoon.maameow.ui.component.dialog.ReInitializeConfirmDialog
 import com.aliothmoon.maameow.ui.component.dialog.ResourceInitDialog
 import com.aliothmoon.maameow.ui.component.material.TopAppBar
 import com.aliothmoon.maameow.ui.viewmodel.SettingsViewModel
