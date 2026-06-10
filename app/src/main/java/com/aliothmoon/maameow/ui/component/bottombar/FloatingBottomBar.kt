@@ -14,7 +14,9 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
@@ -180,7 +182,7 @@ fun FloatingBottomBar(
             valueRange = 0f..(tabsCount - 1).toFloat(),
             visibilityThreshold = 0.001f,
             initialScale = 1f,
-            pressedScale = 78f / 56f,
+            pressedScale = 64f / 56f,
             canDrag = { offset ->
                 val anim = holder.instance ?: return@DampedDragAnimation true
                 if (tabWidthPx == 0f) return@DampedDragAnimation false
@@ -198,6 +200,7 @@ fun FloatingBottomBar(
             onDragStopped = {
                 val targetIndex = targetValue.fastRoundToInt().fastCoerceIn(0, tabsCount - 1)
                 currentIndex = targetIndex
+                onSelected(targetIndex)
                 animateToValue(targetIndex.toFloat())
                 animationScope.launch {
                     offsetAnimation.animateTo(0f, spring(1f, 300f, 0.5f))
@@ -220,11 +223,8 @@ fun FloatingBottomBar(
     LaunchedEffect(selectedIndex) {
         snapshotFlow { selectedIndex() }.collect { currentIndex = it }
     }
-    LaunchedEffect(dampedDragAnimation) {
-        snapshotFlow { currentIndex }.drop(1).collect { index ->
-            dampedDragAnimation.animateToValue(index.toFloat())
-            onSelected(index)
-        }
+    LaunchedEffect(currentIndex) {
+        dampedDragAnimation.animateToValue(currentIndex.toFloat())
     }
 
     val interactiveHighlight = remember(animationScope, tabWidthPx) {
@@ -242,7 +242,11 @@ fun FloatingBottomBar(
 
     val combinedBackdrop = rememberCombinedBackdrop(backdrop, tabsBackdrop)
     Box(
-        modifier = modifier.width(IntrinsicSize.Min),
+        modifier = modifier.fillMaxWidth(),
+        contentAlignment = Alignment.Center
+    ) {
+    Box(
+        modifier = Modifier.width(IntrinsicSize.Min),
         contentAlignment = Alignment.CenterStart
     ) {
         Row(
@@ -391,5 +395,6 @@ fun FloatingBottomBar(
                 )
             }
         }
+    }
     }
 }
