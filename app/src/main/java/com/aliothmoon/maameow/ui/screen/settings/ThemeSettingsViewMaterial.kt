@@ -56,6 +56,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -63,16 +64,25 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.aliothmoon.maameow.R
 import com.aliothmoon.maameow.data.preferences.AppSettingsManager
+import com.aliothmoon.maameow.manager.PermissionManager
 import com.aliothmoon.maameow.ui.component.material.TopAppBar
 import com.aliothmoon.maameow.ui.component.material.MaaUiScaffold
+import com.aliothmoon.maameow.ui.viewmodel.HomeViewModel
 import com.aliothmoon.maameow.ui.viewmodel.SettingsViewModel
+import com.aliothmoon.maameow.ui.viewmodel.UpdateViewModel
 import com.aliothmoon.maameow.ui.theme.MaaDesignTokens
+import com.aliothmoon.maameow.utils.Misc
+import com.aliothmoon.maameow.utils.i18n.asString
 import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.koinInject
 
 @Composable
 fun ThemeSettingsViewMaterial(
     navController: NavController,
-    viewModel: SettingsViewModel = koinViewModel()
+    viewModel: SettingsViewModel = koinViewModel(),
+    updateViewModel: UpdateViewModel = koinViewModel(),
+    homeViewModel: HomeViewModel = koinViewModel(),
+    permissionManager: PermissionManager = koinInject()
 ) {
     val themeMode by viewModel.themeMode.collectAsStateWithLifecycle()
     val uiStyle by viewModel.uiStyle.collectAsStateWithLifecycle()
@@ -80,6 +90,12 @@ fun ThemeSettingsViewMaterial(
     val floatingBottomBar by viewModel.uiFloatingBottomBar.collectAsStateWithLifecycle()
     val liquidGlassEnabled by viewModel.uiLiquidGlassEnabled.collectAsStateWithLifecycle()
     val monetEnabled by viewModel.uiMonetEnabled.collectAsStateWithLifecycle()
+
+    val context = LocalContext.current
+    val (screenWidth, screenHeight) = Misc.getScreenSize(context)
+    val resourceVersion by updateViewModel.currentResourceVersion.collectAsStateWithLifecycle()
+    val appVersion = updateViewModel.currentAppVersion
+    val uiState by homeViewModel.uiState.collectAsStateWithLifecycle()
 
     MaaUiScaffold(
         topBar = {
@@ -104,6 +120,11 @@ fun ThemeSettingsViewMaterial(
                     blurEnabled = uiStyle == AppSettingsManager.UiStyle.MIUIX && blurEnabled,
                     floatingBottomBar = uiStyle == AppSettingsManager.UiStyle.MIUIX && floatingBottomBar,
                     liquidGlassEnabled = uiStyle == AppSettingsManager.UiStyle.MIUIX && liquidGlassEnabled,
+                    screenWidth = screenWidth,
+                    screenHeight = screenHeight,
+                    resourceVersion = resourceVersion,
+                    appVersion = appVersion,
+                    serviceStatusText = uiState.serviceStatusText.asString(),
                     modifier = Modifier.padding(horizontal = 16.dp)
                 )
             }
@@ -198,6 +219,11 @@ private fun MaaMeowThemePreview(
     blurEnabled: Boolean,
     floatingBottomBar: Boolean,
     liquidGlassEnabled: Boolean,
+    screenWidth: Int,
+    screenHeight: Int,
+    resourceVersion: String,
+    appVersion: String,
+    serviceStatusText: String,
     modifier: Modifier = Modifier
 ) {
     val colors = MaterialTheme.colorScheme
@@ -244,8 +270,12 @@ private fun MaaMeowThemePreview(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     PreviewScreenInfoCard(
-                        modeLabel = modeLabel,
-                        uiStyleLabel = uiStyleLabel
+                        modeLabel = serviceStatusText,
+                        uiStyleLabel = uiStyleLabel,
+                        screenWidth = screenWidth,
+                        screenHeight = screenHeight,
+                        resourceVersion = resourceVersion,
+                        appVersion = appVersion
                     )
                 }
 
@@ -291,7 +321,11 @@ private fun MaaMeowThemePreview(
 @Composable
 private fun PreviewScreenInfoCard(
     modeLabel: String,
-    uiStyleLabel: String
+    uiStyleLabel: String,
+    screenWidth: Int,
+    screenHeight: Int,
+    resourceVersion: String,
+    appVersion: String
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
@@ -307,21 +341,21 @@ private fun PreviewScreenInfoCard(
         ) {
             PreviewInfoRow(
                 label = stringResource(R.string.home_screen_resolution),
-                value = "1080 × 1920",
+                value = "$screenWidth × $screenHeight",
                 accent = MaterialTheme.colorScheme.primary
             )
             PreviewInfoRow(
                 label = stringResource(R.string.home_resource_version_label),
-                value = "v2.0.0",
+                value = resourceVersion.ifBlank { stringResource(R.string.home_resource_not_installed) },
                 accent = MaterialTheme.colorScheme.tertiary
             )
             PreviewInfoRow(
                 label = stringResource(R.string.home_app_version_label),
-                value = "v1.0.0",
+                value = appVersion,
                 accent = MaterialTheme.colorScheme.secondary
             )
             PreviewInfoRow(
-                label = stringResource(R.string.home_service_status),
+                label = stringResource(R.string.home_display_mode),
                 value = modeLabel,
                 accent = MaterialTheme.colorScheme.primary
             )
