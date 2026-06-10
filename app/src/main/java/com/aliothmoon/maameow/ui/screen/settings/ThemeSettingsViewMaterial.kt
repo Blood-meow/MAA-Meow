@@ -100,8 +100,6 @@ fun ThemeSettingsViewMaterial(
     val monetEnabled by viewModel.uiMonetEnabled.collectAsStateWithLifecycle()
     val uiKeyColor by viewModel.uiKeyColor.collectAsStateWithLifecycle()
     val fontSizeScale by viewModel.fontSizeScale.collectAsStateWithLifecycle()
-    val uiKeyColor by viewModel.uiKeyColor.collectAsStateWithLifecycle()
-    val fontSizeScale by viewModel.fontSizeScale.collectAsStateWithLifecycle()
 
     val context = LocalContext.current
     val (screenWidth, screenHeight) = Misc.getScreenSize(context)
