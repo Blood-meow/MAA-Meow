@@ -224,19 +224,19 @@ fun ThemeSettingsViewMaterial(
                     )
                 }
             }
-        }
 
-        // Font Size setting at the bottom
-        item {
-            SettingsSectionCard(
-                modifier = Modifier.padding(horizontal = 16.dp),
-                rows = listOf({
-                    FontSizeSlider(
-                        fontSizeScale = fontSizeScale,
-                        onFontSizeChange = viewModel::setFontSizeScale
-                    )
-                })
-            )
+            // Font Size setting
+            item {
+                SettingsSectionCard(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    rows = listOf({
+                        FontSizeSlider(
+                            fontSizeScale = fontSizeScale,
+                            onFontSizeChange = viewModel::setFontSizeScale
+                        )
+                    })
+                )
+            }
         }
     }
 }
@@ -343,19 +343,6 @@ private fun MaaMeowThemePreview(
                     }
                 }
             }
-        }
-
-        // Font Size setting at the bottom
-        item {
-            SettingsSectionCard(
-                modifier = Modifier.padding(horizontal = 16.dp),
-                rows = listOf({
-                    FontSizeSlider(
-                        fontSizeScale = fontSizeScale,
-                        onFontSizeChange = viewModel::setFontSizeScale
-                    )
-                })
-            )
         }
     }
 }
@@ -504,19 +491,6 @@ private fun ThemeModeSegment(
                 }
             }
         }
-
-        // Font Size setting at the bottom
-        item {
-            SettingsSectionCard(
-                modifier = Modifier.padding(horizontal = 16.dp),
-                rows = listOf({
-                    FontSizeSlider(
-                        fontSizeScale = fontSizeScale,
-                        onFontSizeChange = viewModel::setFontSizeScale
-                    )
-                })
-            )
-        }
     }
 }
 
@@ -542,19 +516,6 @@ private fun SettingsSectionCard(
                     )
                 }
             }
-        }
-
-        // Font Size setting at the bottom
-        item {
-            SettingsSectionCard(
-                modifier = Modifier.padding(horizontal = 16.dp),
-                rows = listOf({
-                    FontSizeSlider(
-                        fontSizeScale = fontSizeScale,
-                        onFontSizeChange = viewModel::setFontSizeScale
-                    )
-                })
-            )
         }
     }
 }
@@ -610,19 +571,6 @@ private fun ThemeChoiceRow(
                     }
                 }
             }
-        }
-
-        // Font Size setting at the bottom
-        item {
-            SettingsSectionCard(
-                modifier = Modifier.padding(horizontal = 16.dp),
-                rows = listOf({
-                    FontSizeSlider(
-                        fontSizeScale = fontSizeScale,
-                        onFontSizeChange = viewModel::setFontSizeScale
-                    )
-                })
-            )
         }
     }
 }
@@ -774,19 +722,6 @@ private fun KeyColorPicker(
                 }
             }
         }
-
-        // Font Size setting at the bottom
-        item {
-            SettingsSectionCard(
-                modifier = Modifier.padding(horizontal = 16.dp),
-                rows = listOf({
-                    FontSizeSlider(
-                        fontSizeScale = fontSizeScale,
-                        onFontSizeChange = viewModel::setFontSizeScale
-                    )
-                })
-            )
-        }
     }
 }
 
@@ -835,7 +770,6 @@ private fun FontSizeSlider(
     }
 
     // Material mode
-
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -902,104 +836,6 @@ private fun FontSizeSlider(
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                 )
             }
-        }
-
-        // Font Size setting at the bottom
-        item {
-            SettingsSectionCard(
-                modifier = Modifier.padding(horizontal = 16.dp),
-                rows = listOf({
-                    FontSizeSlider(
-                        fontSizeScale = fontSizeScale,
-                        onFontSizeChange = viewModel::setFontSizeScale
-                    )
-                })
-            )
-        }
-    }
-}
-
-private val presetColors = listOf(
-    0L to Color(0xFF2B6BCA),       // Default (arknights blue)
-    0xFFF44336L to Color(0xFFF44336), // Red
-    0xFFE91E63L to Color(0xFFE91E63), // Pink
-    0xFF9C27B0L to Color(0xFF9C27B0), // Purple
-    0xFF673AB7L to Color(0xFF673AB7), // Deep Purple
-    0xFF3F51B5L to Color(0xFF3F51B5), // Indigo
-    0xFF2196F3L to Color(0xFF2196F3), // Blue
-    0xFF00BCD4L to Color(0xFF00BCD4), // Cyan
-    0xFF009688L to Color(0xFF009688), // Teal
-    0xFF4CAF50L to Color(0xFF4CAF50), // Green
-    0xFFFFEB3BL to Color(0xFFFFEB3B), // Yellow
-    0xFFFFC107L to Color(0xFFFFC107), // Amber
-    0xFFFF9800L to Color(0xFFFF9800), // Orange
-    0xFF795548L to Color(0xFF795548), // Brown
-    0xFF607D8FL to Color(0xFF607D8F), // Blue Grey
-    0xFFFF9CA8L to Color(0xFFFF9CA8), // Sakura
-)
-
-@Composable
-private fun KeyColorPicker(
-    selectedColor: Long,
-    onColorSelected: (Long) -> Unit
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
-    ) {
-        HorizontalDivider(
-            thickness = MaaDesignTokens.Separator.thickness,
-            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
-        )
-        Spacer(modifier = Modifier.height(12.dp))
-        Text(
-            text = stringResource(R.string.settings_key_color),
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            items(presetColors.size) { index ->
-                val (colorLong, colorObj) = presetColors[index]
-                val selected = colorLong == selectedColor
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(colorObj)
-                        .then(
-                            if (selected) Modifier.border(2.5.dp, MaterialTheme.colorScheme.onSurface, CircleShape)
-                            else Modifier
-                        )
-                        .clickable { onColorSelected(colorLong) },
-                    contentAlignment = Alignment.Center
-                ) {
-                    if (selected) {
-                        Icon(
-                            Icons.Rounded.Check,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp),
-                            tint = Color.White
-                        )
-                    }
-                }
-            }
-        }
-
-        // Font Size setting at the bottom
-        item {
-            SettingsSectionCard(
-                modifier = Modifier.padding(horizontal = 16.dp),
-                rows = listOf({
-                    FontSizeSlider(
-                        fontSizeScale = fontSizeScale,
-                        onFontSizeChange = viewModel::setFontSizeScale
-                    )
-                })
-            )
         }
     }
 }

@@ -325,7 +325,7 @@ fun BackgroundTaskViewMaterial(
                 .fillMaxSize()
                 .statusBarsPadding()
                 .padding(horizontal = 16.dp)
-                .padding(top = 8.dp, bottom = 88.dp)
+                .padding(top = 8.dp, bottom = 8.dp)
         ) {
             // --- 预览图区域：实时加载 ---
             Box(

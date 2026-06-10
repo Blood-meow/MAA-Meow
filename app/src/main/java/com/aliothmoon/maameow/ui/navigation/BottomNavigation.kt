@@ -48,8 +48,8 @@ import com.aliothmoon.maameow.R
 import com.aliothmoon.maameow.constant.Routes
 import com.aliothmoon.maameow.data.preferences.AppSettingsManager
 import com.aliothmoon.maameow.ui.isMiuixUi
-import com.aliothmoon.maameow.ui.component.bottombar.FloatingBottomBar
-import com.aliothmoon.maameow.ui.component.bottombar.FloatingBottomBarItem
+import com.aliothmoon.maameow.ui.component.bottombar.FloatingBottomBarAdvanced
+import com.aliothmoon.maameow.ui.component.bottombar.FloatingBottomBarItemAdvanced
 import com.aliothmoon.maameow.ui.component.blur.BlurredBar
 import com.aliothmoon.maameow.ui.component.blur.rememberBlurBackdrop
 import com.aliothmoon.maameow.ui.theme.MaaDesignTokens
@@ -179,7 +179,7 @@ fun MiuixBottomNavigation(
     val enableBlur by appSettings.uiBlurEnabled.collectAsStateWithLifecycle()
 
     if (enableFloatingBottomBar && backdrop != null) {
-        FloatingBottomBar(
+        FloatingBottomBarAdvanced(
             selectedIndex = { selectedIndexInt },
             onSelected = { idx -> onTabSelected(BottomNavTab.all[idx]) },
             backdrop = backdrop,
@@ -190,7 +190,7 @@ fun MiuixBottomNavigation(
             BottomNavTab.all.forEach { tab ->
                 val label = stringResource(tab.labelRes)
                 val selected = currentRoute == tab.route
-                FloatingBottomBarItem(
+                FloatingBottomBarItemAdvanced(
                     onClick = { onTabSelected(tab) },
                 ) {
                     Icon(
