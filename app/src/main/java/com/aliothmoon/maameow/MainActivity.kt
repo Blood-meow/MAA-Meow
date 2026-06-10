@@ -64,15 +64,12 @@ class MainActivity : AppCompatActivity() {
             val themeMode by appSettingsManager.themeMode.collectAsStateWithLifecycle()
             val monetEnabled by appSettingsManager.uiMonetEnabled.collectAsStateWithLifecycle()
             val uiStyle by appSettingsManager.uiStyle.collectAsStateWithLifecycle()
-            val pageScale by appSettingsManager.uiPageScale.collectAsStateWithLifecycle()
             val systemDensity = LocalDensity.current
-            val scaledDensity = Density(systemDensity.density * pageScale, systemDensity.fontScale)
             MaaMeowTheme(
                 themeMode = themeMode,
                 monetEnabled = monetEnabled,
                 uiStyle = uiStyle
             ) {
-                CompositionLocalProvider(LocalDensity provides scaledDensity) {
                     AppNavigation(backgroundTaskViewModel = backgroundTaskViewModel)
                 }
             }

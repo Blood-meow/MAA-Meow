@@ -217,10 +217,7 @@ class SettingsViewModel(
     fun setUiMonetEnabled(enabled: Boolean) {
         viewModelScope.launch { appSettingsManager.setUiMonetEnabled(enabled) }
     }
-    val uiPageScale: StateFlow<Float> = appSettingsManager.uiPageScale
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 1.0f)
-    fun setUiPageScale(scale: Float) {
-        viewModelScope.launch { appSettingsManager.setUiPageScale(scale) }
     }
 
     val backgroundResolution: StateFlow<DefaultDisplayConfig.ResolutionPreference> =
