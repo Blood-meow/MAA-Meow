@@ -17,7 +17,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.rounded.Delete
@@ -148,7 +147,6 @@ private fun LogFileListView(
         topBar = {
             TopAppBar(
                 title = stringResource(R.string.settings_log_history_title),
-                navigationIcon = Icons.AutoMirrored.Filled.ArrowBack,
                 onNavigationClick = onBack,
                 actions = {
                     IconButton(onClick = onExport) {
@@ -262,7 +260,6 @@ private fun LogDetailView(
         topBar = {
             TopAppBar(
                 title = stringResource(R.string.log_detail_title),
-                navigationIcon = Icons.AutoMirrored.Filled.ArrowBack,
                 onNavigationClick = onBack
             )
         }
