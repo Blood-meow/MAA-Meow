@@ -1,61 +1,39 @@
 package com.aliothmoon.maameow.ui.navigation
 
 import androidx.annotation.StringRes
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Cottage
-import androidx.compose.material.icons.rounded.DateRange
-import androidx.compose.material.icons.rounded.PlayArrow
-import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.rounded.Cottage
+import androidx.compose.material.icons.rounded.DateRange
+import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -64,16 +42,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.aliothmoon.maameow.R
 import com.aliothmoon.maameow.constant.Routes
+import com.aliothmoon.maameow.data.preferences.AppSettingsManager
 import com.aliothmoon.maameow.ui.isMiuixUi
 import com.aliothmoon.maameow.ui.component.bottombar.FloatingBottomBar
 import com.aliothmoon.maameow.ui.component.bottombar.FloatingBottomBarItem
-import top.yukonga.miuix.kmp.blur.LayerBackdrop
-import top.yukonga.miuix.kmp.shader.isRenderEffectSupported
 import com.aliothmoon.maameow.ui.component.blur.BlurredBar
 import com.aliothmoon.maameow.ui.component.blur.rememberBlurBackdrop
-import top.yukonga.miuix.kmp.theme.MiuixTheme
 import com.aliothmoon.maameow.ui.theme.MaaDesignTokens
 import com.aliothmoon.maameow.ui.theme.ThemeColors
+import top.yukonga.miuix.kmp.blur.Backdrop
+import top.yukonga.miuix.kmp.basic.NavigationBar
+import top.yukonga.miuix.kmp.basic.NavigationBarItem
+import top.yukonga.miuix.kmp.basic.NavigationItem
+import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 sealed class BottomNavTab(
     val route: String,
@@ -114,200 +95,175 @@ sealed class BottomNavTab(
     }
 }
 
+/**
+ * Material-style bottom navigation bar (non-floating, standard row of icons).
+ */
 @Composable
-fun AppBottomNavigation(
+private fun AppBottomNavigationMaterial(
     currentRoute: String,
-    blurEnabled: Boolean = true,
-    floating: Boolean = true,
-    liquidGlass: Boolean = true,
-    backdrop: LayerBackdrop? = null,
     onTabSelected: (BottomNavTab) -> Unit
 ) {
-    val miuix = isMiuixUi
-    val effectiveFloating = floating || miuix
-    val effectiveLiquidGlass = liquidGlass || miuix
-    val barShape = if (effectiveFloating) CircleShape else RoundedCornerShape(0.dp)
-    val containerColor = when {
-        effectiveLiquidGlass && miuix -> ThemeColors.surfaceContainer.copy(alpha = 0.68f)
-        effectiveLiquidGlass -> ThemeColors.surface.copy(alpha = 0.72f)
-        else -> ThemeColors.surface
-    }
-    val horizontalPadding = if (effectiveFloating) if (miuix) 16.dp else 18.dp else 0.dp
-    val verticalPadding = if (effectiveFloating) if (miuix) 8.dp else 10.dp else 0.dp
-
-    if (miuix && effectiveFloating && backdrop != null && isRenderEffectSupported()) {
-        val navBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            FloatingBottomBar(
-                selectedIndex = {
-                    BottomNavTab.all.indexOfFirst { it.route == currentRoute }.coerceAtLeast(0)
-                },
-                onSelected = { index ->
-                    onTabSelected(BottomNavTab.all[index])
-                },
-                backdrop = backdrop,
-                tabsCount = BottomNavTab.all.size,
-                isBlurEnabled = blurEnabled,
-                modifier = Modifier.padding(horizontal = 16.dp),
+    Surface(
+        color = ThemeColors.surface,
+        shadowElevation = 0.dp
+    ) {
+        Column {
+            HorizontalDivider(
+                thickness = MaaDesignTokens.Separator.thickness,
+                color = ThemeColors.outlineVariant.copy(alpha = 0.3f)
+            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp, vertical = 6.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 BottomNavTab.all.forEach { tab ->
                     val label = stringResource(tab.labelRes)
                     val selected = currentRoute == tab.route
-                    FloatingBottomBarItem(
-                        onClick = { onTabSelected(tab) },
-                        modifier = Modifier.defaultMinSize(minWidth = 76.dp)
+                    val contentColor = if (selected) ThemeColors.primary
+                    else ThemeColors.onSurfaceVariant.copy(alpha = 0.7f)
+
+                    Column(
+                        modifier = Modifier
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null
+                            ) { onTabSelected(tab) }
+                            .heightIn(min = 48.dp)
+                            .padding(horizontal = 20.dp, vertical = 2.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Icon(
-                            imageVector = if (miuix) tab.miuixIcon else tab.icon,
+                            imageVector = tab.icon,
                             contentDescription = label,
-                            tint = if (selected) MiuixTheme.colorScheme.onSurface else ThemeColors.onSurfaceVariant
+                            modifier = Modifier.size(20.dp),
+                            tint = contentColor
                         )
                         Text(
                             text = label,
-                            fontSize = 11.sp,
-                            lineHeight = 14.sp,
-                            color = if (selected) MiuixTheme.colorScheme.onSurface else ThemeColors.onSurfaceVariant,
-                            maxLines = 1,
-                            softWrap = false,
-                            overflow = TextOverflow.Visible
+                            style = MaterialTheme.typography.labelMedium,
+                            color = contentColor
                         )
                     }
                 }
             }
-            // Transparent spacer for gesture area — content shows through
-            Spacer(modifier = Modifier.height(navBarHeight))
-        }
-    } else {
-        val navBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Surface(
-                color = Color.Transparent,
-                shadowElevation = if (effectiveFloating) if (miuix) 14.dp else 10.dp else 0.dp
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = horizontalPadding, vertical = verticalPadding)
-                ) {
-                if (!effectiveFloating) {
-                    HorizontalDivider(
-                        thickness = MaaDesignTokens.Separator.thickness,
-                        color = ThemeColors.outlineVariant.copy(alpha = 0.3f)
-                    )
-                }
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(barShape)
-                        .background(containerColor)
-                        .then(
-                            if (effectiveLiquidGlass) {
-                                Modifier.border(
-                                    width = MaaDesignTokens.Separator.thickness,
-                                    brush = Brush.verticalGradient(
-                                        colors = listOf(
-                                            ThemeColors.onSurface.copy(alpha = if (miuix) 0.24f else 0.18f),
-                                            ThemeColors.onSurface.copy(alpha = if (miuix) 0.08f else 0.06f)
-                                        )
-                                    ),
-                                    shape = barShape
-                                )
-                            } else {
-                                Modifier
-                            }
-                        )
-                ) {
-                    if (blurEnabled && effectiveLiquidGlass) {
-                        Box(
-                            modifier = Modifier
-                                .matchParentSize()
-                                .blur(if (miuix) 26.dp else 22.dp)
-                                .background(ThemeColors.primary.copy(alpha = if (miuix) 0.08f else 0.06f))
-                        )
-                    }
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(
-                                horizontal = if (miuix) 18.dp else 24.dp,
-                                vertical = if (effectiveFloating) if (miuix) 10.dp else 8.dp else 6.dp
-                            ),
-                        horizontalArrangement = Arrangement.SpaceEvenly,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        BottomNavTab.all.forEach { tab ->
-                            val label = stringResource(tab.labelRes)
-                            val selected = currentRoute == tab.route
-                            val transitionSpec = tween<Float>(durationMillis = 260, easing = FastOutSlowInEasing)
-                            val animatedColor by animateColorAsState(
-                                targetValue = if (selected) {
-                                    ThemeColors.primary
-                                } else {
-                                    ThemeColors.onSurfaceVariant.copy(alpha = 0.7f)
-                                },
-                                animationSpec = tween(durationMillis = 220, easing = FastOutSlowInEasing),
-                                label = "bottomNavContentColor"
-                            )
-                            val iconSize by animateDpAsState(
-                                targetValue = if (miuix && selected) 24.dp else if (miuix) 22.dp else if (selected) 21.dp else 20.dp,
-                                animationSpec = tween(durationMillis = 260, easing = FastOutSlowInEasing),
-                                label = "bottomNavIconSize"
-                            )
-                            val itemScale by animateFloatAsState(
-                                targetValue = if (selected) 1.04f else 1f,
-                                animationSpec = transitionSpec,
-                                label = "bottomNavItemScale"
-                            )
-
-                            Column(
-                                modifier = Modifier
-                                    .graphicsLayer {
-                                        scaleX = itemScale
-                                        scaleY = itemScale
-                                    }
-                                    .clickable(
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        indication = null
-                                    ) { onTabSelected(tab) }
-                                    .heightIn(min = if (miuix) 52.dp else 48.dp)
-                                    .padding(horizontal = if (miuix) 14.dp else 20.dp, vertical = 2.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.spacedBy(if (miuix) 1.dp else 0.dp)
-                            ) {
-                                Icon(
-                                    imageVector = if (miuix) tab.miuixIcon else tab.icon,
-                                    contentDescription = label,
-                                    modifier = Modifier.size(iconSize),
-                                    tint = animatedColor
-                                )
-                                AnimatedVisibility(
-                                    visible = !miuix || selected,
-                                    enter = fadeIn(animationSpec = tween(durationMillis = 160)) +
-                                        scaleIn(initialScale = 0.92f, animationSpec = transitionSpec),
-                                    exit = fadeOut(animationSpec = tween(durationMillis = 120)) +
-                                        scaleOut(targetScale = 0.92f, animationSpec = tween(durationMillis = 120))
-                                ) {
-                                    Text(
-                                        text = label,
-                                        style = if (miuix) MaterialTheme.typography.labelSmall else MaterialTheme.typography.labelMedium,
-                                        fontWeight = if (miuix && selected) FontWeight.Medium else FontWeight.Normal,
-                                        color = animatedColor
-                                    )
-                                }
-                }
-                }
-            }
-            // Transparent spacer for gesture area
-            Spacer(modifier = Modifier.height(navBarHeight))
         }
     }
 }
+
+/**
+ * Miuix-style bottom navigation: FloatingBottomBar when enabled, else standard NavigationBar.
+ */
+@Composable
+fun MiuixBottomNavigation(
+    currentRoute: String,
+    onTabSelected: (BottomNavTab) -> Unit,
+    backdrop: Backdrop? = null,
+    appSettings: AppSettingsManager = koinInject(),
+) {
+    val selectedIndexInt = when (currentRoute) {
+        Routes.HOME -> 0
+        Routes.BACKGROUND_TASK -> 1
+        Routes.SCHEDULE -> 2
+        Routes.SETTINGS -> 3
+        else -> 0
+    }
+
+    val enableFloatingBottomBar by appSettings.uiFloatingBottomBar.collectAsStateWithLifecycle()
+    val enableBlur by appSettings.uiBlurEnabled.collectAsStateWithLifecycle()
+
+    if (enableFloatingBottomBar && backdrop != null) {
+        FloatingBottomBar(
+            selectedIndex = { selectedIndexInt },
+            onSelected = { idx -> onTabSelected(BottomNavTab.all[idx]) },
+            backdrop = backdrop,
+            tabsCount = BottomNavTab.all.size,
+            isBlurEnabled = enableBlur,
+            modifier = Modifier.padding(horizontal = 16.dp),
+        ) {
+            BottomNavTab.all.forEach { tab ->
+                val label = stringResource(tab.labelRes)
+                val selected = currentRoute == tab.route
+                FloatingBottomBarItem(
+                    onClick = { onTabSelected(tab) },
+                ) {
+                    Icon(
+                        imageVector = tab.miuixIcon,
+                        contentDescription = null,
+                        modifier = Modifier.size(24.dp),
+                        tint = if (selected) MiuixTheme.colorScheme.primary
+                        else MiuixTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    )
+                    Text(
+                        text = label,
+                        fontSize = 10.sp,
+                        fontWeight = if (selected) FontWeight.Medium else FontWeight.Normal,
+                        color = if (selected) MiuixTheme.colorScheme.primary
+                        else MiuixTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    )
+                }
+            }
         }
+    } else {
+        // Standard miuix NavigationBar with optional blur
+        val blurBackdrop = rememberBlurBackdrop(enableBlur = enableBlur)
+        val destinations = BottomNavTab.all
+        val items = destinations.map { tab ->
+            NavigationItem(
+                label = stringResource(tab.labelRes),
+                icon = tab.miuixIcon,
+            )
+        }
+        BlurredBar(blurBackdrop) {
+            NavigationBar(
+                modifier = Modifier,
+                color = if (blurBackdrop != null) Color.Transparent else MiuixTheme.colorScheme.surface,
+            ) {
+                items.forEachIndexed { index, item ->
+                    NavigationBarItem(
+                        modifier = Modifier.weight(1f),
+                        icon = item.icon,
+                        label = item.label,
+                        selected = selectedIndexInt == index,
+                        onClick = {
+                            onTabSelected(BottomNavTab.all[index])
+                        }
+                    )
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Main entry point: delegates to Material or Miuix based on UI mode.
+ */
+@Composable
+fun AppBottomNavigation(
+    currentRoute: String,
+    onTabSelected: (BottomNavTab) -> Unit,
+    backdrop: Backdrop? = null
+) {
+    val navBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        if (isMiuixUi) {
+            MiuixBottomNavigation(
+                currentRoute = currentRoute,
+                onTabSelected = onTabSelected,
+                backdrop = backdrop
+            )
+        } else {
+            AppBottomNavigationMaterial(
+                currentRoute = currentRoute,
+                onTabSelected = onTabSelected
+            )
+        }
+        // Transparent spacer for gesture area — content shows through
+        Spacer(modifier = Modifier.height(navBarHeight))
     }
 }
