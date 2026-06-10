@@ -8,7 +8,7 @@ import com.aliothmoon.maameow.presentation.view.notification.NotificationSetting
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun NotificationSettingsView(
+fun NotificationSettingsViewMaterial(
     viewModel: NotificationSettingsViewModel = koinViewModel()
 ) {
     if (isMiuixUi) {

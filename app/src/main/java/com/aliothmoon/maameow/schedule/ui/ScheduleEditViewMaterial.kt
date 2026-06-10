@@ -9,7 +9,7 @@ import com.aliothmoon.maameow.schedule.ui.ScheduleEditViewModel
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun ScheduleEditView(
+fun ScheduleEditViewMaterial(
     navController: NavController,
     strategyId: String?,
     viewModel: ScheduleEditViewModel = koinViewModel()

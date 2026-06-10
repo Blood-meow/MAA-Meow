@@ -9,7 +9,7 @@ import com.aliothmoon.maameow.presentation.view.settings.ErrorLogViewModel
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun ErrorLogView(
+fun ErrorLogViewMaterial(
     navController: NavController,
     viewModel: ErrorLogViewModel = koinViewModel()
 ) {

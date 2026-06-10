@@ -9,7 +9,7 @@ import com.aliothmoon.maameow.presentation.view.settings.TaskOverrideEditorViewM
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun TaskOverrideEditorView(
+fun TaskOverrideEditorViewMaterial(
     navController: NavController,
     viewModel: TaskOverrideEditorViewModel = koinViewModel(),
 ) {

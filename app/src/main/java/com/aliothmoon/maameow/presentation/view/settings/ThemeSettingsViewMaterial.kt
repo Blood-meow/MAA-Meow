@@ -10,7 +10,7 @@ import com.aliothmoon.maameow.presentation.view.settings.ThemeSettingsViewMiuix
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun ThemeSettingsView(
+fun ThemeSettingsViewMaterial(
     navController: NavController,
     viewModel: SettingsViewModel = koinViewModel()
 ) {

@@ -11,7 +11,7 @@ import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 
 @Composable
-fun LogHistoryView(
+fun LogHistoryViewMaterial(
     navController: NavController,
     viewModel: LogHistoryViewModel = koinViewModel(),
     logExportService: LogExportService = koinInject()

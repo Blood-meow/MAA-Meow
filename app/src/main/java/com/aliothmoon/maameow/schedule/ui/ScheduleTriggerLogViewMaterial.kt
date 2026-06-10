@@ -9,7 +9,7 @@ import com.aliothmoon.maameow.schedule.ui.ScheduleTriggerLogViewModel
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun ScheduleTriggerLogView(
+fun ScheduleTriggerLogViewMaterial(
     navController: NavController,
     viewModel: ScheduleTriggerLogViewModel = koinViewModel(),
 ) {
