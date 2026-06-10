@@ -217,8 +217,6 @@ class SettingsViewModel(
     fun setUiMonetEnabled(enabled: Boolean) {
         viewModelScope.launch { appSettingsManager.setUiMonetEnabled(enabled) }
     }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 1.0f)
-    }
 
     val backgroundResolution: StateFlow<DefaultDisplayConfig.ResolutionPreference> =
         appSettingsManager.backgroundResolution

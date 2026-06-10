@@ -33,7 +33,8 @@ import com.aliothmoon.maameow.ui.screen.settings.SettingsView
 import com.aliothmoon.maameow.ui.viewmodel.BackgroundTaskViewModel
 import com.aliothmoon.maameow.schedule.ui.ScheduleListView
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.coroutineContext
+import kotlinx.coroutines.job
+import kotlin.coroutines.coroutineContext
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import top.yukonga.miuix.kmp.basic.Scaffold as MiuixScaffold
