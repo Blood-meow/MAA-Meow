@@ -9,7 +9,13 @@ import com.aliothmoon.maameow.ui.viewmodel.UpdateViewModel
 
 @Composable
 fun HomeViewMiuix(
-    navController: NavController, viewModel: HomeViewModel, updateViewModel: UpdateViewModel, permissionManager: PermissionManager, appSettingsManager: AppSettingsManager
+    navController: NavController,
+    viewModel: HomeViewModel,
+    updateViewModel: UpdateViewModel,
+    permissionManager: PermissionManager,
+    appSettingsManager: AppSettingsManager
 ) {
+    // Complex home view with UpdateCard, InfoCard, permission dialogs, etc.
+    // Material version already uses ThemeColors for Miuix color compatibility.
     HomeViewMaterial(navController, viewModel, updateViewModel, permissionManager, appSettingsManager)
 }
