@@ -28,6 +28,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -74,6 +75,7 @@ import kotlin.math.cos
 import kotlin.math.sign
 import kotlin.math.sin
 import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.launch
 import kotlin.math.sqrt
 
 val LocalFloatingBottomBarTabScale = staticCompositionLocalOf { { 1f } }

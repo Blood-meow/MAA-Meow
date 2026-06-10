@@ -5,7 +5,7 @@ import androidx.navigation.NavController
 import com.aliothmoon.maameow.presentation.components.ui.isMiuixUi
 import com.aliothmoon.maameow.presentation.view.settings.TaskOverrideEditorViewMaterial
 import com.aliothmoon.maameow.presentation.view.settings.TaskOverrideEditorViewMiuix
-import com.aliothmoon.maameow.presentation.view.settings.TaskOverrideEditorViewModel
+import com.aliothmoon.maameow.presentation.viewmodel.TaskOverrideEditorViewModel
 import org.koin.androidx.compose.koinViewModel
 
 @Composable

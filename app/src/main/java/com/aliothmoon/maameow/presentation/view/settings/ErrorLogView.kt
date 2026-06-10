@@ -5,7 +5,7 @@ import androidx.navigation.NavController
 import com.aliothmoon.maameow.presentation.components.ui.isMiuixUi
 import com.aliothmoon.maameow.presentation.view.settings.ErrorLogViewMaterial
 import com.aliothmoon.maameow.presentation.view.settings.ErrorLogViewMiuix
-import com.aliothmoon.maameow.presentation.view.settings.ErrorLogViewModel
+import com.aliothmoon.maameow.presentation.viewmodel.ErrorLogViewModel
 import org.koin.androidx.compose.koinViewModel
 
 @Composable

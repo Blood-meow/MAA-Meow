@@ -47,9 +47,6 @@ import com.aliothmoon.maameow.presentation.components.ui.MaaUiScaffold
 import com.aliothmoon.maameow.presentation.components.ui.isMiuixUi
 import top.yukonga.miuix.kmp.blur.LayerBackdrop
 import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
-import top.yukonga.miuix.kmp.blur.Backdrop
-import top.yukonga.miuix.kmp.blur.LayerBackdrop
-import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
 import top.yukonga.miuix.kmp.shader.isRenderEffectSupported
 import com.aliothmoon.maameow.presentation.view.background.BackgroundTaskView
 import com.aliothmoon.maameow.presentation.view.home.HomeView
@@ -166,10 +163,9 @@ fun AppNavigation(
                 ) {
                     AppBottomNavigation(
                         currentRoute = currentNavRoute ?: Routes.HOME,
-                        blurEnabled = isMiuix && uiBlurEnabled,
-                        floating = isMiuix && uiFloatingBottomBar,
-                        liquidGlass = isMiuix && uiLiquidGlassEnabled,
-                        backdrop = blurBackdrop,
+                        blurEnabled = isMiuixUi && uiBlurEnabled,
+                        floating = isMiuixUi && uiFloatingBottomBar,
+                        liquidGlass = isMiuixUi && uiLiquidGlassEnabled,
                         backdrop = blurBackdrop,
                         onTabSelected = { tab ->
                             if (tab.route == currentNavRoute) return@AppBottomNavigation

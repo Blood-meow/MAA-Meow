@@ -6,7 +6,7 @@ import com.aliothmoon.maameow.domain.service.LogExportService
 import com.aliothmoon.maameow.presentation.components.ui.isMiuixUi
 import com.aliothmoon.maameow.presentation.view.settings.LogHistoryViewMaterial
 import com.aliothmoon.maameow.presentation.view.settings.LogHistoryViewMiuix
-import com.aliothmoon.maameow.presentation.view.settings.LogHistoryViewModel
+import com.aliothmoon.maameow.presentation.viewmodel.LogHistoryViewModel
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 
