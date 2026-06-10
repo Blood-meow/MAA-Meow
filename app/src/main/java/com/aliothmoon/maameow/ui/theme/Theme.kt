@@ -23,6 +23,7 @@ import androidx.compose.ui.node.DelegatableNode
 import androidx.compose.ui.node.DrawModifierNode
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import com.aliothmoon.maameow.data.preferences.AppSettingsManager
+import com.aliothmoon.maameow.ui.LocalIsPureDark
 import com.aliothmoon.maameow.ui.LocalUiStyle
 import top.yukonga.miuix.kmp.theme.ColorSchemeMode
 import top.yukonga.miuix.kmp.theme.MiuixTheme
@@ -181,8 +182,18 @@ fun MaaMeowTheme(
         AppSettingsManager.ThemeMode.DARK,
         AppSettingsManager.ThemeMode.PURE_DARK -> true
     }
+    val isPureDark = themeMode == AppSettingsManager.ThemeMode.PURE_DARK
     val colorScheme = if (monetEnabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+        val dynamic = if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+        if (isPureDark) {
+            dynamic.copy(
+                background = Color(0xFF000000),
+                surface = Color(0xFF000000),
+                surfaceVariant = Color(0xFF121212)
+            )
+        } else {
+            dynamic
+        }
     } else {
         when (themeMode) {
             AppSettingsManager.ThemeMode.SYSTEM -> if (systemDarkTheme) BlueDark else BlueLight
@@ -207,7 +218,7 @@ fun MaaMeowTheme(
     }
 
     val themedContent: @Composable () -> Unit = {
-        CompositionLocalProvider(LocalUiStyle provides uiStyle) {
+        CompositionLocalProvider(LocalUiStyle provides uiStyle, LocalIsPureDark provides isPureDark) {
             content()
         }
     }

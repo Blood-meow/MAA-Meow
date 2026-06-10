@@ -3,15 +3,24 @@ package com.aliothmoon.maameow.ui.theme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import com.aliothmoon.maameow.ui.LocalIsPureDark
 import com.aliothmoon.maameow.ui.isMiuixUi
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 object ThemeColors {
     val background: Color
-        @Composable get() = if (isMiuixUi) MiuixTheme.colorScheme.background else MaterialTheme.colorScheme.background
+        @Composable get() {
+            val pureDark = LocalIsPureDark.current
+            if (pureDark) return Color.Black
+            return if (isMiuixUi) MiuixTheme.colorScheme.background else MaterialTheme.colorScheme.background
+        }
 
     val surface: Color
-        @Composable get() = if (isMiuixUi) MiuixTheme.colorScheme.surface else MaterialTheme.colorScheme.surface
+        @Composable get() {
+            val pureDark = LocalIsPureDark.current
+            if (pureDark) return Color.Black
+            return if (isMiuixUi) MiuixTheme.colorScheme.surface else MaterialTheme.colorScheme.surface
+        }
 
     val surfaceContainer: Color
         @Composable get() = if (isMiuixUi) MiuixTheme.colorScheme.surfaceContainer else MaterialTheme.colorScheme.surfaceContainer
