@@ -250,24 +250,16 @@ fun AppBottomNavigation(
     onTabSelected: (BottomNavTab) -> Unit,
     backdrop: Backdrop? = null
 ) {
-    val navBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        if (isMiuixUi) {
-            MiuixBottomNavigation(
-                currentRoute = currentRoute,
-                onTabSelected = onTabSelected,
-                backdrop = backdrop
-            )
-        } else {
-            AppBottomNavigationMaterial(
-                currentRoute = currentRoute,
-                onTabSelected = onTabSelected
-            )
-        }
-        // Transparent spacer for gesture area — content shows through
-        Spacer(modifier = Modifier.height(navBarHeight))
+    if (isMiuixUi) {
+        MiuixBottomNavigation(
+            currentRoute = currentRoute,
+            onTabSelected = onTabSelected,
+            backdrop = backdrop
+        )
+    } else {
+        AppBottomNavigationMaterial(
+            currentRoute = currentRoute,
+            onTabSelected = onTabSelected
+        )
     }
 }
