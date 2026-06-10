@@ -23,6 +23,7 @@ import androidx.compose.ui.node.DelegatableNode
 import androidx.compose.ui.node.DrawModifierNode
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import com.aliothmoon.maameow.data.preferences.AppSettingsManager
+import com.aliothmoon.maameow.presentation.components.ui.LocalUiStyle
 import top.yukonga.miuix.kmp.theme.ColorSchemeMode
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.theme.ThemeController
@@ -169,6 +170,7 @@ object MaaThemeAlphas {
 fun MaaMeowTheme(
     themeMode: AppSettingsManager.ThemeMode = AppSettingsManager.ThemeMode.SYSTEM,
     monetEnabled: Boolean = false,
+    uiStyle: AppSettingsManager.UiStyle = AppSettingsManager.UiStyle.MATERIAL,
     content: @Composable () -> Unit
 ) {
     val systemDarkTheme = isSystemInDarkTheme()
@@ -204,16 +206,51 @@ fun MaaMeowTheme(
         )
     }
 
-    MiuixTheme(controller = miuixController) {
-        CompositionLocalProvider(
-            LocalIndication provides NoIndication
-        ) {
-            MaterialTheme(
-                colorScheme = colorScheme,
-                typography = Typography,
-                shapes = MaaShapes,
-                content = content
-            )
+    val themedContent: @Composable () -> Unit = {
+        CompositionLocalProvider(LocalUiStyle provides uiStyle) {
+            content()
         }
+    }
+
+    when (uiStyle) {
+        AppSettingsManager.UiStyle.MATERIAL -> MaterialThemeWrapper(
+            colorScheme = colorScheme,
+            content = themedContent
+        )
+
+        AppSettingsManager.UiStyle.MIUIX -> MiuixThemeWrapper(
+            controller = miuixController,
+            colorScheme = colorScheme,
+            content = themedContent
+        )
+    }
+}
+
+@Composable
+fun MaterialThemeWrapper(
+    colorScheme: ColorScheme,
+    content: @Composable () -> Unit
+) {
+    CompositionLocalProvider(LocalIndication provides NoIndication) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = Typography,
+            shapes = MaaShapes,
+            content = content
+        )
+    }
+}
+
+@Composable
+fun MiuixThemeWrapper(
+    controller: ThemeController,
+    colorScheme: ColorScheme,
+    content: @Composable () -> Unit
+) {
+    MiuixTheme(controller = controller) {
+        MaterialThemeWrapper(
+            colorScheme = colorScheme,
+            content = content
+        )
     }
 }
