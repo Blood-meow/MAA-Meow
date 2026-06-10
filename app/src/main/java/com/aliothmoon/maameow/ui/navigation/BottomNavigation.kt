@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.defaultMinSize
@@ -132,43 +133,49 @@ fun AppBottomNavigation(
     val verticalPadding = if (effectiveFloating) if (miuix) 8.dp else 10.dp else 0.dp
 
     if (miuix && effectiveFloating && backdrop != null && isRenderEffectSupported()) {
-        FloatingBottomBar(
-            selectedIndex = {
-                BottomNavTab.all.indexOfFirst { it.route == currentRoute }.coerceAtLeast(0)
-            },
-            onSelected = { index ->
-                onTabSelected(BottomNavTab.all[index])
-            },
-            backdrop = backdrop,
-            tabsCount = BottomNavTab.all.size,
-            isBlurEnabled = blurEnabled,
-            modifier = Modifier
-                .padding(horizontal = 16.dp)
-                .padding(bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()),
+        val navBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            BottomNavTab.all.forEach { tab ->
-                val label = stringResource(tab.labelRes)
-                val selected = currentRoute == tab.route
-                FloatingBottomBarItem(
-                    onClick = { onTabSelected(tab) },
-                    modifier = Modifier.defaultMinSize(minWidth = 76.dp)
-                ) {
-                    Icon(
-                        imageVector = if (miuix) tab.miuixIcon else tab.icon,
-                        contentDescription = label,
-                        tint = if (selected) MiuixTheme.colorScheme.onSurface else ThemeColors.onSurfaceVariant
-                    )
-                    Text(
-                        text = label,
-                        fontSize = 11.sp,
-                        lineHeight = 14.sp,
-                        color = if (selected) MiuixTheme.colorScheme.onSurface else ThemeColors.onSurfaceVariant,
-                        maxLines = 1,
-                        softWrap = false,
-                        overflow = TextOverflow.Visible
-                    )
+            FloatingBottomBar(
+                selectedIndex = {
+                    BottomNavTab.all.indexOfFirst { it.route == currentRoute }.coerceAtLeast(0)
+                },
+                onSelected = { index ->
+                    onTabSelected(BottomNavTab.all[index])
+                },
+                backdrop = backdrop,
+                tabsCount = BottomNavTab.all.size,
+                isBlurEnabled = blurEnabled,
+                modifier = Modifier.padding(horizontal = 16.dp),
+            ) {
+                BottomNavTab.all.forEach { tab ->
+                    val label = stringResource(tab.labelRes)
+                    val selected = currentRoute == tab.route
+                    FloatingBottomBarItem(
+                        onClick = { onTabSelected(tab) },
+                        modifier = Modifier.defaultMinSize(minWidth = 76.dp)
+                    ) {
+                        Icon(
+                            imageVector = if (miuix) tab.miuixIcon else tab.icon,
+                            contentDescription = label,
+                            tint = if (selected) MiuixTheme.colorScheme.onSurface else ThemeColors.onSurfaceVariant
+                        )
+                        Text(
+                            text = label,
+                            fontSize = 11.sp,
+                            lineHeight = 14.sp,
+                            color = if (selected) MiuixTheme.colorScheme.onSurface else ThemeColors.onSurfaceVariant,
+                            maxLines = 1,
+                            softWrap = false,
+                            overflow = TextOverflow.Visible
+                        )
+                    }
                 }
             }
+            // Transparent spacer for gesture area — content shows through
+            Spacer(modifier = Modifier.height(navBarHeight))
         }
     } else {
         Surface(

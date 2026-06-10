@@ -290,7 +290,7 @@ fun FloatingBottomBar(
                     }
                 )
                 .then(if (isBlurEnabled) interactiveHighlight.modifier else Modifier)
-                .height(64.dp)
+                .height(80.dp)
                 .padding(4.dp),
             verticalAlignment = Alignment.CenterVertically,
             content = content
@@ -321,7 +321,7 @@ fun FloatingBottomBar(
                             onDrawSurface = { drawRect(containerColor) },
                         )
                         .then(interactiveHighlight.modifier)
-                        .height(56.dp)
+                        .height(72.dp)
                         .padding(horizontal = 4.dp)
                         .graphicsLayer(colorFilter = ColorFilter.tint(accentColor)),
                     verticalAlignment = Alignment.CenterVertically,
@@ -376,7 +376,7 @@ fun FloatingBottomBar(
                                 alpha = dampedDragAnimation.pressProgress,
                             )
                         }
-                        .height(56.dp)
+                        .height(72.dp)
                         .width(tabWidthDp)
                 )
             } else {
@@ -390,7 +390,7 @@ fun FloatingBottomBar(
                         .then(dampedDragAnimation.modifier)
                         .clip(pillShape)
                         .background(accentColor.copy(alpha = 0.15f), pillShape)
-                        .height(56.dp)
+                        .height(72.dp)
                         .width(tabWidthDp)
                 )
             }
