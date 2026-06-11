@@ -226,7 +226,7 @@ private fun StrategyCardMiuix(
                             strategy.lastResult,
                             MiuixTheme.colorScheme.primary,
                             MiuixTheme.colorScheme.error,
-                            MiuixTheme.colorScheme.tertiary,
+                            MiuixTheme.colorScheme.secondaryVariant,
                         ),
                     )
                 }

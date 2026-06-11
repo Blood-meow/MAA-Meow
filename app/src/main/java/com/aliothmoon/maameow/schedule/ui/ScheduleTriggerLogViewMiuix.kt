@@ -353,7 +353,7 @@ private fun resultColorMiuix(result: ExecutionResult) = when (result) {
     ExecutionResult.STARTED -> MiuixTheme.colorScheme.primary
     ExecutionResult.SKIPPED_BUSY,
     ExecutionResult.SKIPPED_LOCKED,
-    ExecutionResult.CANCELLED -> MiuixTheme.colorScheme.tertiary
+    ExecutionResult.CANCELLED -> MiuixTheme.colorScheme.secondaryVariant
     ExecutionResult.FAILED_VALIDATION,
     ExecutionResult.FAILED_START,
     ExecutionResult.FAILED_UI_LAUNCH -> MiuixTheme.colorScheme.error
