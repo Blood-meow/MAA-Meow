@@ -1,5 +1,6 @@
 package com.aliothmoon.maameow.ui.component.material
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -18,11 +19,54 @@ import androidx.compose.ui.unit.dp
 import com.aliothmoon.maameow.ui.isMiuixUi
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
-// ── Text (String) ─────────────────────────────────────────────
+// ── Text (String) ────────────────────────────────────────────
 
 @Composable
 fun MaaUiText(
     text: String,
+    modifier: Modifier = Modifier,
+    color: Color = Color.Unspecified,
+    fontSize: TextUnit = TextUnit.Unspecified,
+    fontStyle: FontStyle? = null,
+    fontWeight: FontWeight? = null,
+    fontFamily: FontFamily? = null,
+    letterSpacing: TextUnit = TextUnit.Unspecified,
+    textDecoration: TextDecoration? = null,
+    textAlign: TextAlign? = null,
+    lineHeight: TextUnit = TextUnit.Unspecified,
+    overflow: TextOverflow = TextOverflow.Clip,
+    softWrap: Boolean = true,
+    maxLines: Int = Int.MAX_VALUE,
+    minLines: Int = 1,
+    style: TextStyle = if (isMiuixUi) MiuixTheme.textStyles.body2
+        else androidx.compose.material3.MaterialTheme.typography.bodyMedium,
+) {
+    if (isMiuixUi) {
+        top.yukonga.miuix.kmp.basic.Text(
+            text = text, modifier = modifier, color = color,
+            fontSize = fontSize, fontStyle = fontStyle, fontWeight = fontWeight,
+            fontFamily = fontFamily, letterSpacing = letterSpacing,
+            textDecoration = textDecoration, textAlign = textAlign,
+            lineHeight = lineHeight, overflow = overflow, softWrap = softWrap,
+            maxLines = maxLines, minLines = minLines, style = style,
+        )
+    } else {
+        androidx.compose.material3.Text(
+            text = text, modifier = modifier, color = color,
+            fontSize = fontSize, fontStyle = fontStyle, fontWeight = fontWeight,
+            fontFamily = fontFamily, letterSpacing = letterSpacing,
+            textDecoration = textDecoration, textAlign = textAlign,
+            lineHeight = lineHeight, overflow = overflow, softWrap = softWrap,
+            maxLines = maxLines, minLines = minLines, style = style,
+        )
+    }
+}
+
+// ── Text (AnnotatedString) ───────────────────────────────────
+
+@Composable
+fun MaaUiText(
+    text: AnnotatedString,
     modifier: Modifier = Modifier,
     color: Color = Color.Unspecified,
     fontSize: TextUnit = TextUnit.Unspecified,
@@ -128,9 +172,12 @@ fun MaaUiHorizontalDivider(
 @Composable
 fun MaaUiSurface(
     modifier: Modifier = Modifier,
+    shape: Shape = androidx.compose.foundation.shape.RoundedCornerShape(0.dp),
     color: Color = Color.Unspecified,
     contentColor: Color = Color.Unspecified,
-    shape: Shape? = null,
+    tonalElevation: Dp = 0.dp,
+    shadowElevation: Dp = 0.dp,
+    border: BorderStroke? = null,
     content: @Composable () -> Unit,
 ) {
     if (isMiuixUi) {
@@ -147,6 +194,9 @@ fun MaaUiSurface(
             shape = shape,
             color = color,
             contentColor = contentColor,
+            tonalElevation = tonalElevation,
+            shadowElevation = shadowElevation,
+            border = border,
             content = content,
         )
     }

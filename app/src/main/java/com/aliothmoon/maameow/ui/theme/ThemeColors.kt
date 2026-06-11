@@ -76,6 +76,9 @@ object ThemeColors {
     val outline: Color
         @Composable get() = if (isMiuixUi) MiuixTheme.colorScheme.outline else MaterialTheme.colorScheme.outline
 
+    val onBackground: Color
+        @Composable get() = if (isMiuixUi) MiuixTheme.colorScheme.onBackground else MaterialTheme.colorScheme.onBackground
+
     val outlineVariant: Color
         @Composable get() = if (isMiuixUi) MiuixTheme.colorScheme.outline else MaterialTheme.colorScheme.outlineVariant
 

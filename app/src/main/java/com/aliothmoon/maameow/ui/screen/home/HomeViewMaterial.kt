@@ -89,6 +89,7 @@ import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import androidx.compose.foundation.shape.RoundedCornerShape
 import com.aliothmoon.maameow.ui.theme.ThemeColors
 import com.aliothmoon.maameow.ui.theme.ThemeTypography
 

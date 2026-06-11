@@ -32,7 +32,6 @@ import org.koin.compose.koinInject
 import com.aliothmoon.maameow.ui.component.material.MaaUiText
 import com.aliothmoon.maameow.ui.theme.ThemeColors
 import com.aliothmoon.maameow.ui.theme.ThemeTypography
-import com.aliothmoon.maameow.ui.theme.ThemeTypography
 
 @Composable
 fun VirtualDisplayPreview(
