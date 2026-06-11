@@ -494,7 +494,6 @@ fun BackgroundTaskViewMiuix(
                                     if (maaState == MaaExecutionState.STARTING) {
                                         MiuixCircularProgressIndicator(
                                             modifier = Modifier.size(20.dp),
-                                            color = MiuixTheme.colorScheme.onPrimary,
                                             strokeWidth = 2.dp
                                         )
                                     } else {
@@ -514,14 +513,10 @@ fun BackgroundTaskViewMiuix(
                                     enabled = maaState == MaaExecutionState.RUNNING,
                                     modifier = Modifier.weight(1f),
                                     shape = RoundedCornerShape(8.dp),
-                                    colors = ButtonDefaults.outlinedButtonColors(
-                                        contentColor = MiuixTheme.colorScheme.error
-                                    )
                                 ) {
                                     if (maaState == MaaExecutionState.STOPPING) {
                                         MiuixCircularProgressIndicator(
                                             modifier = Modifier.size(20.dp),
-                                            color = MiuixTheme.colorScheme.error,
                                             strokeWidth = 2.dp
                                         )
                                     } else {
@@ -787,8 +782,6 @@ private fun BackgroundMoreActionsOverlay(
                     indication = null,
                     onClick = {}
                 ),
-            shape = RoundedCornerShape(4.dp),
-            border = BorderStroke(0.5.dp, MiuixTheme.colorScheme.outline)
         ) {
             Column(modifier = Modifier.padding(10.dp)) {
                 // 标题与快速操作组

@@ -144,6 +144,7 @@ fun MaaUiOutlinedButton(
     shape: Shape = RoundedCornerShape(8.dp),
     contentPadding: PaddingValues = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
     colors: ButtonColors? = null,
+    border: androidx.compose.foundation.BorderStroke? = null,
     content: @Composable RowScope.() -> Unit,
 ) {
     if (isMiuixUi) {
@@ -156,6 +157,7 @@ fun MaaUiOutlinedButton(
             onClick = onClick, modifier = modifier, enabled = enabled,
             shape = shape, contentPadding = contentPadding,
             colors = colors ?: ButtonDefaults.outlinedButtonColors(),
+            border = border,
             content = content,
         )
     }
