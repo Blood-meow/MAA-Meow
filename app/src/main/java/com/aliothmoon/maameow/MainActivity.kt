@@ -50,6 +50,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         dispatchScheduledLaunchIntent(intent)
         enableEdgeToEdge()
+        window.isNavigationBarContrastEnforced = false
         doObserveKeepScreenOn()
         doObserveThemeMode()
         window.decorView.viewTreeObserver.addOnPreDrawListener(object :
