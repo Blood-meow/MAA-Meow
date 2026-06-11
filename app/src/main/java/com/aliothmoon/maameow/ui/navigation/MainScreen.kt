@@ -160,7 +160,9 @@ fun MainScreen(
         }
 
         MiuixScaffold(bottomBar = bottomBar) { paddingValues ->
-            // Floating bar: content fills entire screen, bar overlays on top (feat-miuix-ui pattern).
+            // Floating bar: content fills entire screen (feat-miuix-ui pattern).
+            // The floating bar itself positions above gesture bar (12dp + navigationBars),
+            // so gesture bar area is handled by the floating bar.
             // Non-floating: standard NavigationBar, apply scaffold padding.
             val contentModifier = if (useFloatingBar) {
                 if (uiBlurEnabled && backdrop != null) Modifier.layerBackdrop(backdrop)

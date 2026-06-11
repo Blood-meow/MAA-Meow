@@ -168,9 +168,6 @@ fun ThemeSettingsViewMaterial(
                                         if (index == 1) AppSettingsManager.UiStyle.MIUIX
                                         else AppSettingsManager.UiStyle.MATERIAL
                                     )
-                                    // Navigate back to home so the full UI tree recomposes
-                                    // with the new style cleanly.
-                                    navController.popBackStack()
                                 }
                             )
                         },
