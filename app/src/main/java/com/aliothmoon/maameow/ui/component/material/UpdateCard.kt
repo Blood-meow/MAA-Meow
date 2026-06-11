@@ -425,7 +425,7 @@ fun UpdateCard(
                                 modifier = Modifier.fillMaxWidth()
                             ) {
                                 when (source) {
-                                    UpdateSource.GITHUB -> Text(
+                                    UpdateSource.GITHUB -> MaaUiText(
                                         text = stringResource(R.string.update_card_github_desc),
                                         style = ThemeTypography.bodyMedium,
                                         textAlign = TextAlign.Center
