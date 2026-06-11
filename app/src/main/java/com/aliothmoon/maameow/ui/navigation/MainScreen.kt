@@ -143,6 +143,33 @@ fun MainScreen(
         null
     }
 
+    // For floating bar: backdrop without surface fill so gesture bar stays transparent
+    val floatingBackdrop = if (miuix) {
+        rememberLayerBackdrop {
+            drawContent()
+        }
+    } else {
+        null
+    }
+
+    // For floating bar: backdrop without surface fill so gesture bar stays transparent
+    val floatingBackdrop = if (miuix) {
+        rememberLayerBackdrop {
+            drawContent()
+        }
+    } else {
+        null
+    }
+
+    // For floating bar: backdrop without surface fill so gesture bar stays transparent
+    val floatingBackdrop = if (miuix) {
+        rememberLayerBackdrop {
+            drawContent()
+        }
+    } else {
+        null
+    }
+
     val settledPage = mainPagerState.pagerState.settledPage
     LaunchedEffect(settledPage) { mainPagerState.syncPage() }
     val currentPage = mainPagerState.pagerState.currentPage
@@ -195,17 +222,19 @@ fun MainScreen(
         val useFloatingBar = uiFloatingBottomBar && visible
 
         // Miuix mode: scaffold with backdrop layer (KernelSU pattern)
-        // For floating bar: transparent container so gesture bar area is transparent
-        // For standard bar: default container color
+        // For floating bar: transparent container + backdrop without surface fill
+        // so gesture bar area stays transparent
+        // For standard bar: default container color + backdrop with surface fill
         CompositionLocalProvider(LocalMainPagerState provides mainPagerState) {
             MiuixScaffold(
                 bottomBar = bottomBar,
                 containerColor = if (useFloatingBar) Color.Transparent
                     else MiuixTheme.colorScheme.surface
             ) { paddingValues ->
+                val activeBackdrop = if (useFloatingBar) floatingBackdrop else backdrop
                 Box(
-                    modifier = if (uiBlurEnabled && backdrop != null)
-                        Modifier.layerBackdrop(backdrop) else Modifier
+                    modifier = if (uiBlurEnabled && activeBackdrop != null)
+                        Modifier.layerBackdrop(activeBackdrop) else Modifier
                 ) {
                     pagerContent(
                         Modifier
