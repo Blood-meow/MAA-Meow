@@ -67,6 +67,7 @@ import androidx.navigation.NavController
 import com.aliothmoon.maameow.R
 import com.aliothmoon.maameow.data.preferences.AppSettingsManager
 import com.aliothmoon.maameow.manager.PermissionManager
+import com.aliothmoon.maameow.ui.LocalIsPureDark
 import com.aliothmoon.maameow.ui.viewmodel.HomeViewModel
 import com.aliothmoon.maameow.ui.viewmodel.SettingsViewModel
 import com.aliothmoon.maameow.ui.viewmodel.UpdateViewModel
@@ -249,9 +250,17 @@ private fun ThemePreviewMiuix(
     serviceStatusText: String,
     modifier: Modifier = Modifier
 ) {
-    val surfaceVariant = MiuixTheme.colorScheme.surfaceVariant
+    val isPureDark = LocalIsPureDark.current
+    val background = if (isPureDark) Color.Black else MiuixTheme.colorScheme.background
     val onSurface = MiuixTheme.colorScheme.onSurface
     val primary = MiuixTheme.colorScheme.primary
+    val surfaceVariant = MiuixTheme.colorScheme.surfaceVariant
+    val modeLabel = when (themeMode) {
+        AppSettingsManager.ThemeMode.SYSTEM -> stringResource(R.string.settings_theme_system)
+        AppSettingsManager.ThemeMode.WHITE -> stringResource(R.string.settings_theme_white)
+        AppSettingsManager.ThemeMode.DARK -> stringResource(R.string.settings_theme_dark)
+        AppSettingsManager.ThemeMode.PURE_DARK -> stringResource(R.string.settings_theme_pure_dark)
+    }
 
     Box(modifier = modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
         MiuixSurface(
@@ -260,7 +269,7 @@ private fun ThemePreviewMiuix(
                 .aspectRatio(0.58f)
                 .border(1.5.dp, MiuixTheme.colorScheme.outlineVariant, RoundedCornerShape(24.dp)),
             shape = RoundedCornerShape(24.dp),
-            color = MiuixTheme.colorScheme.background,
+            color = background,
         ) {
             Column(modifier = Modifier.fillMaxSize()) {
                 Row(
@@ -283,31 +292,40 @@ private fun ThemePreviewMiuix(
                         .padding(horizontal = 10.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    PreviewInfoMiuix(
-                        label = stringResource(R.string.home_display_mode),
-                        value = when (themeMode) {
-                            AppSettingsManager.ThemeMode.SYSTEM -> stringResource(R.string.settings_theme_system)
-                            AppSettingsManager.ThemeMode.WHITE -> stringResource(R.string.settings_theme_white)
-                            AppSettingsManager.ThemeMode.DARK -> stringResource(R.string.settings_theme_dark)
-                            AppSettingsManager.ThemeMode.PURE_DARK -> stringResource(R.string.settings_theme_pure_dark)
-                        },
-                        accent = primary
-                    )
-                    PreviewInfoMiuix(
-                        label = stringResource(R.string.home_screen_resolution),
-                        value = "${screenWidth}×${screenHeight}",
-                        accent = primary
-                    )
-                    PreviewInfoMiuix(
-                        label = stringResource(R.string.home_resource_version_label),
-                        value = resourceVersion,
-                        accent = primary
-                    )
-                    PreviewInfoMiuix(
-                        label = stringResource(R.string.home_app_version_label),
-                        value = appVersion,
-                        accent = primary
-                    )
+                    // Info card matching Material's PreviewScreenInfoCard layout
+                    MiuixSurface(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(14.dp),
+                        color = if (isPureDark) Color(0xFF121212) else MiuixTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 12.dp, vertical = 10.dp),
+                            verticalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            PreviewInfoRowMiuix(
+                                label = stringResource(R.string.home_screen_resolution),
+                                value = "$screenWidth × $screenHeight",
+                                accent = primary
+                            )
+                            PreviewInfoRowMiuix(
+                                label = stringResource(R.string.home_resource_version_label),
+                                value = resourceVersion.ifBlank { stringResource(R.string.home_resource_not_installed) },
+                                accent = MiuixTheme.colorScheme.tertiary
+                            )
+                            PreviewInfoRowMiuix(
+                                label = stringResource(R.string.home_app_version_label),
+                                value = appVersion,
+                                accent = MiuixTheme.colorScheme.secondary
+                            )
+                            PreviewInfoRowMiuix(
+                                label = stringResource(R.string.home_display_mode),
+                                value = modeLabel,
+                                accent = primary
+                            )
+                        }
+                    }
                 }
 
                 MiuixSurface(
@@ -338,16 +356,36 @@ private fun ThemePreviewMiuix(
 }
 
 @Composable
-private fun PreviewInfoMiuix(label: String, value: String, accent: Color) {
+private fun PreviewInfoRowMiuix(label: String, value: String, accent: Color) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        MiuixText(text = label, style = MiuixTheme.textStyles.body2, color = MiuixTheme.colorScheme.onSurfaceSecondary)
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            Box(modifier = Modifier.size(7.dp).clip(CircleShape).background(accent))
-            MiuixText(text = value, style = MiuixTheme.textStyles.body2, color = MiuixTheme.colorScheme.onSurfaceSecondary)
+        MiuixText(
+            text = label,
+            style = MiuixTheme.textStyles.body2,
+            color = MiuixTheme.colorScheme.onSurface,
+            maxLines = 1
+        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            modifier = Modifier.weight(1f, fill = false)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(7.dp)
+                    .clip(CircleShape)
+                    .background(accent)
+            )
+            MiuixText(
+                text = value,
+                style = MiuixTheme.textStyles.body2,
+                color = MiuixTheme.colorScheme.onSurfaceSecondary,
+                maxLines = 1,
+                modifier = Modifier.weight(1f, fill = false)
+            )
         }
     }
 }
