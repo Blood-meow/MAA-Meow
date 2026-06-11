@@ -15,6 +15,10 @@ import androidx.compose.ui.text.font.FontWeight
 import com.aliothmoon.maameow.R
 import com.aliothmoon.maameow.ui.isMiuixUi
 import com.aliothmoon.maameow.ui.theme.ThemeColors
+import top.yukonga.miuix.kmp.basic.Icon as MiuixIcon
+import top.yukonga.miuix.kmp.basic.IconButton as MiuixIconButton
+import top.yukonga.miuix.kmp.basic.Text as MiuixText
+import top.yukonga.miuix.kmp.basic.TopAppBar as MiuixTopAppBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -27,47 +31,79 @@ fun MaaUiTopAppBar(
     onActionClick: () -> Unit = {},
     actions: @Composable (RowScope.() -> Unit)? = null
 ) {
-    val titleContent: @Composable () -> Unit = {
-        Text(
-            text = title,
-            fontWeight = FontWeight.SemiBold,
-            style = MaterialTheme.typography.titleLarge
-        )
-    }
-    val navigationContent: @Composable () -> Unit = {
-        navigationIcon?.let { icon ->
-            IconButton(onClick = onNavigationClick) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = stringResource(R.string.accessibility_navigation)
-                )
+    if (isMiuixUi) {
+        MiuixTopAppBar(
+            title = title,
+            navigationIcon = if (navigationIcon != null) {
+                @Composable {
+                    MiuixIconButton(onClick = onNavigationClick) {
+                        MiuixIcon(
+                            imageVector = navigationIcon,
+                            contentDescription = stringResource(R.string.accessibility_navigation)
+                        )
+                    }
+                }
+            } else {
+                {}
+            },
+            actions = {
+                if (actions != null) {
+                    actions()
+                } else {
+                    actionIcon?.let { icon ->
+                        MiuixIconButton(onClick = onActionClick) {
+                            MiuixIcon(
+                                imageVector = icon,
+                                contentDescription = actionIconDescription
+                            )
+                        }
+                    }
+                }
             }
+        )
+    } else {
+        val titleContent: @Composable () -> Unit = {
+            Text(
+                text = title,
+                fontWeight = FontWeight.SemiBold,
+                style = MaterialTheme.typography.titleLarge
+            )
         }
-    }
-    val actionsContent: @Composable RowScope.() -> Unit = {
-        if (actions != null) {
-            actions()
-        } else {
-            actionIcon?.let { icon ->
-                IconButton(onClick = onActionClick) {
+        val navigationContent: @Composable () -> Unit = {
+            navigationIcon?.let { icon ->
+                IconButton(onClick = onNavigationClick) {
                     Icon(
                         imageVector = icon,
-                        contentDescription = actionIconDescription
+                        contentDescription = stringResource(R.string.accessibility_navigation)
                     )
                 }
             }
         }
-    }
-    val colors = TopAppBarDefaults.topAppBarColors(
-        containerColor = ThemeColors.background,
-        titleContentColor = ThemeColors.onSurface,
-        navigationIconContentColor = ThemeColors.primary,
-        actionIconContentColor = ThemeColors.primary
-    )
-    TopAppBar(
+        val actionsContent: @Composable RowScope.() -> Unit = {
+            if (actions != null) {
+                actions()
+            } else {
+                actionIcon?.let { icon ->
+                    IconButton(onClick = onActionClick) {
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = actionIconDescription
+                        )
+                    }
+                }
+            }
+        }
+        val colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = ThemeColors.background,
+            titleContentColor = ThemeColors.onSurface,
+            navigationIconContentColor = ThemeColors.primary,
+            actionIconContentColor = ThemeColors.primary
+        )
+        TopAppBar(
             title = titleContent,
             navigationIcon = navigationContent,
             actions = actionsContent,
             colors = colors
         )
+    }
 }

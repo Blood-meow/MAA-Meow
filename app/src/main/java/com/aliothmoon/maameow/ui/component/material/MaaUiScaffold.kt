@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import com.aliothmoon.maameow.ui.isMiuixUi
+import top.yukonga.miuix.kmp.basic.Scaffold as MiuixScaffold
 
 @Composable
 fun MaaUiScaffold(
@@ -12,10 +14,19 @@ fun MaaUiScaffold(
     bottomBar: @Composable () -> Unit = {},
     content: @Composable (PaddingValues) -> Unit
 ) {
-    Scaffold(
-        modifier = modifier,
-        topBar = topBar,
-        bottomBar = bottomBar,
-        content = content
-    )
+    if (isMiuixUi) {
+        MiuixScaffold(
+            modifier = modifier,
+            topBar = topBar,
+            bottomBar = bottomBar,
+            content = content
+        )
+    } else {
+        Scaffold(
+            modifier = modifier,
+            topBar = topBar,
+            bottomBar = bottomBar,
+            content = content
+        )
+    }
 }
