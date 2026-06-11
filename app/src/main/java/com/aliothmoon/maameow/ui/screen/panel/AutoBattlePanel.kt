@@ -28,15 +28,15 @@ import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import com.aliothmoon.maameow.ui.component.material.MaaUiButton
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.HorizontalDivider
+import com.aliothmoon.maameow.ui.component.material.MaaUiCircularProgressIndicator
+import com.aliothmoon.maameow.ui.component.material.MaaUiHorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.aliothmoon.maameow.ui.component.material.MaaUiIconButton
 import androidx.compose.material3.MaterialTheme
 import com.aliothmoon.maameow.ui.component.material.MaaUiOutlinedButton
 import com.aliothmoon.maameow.ui.component.material.MaaUiRadioButton
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import com.aliothmoon.maameow.ui.component.material.MaaUiSurface
+import com.aliothmoon.maameow.ui.component.material.MaaUiText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -188,7 +188,7 @@ fun AutoBattlePanel(
                         ) {
                             rowSpecs.forEach { spec ->
                                 val selected = state.tabIndex == spec.index
-                                Surface(
+                                MaaUiSurface(
                                     shape = RoundedCornerShape(8.dp),
                                     color = if (selected) {
                                         ThemeColors.primaryContainer
@@ -215,7 +215,7 @@ fun AutoBattlePanel(
                                         horizontalAlignment = Alignment.CenterHorizontally,
                                         verticalArrangement = Arrangement.Center
                                     ) {
-                                        Text(
+                                        MaaUiText(
                                             text = stringResource(spec.titleRes),
                                             style = tabTitleTextStyle,
                                             color = if (selected) {
@@ -231,7 +231,7 @@ fun AutoBattlePanel(
                                         )
                                         spec.subtitleRes?.let { subtitleRes ->
                                             Spacer(modifier = Modifier.height(1.dp))
-                                            Text(
+                                            MaaUiText(
                                                 text = stringResource(subtitleRes),
                                                 style = tabSubtitleTextStyle,
                                                 color = if (selected) {
@@ -255,7 +255,7 @@ fun AutoBattlePanel(
                             }
                         }
                     }
-                    HorizontalDivider()
+                    MaaUiHorizontalDivider()
                 }
             }
 
@@ -269,7 +269,7 @@ fun AutoBattlePanel(
             }
 
             item {
-                Surface(
+                MaaUiSurface(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(6.dp),
                     color = ThemeColors.surfaceVariant
@@ -280,12 +280,12 @@ fun AutoBattlePanel(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         if (state.isLoading) {
-                            CircularProgressIndicator(
+                            MaaUiCircularProgressIndicator(
                                 modifier = Modifier.size(16.dp),
                                 strokeWidth = 2.dp
                             )
                         }
-                        Text(
+                        MaaUiText(
                             text = statusMessage.ifBlank {
                                 stringResource(R.string.panel_autobattle_waiting)
                             },
@@ -307,7 +307,7 @@ fun AutoBattlePanel(
                         shape = compactButtonShape,
                         contentPadding = compactButtonPadding
                     ) {
-                        Text(
+                        MaaUiText(
                             if (state.isLoading) {
                                 stringResource(R.string.panel_autobattle_loading)
                             } else {
@@ -321,7 +321,7 @@ fun AutoBattlePanel(
                         shape = compactButtonShape,
                         contentPadding = compactButtonPadding
                     ) {
-                        Text(stringResource(R.string.panel_autobattle_read_set))
+                        MaaUiText(stringResource(R.string.panel_autobattle_read_set))
                     }
                     MaaUiOutlinedButton(
                         onClick = {
@@ -335,14 +335,14 @@ fun AutoBattlePanel(
                         shape = compactButtonShape,
                         contentPadding = compactButtonPadding
                     ) {
-                        Text(stringResource(R.string.copilot_import_file))
+                        MaaUiText(stringResource(R.string.copilot_import_file))
                     }
                     MaaUiOutlinedButton(
                         onClick = { Misc.openUriSafely(context, "https://zoot.plus") },
                         shape = compactButtonShape,
                         contentPadding = compactButtonPadding
                     ) {
-                        Text(stringResource(R.string.panel_autobattle_station))
+                        MaaUiText(stringResource(R.string.panel_autobattle_station))
                     }
                 }
             }
@@ -355,7 +355,7 @@ fun AutoBattlePanel(
                 val hasVideo = state.videoUrl.isNotBlank()
                 if (hasDetail || hasVideo) {
                     item {
-                        Surface(
+                        MaaUiSurface(
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(6.dp),
                             color = ThemeColors.secondaryContainer
@@ -369,7 +369,7 @@ fun AutoBattlePanel(
                                 SelectionContainer {
                                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                                         if (doc.title.isNotBlank()) {
-                                            Text(
+                                            MaaUiText(
                                                 text = doc.title,
                                                 style = ThemeTypography.bodyMedium,
                                                 fontWeight = FontWeight.Medium,
@@ -377,7 +377,7 @@ fun AutoBattlePanel(
                                             )
                                         }
                                         if (doc.details.isNotBlank()) {
-                                            Text(
+                                            MaaUiText(
                                                 text = doc.details,
                                                 style = ThemeTypography.bodySmall,
                                                 color = ThemeColors.onSecondaryContainer
@@ -388,7 +388,7 @@ fun AutoBattlePanel(
                                 val summary = state.operatorSummary
                                 if (summary != null && !summary.isEmpty) {
                                     if (doc.title.isNotBlank() || doc.details.isNotBlank()) {
-                                        HorizontalDivider(
+                                        MaaUiHorizontalDivider(
                                             color = ThemeColors.onSecondaryContainer.copy(
                                                 alpha = 0.2f
                                             )
@@ -412,7 +412,7 @@ fun AutoBattlePanel(
                                         // 独立干员
                                         if (summary.operators.isNotEmpty()) {
                                             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                                                Text(
+                                                MaaUiText(
                                                     text = stringResource(R.string.panel_autobattle_operator_header),
                                                     style = ThemeTypography.labelSmall,
                                                     fontWeight = FontWeight.Bold,
@@ -426,7 +426,7 @@ fun AutoBattlePanel(
                                         // 备选组
                                         summary.groups.forEach { (groupName, opers) ->
                                             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                                                Text(
+                                                MaaUiText(
                                                     text = stringResource(
                                                         R.string.panel_autobattle_group_header,
                                                         groupName
@@ -441,7 +441,7 @@ fun AutoBattlePanel(
                                             }
                                         }
                                         // 统计
-                                        Text(
+                                        MaaUiText(
                                             text = stringResource(
                                                 R.string.panel_autobattle_summary_count,
                                                 summary.totalCount
@@ -454,7 +454,7 @@ fun AutoBattlePanel(
                                     }
                                 }
                                 if (hasVideo) {
-                                    Text(
+                                    MaaUiText(
                                         text = stringResource(R.string.common_video),
                                         style = ThemeTypography.bodySmall,
                                         color = ThemeColors.primary,
@@ -524,7 +524,7 @@ fun AutoBattlePanel(
                                                     )
                                                 }
                                             )
-                                            Text(index.toString())
+                                            MaaUiText(index.toString())
                                         }
                                     }
                                 }
@@ -574,7 +574,7 @@ fun AutoBattlePanel(
                                                     )
                                                 }
                                             )
-                                            Text(label)
+                                            MaaUiText(label)
                                         }
                                     }
                                 }
@@ -654,7 +654,7 @@ fun AutoBattlePanel(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        Text(
+                        MaaUiText(
                             stringResource(R.string.panel_autobattle_battle_list),
                             style = ThemeTypography.bodyMedium,
                             fontWeight = FontWeight.Medium
@@ -669,7 +669,7 @@ fun AutoBattlePanel(
                         )
                     }
                     Spacer(modifier = Modifier.height(4.dp))
-                    Surface(
+                    MaaUiSurface(
                         shape = RoundedCornerShape(6.dp),
                         color = ThemeColors.surfaceVariant,
                         modifier = Modifier
@@ -677,7 +677,7 @@ fun AutoBattlePanel(
                             .heightIn(max = 300.dp)
                     ) {
                         if (state.taskList.isEmpty()) {
-                            Text(
+                            MaaUiText(
                                 stringResource(R.string.panel_autobattle_empty_entries),
                                 style = ThemeTypography.bodySmall,
                                 color = ThemeColors.onSurfaceVariant,
@@ -705,7 +705,7 @@ fun AutoBattlePanel(
                                         reorderableState,
                                         key = "${item.filePath}-${item.name}-$index"
                                     ) { isDragging ->
-                                        Surface(
+                                        MaaUiSurface(
                                             tonalElevation = if (isDragging) 4.dp else 0.dp,
                                             shape = RoundedCornerShape(6.dp),
                                             color = ThemeColors.surface,
@@ -743,8 +743,8 @@ fun AutoBattlePanel(
                                                     onClick = { viewModel.onSelectListItem(index) },
                                                     shape = compactButtonShape,
                                                     contentPadding = compactButtonPadding
-                                                ) { Text(stringResource(R.string.common_load)) }
-                                                IconButton(
+                                                ) { MaaUiText(stringResource(R.string.common_load)) }
+                                                MaaUiIconButton(
                                                     onClick = { viewModel.onRemoveFromList(index) },
                                                     modifier = Modifier.size(32.dp)
                                                 ) {
@@ -772,12 +772,12 @@ fun AutoBattlePanel(
                             onClick = viewModel::onCleanUnchecked,
                             shape = compactButtonShape,
                             contentPadding = compactButtonPadding
-                        ) { Text(stringResource(R.string.panel_autobattle_clear_unchecked)) }
+                        ) { MaaUiText(stringResource(R.string.panel_autobattle_clear_unchecked)) }
                         MaaUiOutlinedButton(
                             onClick = viewModel::onClearList,
                             shape = compactButtonShape,
                             contentPadding = compactButtonPadding
-                        ) { Text(stringResource(R.string.panel_autobattle_clear_list)) }
+                        ) { MaaUiText(stringResource(R.string.panel_autobattle_clear_list)) }
                     }
                 }
             }
@@ -789,7 +789,7 @@ fun AutoBattlePanel(
                 var expanded by remember { mutableStateOf(true) }
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
+                        MaaUiText(
                             stringResource(R.string.panel_autobattle_tips_title),
                             style = ThemeTypography.bodySmall,
                             color = ThemeColors.onSurfaceVariant
@@ -818,11 +818,11 @@ private fun OperatorRow(
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Surface(
+        MaaUiSurface(
             shape = RoundedCornerShape(4.dp),
             color = ThemeColors.primaryContainer
         ) {
-            Text(
+            MaaUiText(
                 text = item.name,
                 style = ThemeTypography.labelSmall,
                 fontWeight = FontWeight.Medium,
@@ -839,11 +839,11 @@ private fun OperatorRow(
             itemVerticalAlignment = Alignment.CenterVertically
         ) {
             item.tags.forEach { tag ->
-                Surface(
+                MaaUiSurface(
                     shape = RoundedCornerShape(4.dp),
                     color = ThemeColors.surfaceVariant
                 ) {
-                    Text(
+                    MaaUiText(
                         text = tag,
                         style = ThemeTypography.labelSmall,
                         color = ThemeColors.onSurfaceVariant,

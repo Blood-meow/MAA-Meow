@@ -12,9 +12,9 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.aliothmoon.maameow.ui.component.material.MaaUiIconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import com.aliothmoon.maameow.ui.component.material.MaaUiText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -47,7 +47,7 @@ fun PanelHeader(
     ) {
         val tabContent = @Composable {
             PanelTab.entries.forEach { tab ->
-                Text(
+                MaaUiText(
                     text = stringResource(tab.labelRes),
                     style = ThemeTypography.bodyMedium,
                     color = if (selectedTab == tab)
@@ -74,7 +74,7 @@ fun PanelHeader(
             }
 
             Row(verticalAlignment = Alignment.CenterVertically) {
-                IconButton(
+                MaaUiIconButton(
                     onClick = onHome,
                     modifier = Modifier.size(32.dp)
                 ) {
@@ -86,7 +86,7 @@ fun PanelHeader(
                     )
                 }
 
-                IconButton(
+                MaaUiIconButton(
                     onClick = { onLockToggle(!isLocked) },
                     modifier = Modifier.size(32.dp)
                 ) {

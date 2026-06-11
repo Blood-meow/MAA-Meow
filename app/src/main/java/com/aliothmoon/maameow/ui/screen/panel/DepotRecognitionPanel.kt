@@ -23,8 +23,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import com.aliothmoon.maameow.ui.component.material.MaaUiSurface
+import com.aliothmoon.maameow.ui.component.material.MaaUiText
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -84,7 +84,7 @@ fun DepotRecognitionPanel(
         // 统计信息 + 导出按钮
         item(span = { GridItemSpan(maxLineSpan) }) {
             Column(modifier = Modifier.fillMaxWidth()) {
-                Text(
+                MaaUiText(
                     text = stringResource(R.string.panel_depot_item_count, items.size),
                     style = ThemeTypography.bodySmall,
                     color = ThemeColors.onSurfaceVariant
@@ -104,7 +104,7 @@ fun DepotRecognitionPanel(
                         },
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text(
+                        MaaUiText(
                             stringResource(R.string.panel_depot_export_penguin),
                             style = ThemeTypography.bodySmall,
                             maxLines = 1,
@@ -122,7 +122,7 @@ fun DepotRecognitionPanel(
                         },
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text(
+                        MaaUiText(
                             stringResource(R.string.panel_depot_export_toolbox),
                             style = ThemeTypography.bodySmall,
                             maxLines = 1,
@@ -149,7 +149,7 @@ private fun DepotEmptyState(modifier: Modifier, statusMessage: String) {
             .padding(horizontal = 20.dp)
     ) {
         Spacer(Modifier.height(48.dp))
-        Text(
+        MaaUiText(
             text = stringResource(R.string.maa_depot),
             style = ThemeTypography.titleLarge,
             color = ThemeColors.onSurface,
@@ -161,7 +161,7 @@ private fun DepotEmptyState(modifier: Modifier, statusMessage: String) {
         HintRow(stringResource(R.string.panel_depot_hint_results))
         if (statusMessage.isNotBlank()) {
             Spacer(Modifier.height(16.dp))
-            Text(
+            MaaUiText(
                 text = statusMessage,
                 style = ThemeTypography.bodySmall,
                 color = ThemeColors.primary
@@ -185,7 +185,7 @@ private fun HintRow(text: String) {
             tint = ThemeColors.primary.copy(alpha = 0.6f)
         )
         Spacer(Modifier.width(12.dp))
-        Text(
+        MaaUiText(
             text = text,
             style = ThemeTypography.bodyMedium,
             color = ThemeColors.onSurfaceVariant,
@@ -195,7 +195,7 @@ private fun HintRow(text: String) {
 
 @Composable
 private fun DepotItemCell(item: DepotItem, name: String?) {
-    Surface(
+    MaaUiSurface(
         shape = RoundedCornerShape(6.dp),
         color = ThemeColors.surfaceVariant.copy(alpha = 0.5f),
         modifier = Modifier.widthIn(min = 72.dp)
@@ -205,7 +205,7 @@ private fun DepotItemCell(item: DepotItem, name: String?) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(2.dp)
         ) {
-            Text(
+            MaaUiText(
                 text = name ?: item.id,
                 style = ThemeTypography.bodySmall.copy(fontSize = 11.sp),
                 color = ThemeColors.onSurfaceVariant,
@@ -213,7 +213,7 @@ private fun DepotItemCell(item: DepotItem, name: String?) {
                 overflow = TextOverflow.Ellipsis,
                 textAlign = TextAlign.Center
             )
-            Text(
+            MaaUiText(
                 text = "x${item.count}",
                 style = ThemeTypography.bodyMedium.copy(fontSize = 13.sp),
                 fontWeight = FontWeight.Bold,

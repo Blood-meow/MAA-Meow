@@ -10,8 +10,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import com.aliothmoon.maameow.ui.component.material.MaaUiSurface
+import com.aliothmoon.maameow.ui.component.material.MaaUiText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -46,7 +46,7 @@ fun ToolboxPanel(
         ) {
             ToolboxTab.entries.forEach { tab ->
                 val selected = currentTab == tab
-                Surface(
+                MaaUiSurface(
                     shape = RoundedCornerShape(6.dp),
                     color = if (selected)
                         ThemeColors.primaryContainer
@@ -61,7 +61,7 @@ fun ToolboxPanel(
                     ),
                     modifier = Modifier.clickable { viewModel.onTabChange(tab) }
                 ) {
-                    Text(
+                    MaaUiText(
                         text = stringResource(tab.labelRes),
                         style = ThemeTypography.bodySmall.copy(fontSize = 12.sp),
                         color = if (selected)

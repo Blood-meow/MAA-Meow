@@ -8,8 +8,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import com.aliothmoon.maameow.ui.component.material.MaaUiSurface
+import com.aliothmoon.maameow.ui.component.material.MaaUiText
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -43,7 +43,7 @@ fun <T> SelectableChipGroup(
         verticalArrangement = Arrangement.spacedBy(4.dp),
         modifier = modifier
     ) {
-        Text(
+        MaaUiText(
             text = label,
             style = ThemeTypography.bodySmall,
             fontWeight = labelFontWeight,
@@ -68,7 +68,7 @@ fun <T> SelectableChipGroup(
                     !itemEnabled -> ThemeColors.onSurface.copy(alpha = 0.25f)
                     else -> ThemeColors.onSurface
                 }
-                Surface(
+                MaaUiSurface(
                     modifier = Modifier
                         .clip(RoundedCornerShape(16.dp))
                         .then(
@@ -78,7 +78,7 @@ fun <T> SelectableChipGroup(
                     color = chipColor,
                     shape = RoundedCornerShape(16.dp)
                 ) {
-                    Text(
+                    MaaUiText(
                         text = displayName,
                         style = ThemeTypography.bodySmall,
                         color = textColor,

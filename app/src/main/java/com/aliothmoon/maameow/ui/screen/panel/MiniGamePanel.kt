@@ -17,10 +17,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
-import androidx.compose.material3.HorizontalDivider
+import com.aliothmoon.maameow.ui.component.material.MaaUiHorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import com.aliothmoon.maameow.ui.component.material.MaaUiSurface
+import com.aliothmoon.maameow.ui.component.material.MaaUiText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -64,7 +64,7 @@ fun MiniGamePanel(
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         item {
-            Text(
+            MaaUiText(
                 text = stringResource(R.string.panel_mini_game_title),
                 style = ThemeTypography.titleSmall,
                 fontWeight = FontWeight.SemiBold
@@ -74,7 +74,7 @@ fun MiniGamePanel(
         // 任务选择 - 卡片网格
         item {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text(
+                MaaUiText(
                     text = stringResource(R.string.panel_mini_game_name),
                     style = ThemeTypography.bodySmall,
                     color = ThemeColors.onSurfaceVariant
@@ -86,7 +86,7 @@ fun MiniGamePanel(
                     ) {
                         rowGames.forEach { game ->
                             val selected = state.selectedTaskName == game.value
-                            Surface(
+                            MaaUiSurface(
                                 shape = RoundedCornerShape(6.dp),
                                 color = if (game.isUnsupported) {
                                     ThemeColors.errorContainer
@@ -117,7 +117,7 @@ fun MiniGamePanel(
                                     horizontalAlignment = Alignment.CenterHorizontally,
                                     verticalArrangement = Arrangement.Center
                                 ) {
-                                    Text(
+                                    MaaUiText(
                                         text = game.display,
                                         style = tabTitleTextStyle,
                                         color = if (game.isUnsupported) {
@@ -147,7 +147,7 @@ fun MiniGamePanel(
         // Tip 提示
         if (tip.isNotBlank()) {
             item {
-                Surface(
+                MaaUiSurface(
                     shape = RoundedCornerShape(8.dp),
                     color = if (isUnsupported) {
                         ThemeColors.errorContainer
@@ -163,7 +163,7 @@ fun MiniGamePanel(
                 ) {
                     Column(modifier = Modifier.padding(10.dp)) {
                         if (currentGameDisplay.isNotBlank()) {
-                            Text(
+                            MaaUiText(
                                 text = currentGameDisplay,
                                 style = ThemeTypography.bodySmall,
                                 fontWeight = FontWeight.Bold,
@@ -175,7 +175,7 @@ fun MiniGamePanel(
                                 modifier = Modifier.padding(bottom = 4.dp)
                             )
                         }
-                        Text(
+                        MaaUiText(
                             text = tip,
                             style = ThemeTypography.bodySmall,
                             color = if (isUnsupported) {
@@ -192,13 +192,13 @@ fun MiniGamePanel(
         // 隐秘战线配置
         if (delegate.isSecretFront(state.selectedTaskName)) {
             item {
-                HorizontalDivider()
+                MaaUiHorizontalDivider()
             }
 
             // 结局选择
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Text(
+                    MaaUiText(
                         text = stringResource(R.string.panel_mini_game_ending),
                         style = ThemeTypography.bodySmall,
                         color = ThemeColors.onSurfaceVariant
@@ -212,7 +212,7 @@ fun MiniGamePanel(
                                 selected = state.selectedEnding == ending,
                                 onClick = { delegate.onEndingSelected(ending) },
                                 label = {
-                                    Text(
+                                    MaaUiText(
                                         text = ending,
                                         style = ThemeTypography.bodySmall
                                     )
@@ -231,7 +231,7 @@ fun MiniGamePanel(
             // 事件选择 - 卡片网格
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Text(
+                    MaaUiText(
                         text = stringResource(R.string.panel_mini_game_preferred_events),
                         style = ThemeTypography.bodySmall,
                         color = ThemeColors.onSurfaceVariant
@@ -242,7 +242,7 @@ fun MiniGamePanel(
                     ) {
                         MiniGameDelegate.EVENTS.forEach { (value, display) ->
                             val selected = state.selectedEvent == value
-                            Surface(
+                            MaaUiSurface(
                                 shape = RoundedCornerShape(6.dp),
                                 color = if (selected) {
                                     ThemeColors.primaryContainer
@@ -260,7 +260,7 @@ fun MiniGamePanel(
                                 modifier = Modifier
                                     .clickable { delegate.onEventSelected(value) }
                             ) {
-                                Text(
+                                MaaUiText(
                                     text = display,
                                     style = tabTitleTextStyle,
                                     color = if (selected) {

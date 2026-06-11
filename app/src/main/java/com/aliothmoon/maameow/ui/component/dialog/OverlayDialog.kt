@@ -32,7 +32,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import com.aliothmoon.maameow.ui.component.material.MaaUiOutlinedButton
-import androidx.compose.material3.Text
+import com.aliothmoon.maameow.ui.component.material.MaaUiText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -129,7 +129,7 @@ fun OverlayDialog(
                         }
 
                         // 标题
-                        Text(
+                        MaaUiText(
                             text = title,
                             style = ThemeTypography.titleMedium,
                             fontWeight = FontWeight.Bold,
@@ -140,7 +140,7 @@ fun OverlayDialog(
                         Spacer(modifier = Modifier.height(8.dp))
 
                         // 消息内容
-                        Text(
+                        MaaUiText(
                             text = message,
                             style = ThemeTypography.bodyMedium,
                             color = ThemeColors.onSurfaceVariant,
@@ -165,7 +165,7 @@ fun OverlayDialog(
                                     contentColor = ThemeColors.onSurfaceVariant
                                 )
                             ) {
-                                Text(text = resolvedDismissText)
+                                MaaUiText(text = resolvedDismissText)
                             }
 
                             // 确认按钮
@@ -180,7 +180,7 @@ fun OverlayDialog(
                                     contentColor = ThemeColors.onPrimary
                                 )
                             ) {
-                                Text(text = resolvedConfirmText)
+                                MaaUiText(text = resolvedConfirmText)
                             }
                         }
                     }

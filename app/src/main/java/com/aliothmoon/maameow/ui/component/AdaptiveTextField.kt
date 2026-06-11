@@ -8,7 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Text
+import com.aliothmoon.maameow.ui.component.material.MaaUiText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -99,8 +99,8 @@ fun ITextField(
             value = bufferedValue,
             onValueChange = bufferedOnChange,
             modifier = modifier.fillMaxWidth(),
-            label = label?.let { { Text(it) } },
-            placeholder = { Text(placeholder) },
+            label = label?.let { { MaaUiText(it) } },
+            placeholder = { MaaUiText(placeholder) },
             singleLine = singleLine,
             enabled = enabled,
             shape = shape,
@@ -181,8 +181,8 @@ fun ITextFieldWithFocus(
                         onFocusLost()
                     }
                 },
-            label = label?.let { { Text(it) } },
-            placeholder = { Text(placeholder) },
+            label = label?.let { { MaaUiText(it) } },
+            placeholder = { MaaUiText(placeholder) },
             singleLine = singleLine,
             enabled = enabled,
             supportingText = supportingText,

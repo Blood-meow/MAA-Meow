@@ -22,8 +22,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import com.aliothmoon.maameow.ui.component.material.MaaUiSurface
+import com.aliothmoon.maameow.ui.component.material.MaaUiText
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -97,7 +97,7 @@ fun OperBoxPanel(
                         stringResource(R.string.panel_operbox_tab_not_owned, data.notOwned.size)
                     )
                     tabs.forEachIndexed { index, label ->
-                        Text(
+                        MaaUiText(
                             text = label,
                             style = ThemeTypography.bodySmall,
                             color = if (selectedTab == index)
@@ -126,7 +126,7 @@ fun OperBoxPanel(
                         Toast.LENGTH_SHORT
                     ).show()
                 }) {
-                    Text(stringResource(R.string.common_export), style = ThemeTypography.bodySmall)
+                    MaaUiText(stringResource(R.string.common_export), style = ThemeTypography.bodySmall)
                 }
             }
         }
@@ -146,7 +146,7 @@ private fun OperBoxEmptyState(modifier: Modifier, statusMessage: String) {
             .padding(horizontal = 20.dp)
     ) {
         Spacer(Modifier.height(48.dp))
-        Text(
+        MaaUiText(
             text = stringResource(R.string.panel_operbox_title),
             style = ThemeTypography.titleLarge,
             color = ThemeColors.onSurface,
@@ -158,7 +158,7 @@ private fun OperBoxEmptyState(modifier: Modifier, statusMessage: String) {
         OperBoxHintRow(stringResource(R.string.panel_operbox_hint_results))
         if (statusMessage.isNotBlank()) {
             Spacer(Modifier.height(16.dp))
-            Text(
+            MaaUiText(
                 text = statusMessage,
                 style = ThemeTypography.bodySmall,
                 color = ThemeColors.primary
@@ -182,7 +182,7 @@ private fun OperBoxHintRow(text: String) {
             tint = ThemeColors.primary.copy(alpha = 0.6f)
         )
         Spacer(Modifier.width(12.dp))
-        Text(
+        MaaUiText(
             text = text,
             style = ThemeTypography.bodyMedium,
             color = ThemeColors.onSurfaceVariant,
@@ -201,7 +201,7 @@ private fun OperatorRow(oper: OperBoxOperator) {
         else -> ThemeColors.onSurfaceVariant
     }
 
-    Surface(
+    MaaUiSurface(
         shape = RoundedCornerShape(6.dp),
         color = ThemeColors.surfaceVariant.copy(alpha = 0.3f),
         modifier = Modifier.fillMaxWidth()
@@ -217,20 +217,20 @@ private fun OperatorRow(oper: OperBoxOperator) {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text(
+                MaaUiText(
                     text = "${oper.rarity}★",
                     style = ThemeTypography.bodySmall.copy(fontSize = 12.sp),
                     fontWeight = FontWeight.Bold,
                     color = rarityColor
                 )
-                Text(
+                MaaUiText(
                     text = oper.name,
                     style = ThemeTypography.bodyMedium.copy(fontSize = 13.sp),
                     color = ThemeColors.onSurface
                 )
             }
             if (oper.own) {
-                Text(
+                MaaUiText(
                     text = stringResource(
                         R.string.panel_operbox_owned_meta,
                         oper.elite,

@@ -36,8 +36,8 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import com.aliothmoon.maameow.ui.component.material.MaaUiOutlinedButton
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import com.aliothmoon.maameow.ui.component.material.MaaUiSurface
+import com.aliothmoon.maameow.ui.component.material.MaaUiText
 import com.aliothmoon.maameow.ui.component.material.MaaUiTextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -305,7 +305,7 @@ private fun TaskPromptCard(
     val screenHeight = LocalConfiguration.current.screenHeightDp.dp
     val scrollState = rememberScrollState()
 
-    Surface(
+    MaaUiSurface(
         modifier = modifier.fillMaxWidth().wrapContentHeight().heightIn(max = screenHeight * 0.85f),
         shape = RoundedCornerShape(8.dp),
         color = ThemeColors.surface,
@@ -341,7 +341,7 @@ private fun TaskPromptCard(
                     }
                 }
 
-                Text(
+                MaaUiText(
                     text = title,
                     style = ThemeTypography.titleLarge,
                     fontWeight = FontWeight.Bold,
@@ -356,21 +356,21 @@ private fun TaskPromptCard(
                                 onClick = onNeutralClick,
                                 contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
                             ) {
-                                Text(it, maxLines = 1, style = ThemeTypography.bodySmall)
+                                MaaUiText(it, maxLines = 1, style = ThemeTypography.bodySmall)
                             }
                         }
                         MaaUiTextButton(
                             onClick = onConfirm,
                             contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
                         ) {
-                            Text(confirmText, maxLines = 1, style = ThemeTypography.bodySmall)
+                            MaaUiText(confirmText, maxLines = 1, style = ThemeTypography.bodySmall)
                         }
                         dismissText?.let {
                             MaaUiTextButton(
                                 onClick = onDismissRequest,
                                 contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
                             ) {
-                                Text(it, maxLines = 1, style = ThemeTypography.bodySmall)
+                                MaaUiText(it, maxLines = 1, style = ThemeTypography.bodySmall)
                             }
                         }
                     }
@@ -390,7 +390,7 @@ private fun TaskPromptCard(
                     } else if (message != null) {
                         when (message) {
                             is AnnotatedString -> {
-                                Text(
+                                MaaUiText(
                                     text = message,
                                     style = ThemeTypography.bodyMedium,
                                     color = ThemeColors.onSurfaceVariant,
@@ -399,7 +399,7 @@ private fun TaskPromptCard(
                             }
 
                             else -> {
-                                Text(
+                                MaaUiText(
                                     text = message.toString(),
                                     style = ThemeTypography.bodyMedium,
                                     color = ThemeColors.onSurfaceVariant,
@@ -454,7 +454,7 @@ private fun TaskPromptButtons(
                 contentColor = ThemeColors.onPrimary,
             ),
         ) {
-            Text(confirmText)
+            MaaUiText(confirmText)
         }
 
         // 中性/次要按钮：Outlined
@@ -464,7 +464,7 @@ private fun TaskPromptButtons(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp)
             ) {
-                Text(it)
+                MaaUiText(it)
             }
         }
 
@@ -474,7 +474,7 @@ private fun TaskPromptButtons(
                 onClick = onDismissRequest,
                 shape = RoundedCornerShape(16.dp)
             ) {
-                Text(it, color = ThemeColors.onSurfaceVariant)
+                MaaUiText(it, color = ThemeColors.onSurfaceVariant)
             }
         }
     }

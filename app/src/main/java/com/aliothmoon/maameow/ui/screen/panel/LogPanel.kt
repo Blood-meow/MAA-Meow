@@ -31,10 +31,10 @@ import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.aliothmoon.maameow.ui.component.material.MaaUiIconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import com.aliothmoon.maameow.ui.component.material.MaaUiSurface
+import com.aliothmoon.maameow.ui.component.material.MaaUiText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -102,7 +102,7 @@ fun LogPanel(
                     tint = ThemeColors.primary
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(
+                MaaUiText(
                     text = stringResource(R.string.panel_log_title),
                     style = ThemeTypography.titleMedium,
                     fontWeight = FontWeight.Bold
@@ -110,14 +110,14 @@ fun LogPanel(
             }
 
             Row {
-                IconButton(onClick = onClearLogs) {
+                MaaUiIconButton(onClick = onClearLogs) {
                     Icon(
                         imageVector = Icons.Rounded.Delete,
                         contentDescription = stringResource(R.string.common_clear),
                         tint = ThemeColors.onSurfaceVariant
                     )
                 }
-                IconButton(onClick = onClose) {
+                MaaUiIconButton(onClick = onClose) {
                     Icon(
                         imageVector = Icons.Rounded.Close,
                         contentDescription = stringResource(R.string.common_close),
@@ -148,7 +148,7 @@ fun LogPanel(
 
             // 自动滚动恢复按钮
             if (!isAutoScroll && logs.isNotEmpty()) {
-                IconButton(
+                MaaUiIconButton(
                     onClick = { isAutoScroll = true },
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
@@ -187,7 +187,7 @@ private fun LogLine(
     logItem: LogItem,
     onClick: () -> Unit
 ) {
-    Surface(
+    MaaUiSurface(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(4.dp))
@@ -199,7 +199,7 @@ private fun LogLine(
             verticalAlignment = Alignment.Top
         ) {
             // 时间戳
-            Text(
+            MaaUiText(
                 text = logItem.formattedTime,
                 style = ThemeTypography.labelSmall.copy(
                     fontFamily = FontFamily.Monospace,
@@ -210,11 +210,11 @@ private fun LogLine(
             )
 
             // 级别标识
-            Surface(
+            MaaUiSurface(
                 shape = RoundedCornerShape(3.dp),
                 color = logItem.color.copy(alpha = 0.15f)
             ) {
-                Text(
+                MaaUiText(
                     text = logItem.level.displayName,
                     style = ThemeTypography.labelSmall.copy(
                         fontSize = 10.sp,
@@ -228,7 +228,7 @@ private fun LogLine(
             Spacer(modifier = Modifier.width(6.dp))
 
             // 日志内容
-            Text(
+            MaaUiText(
                 text = logItem.content,
                 style = ThemeTypography.bodySmall.copy(
                     fontSize = 12.sp
@@ -279,18 +279,18 @@ private fun LogDetailDialog(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Surface(
+                    MaaUiSurface(
                         shape = RoundedCornerShape(4.dp),
                         color = logItem.color.copy(alpha = 0.15f)
                     ) {
-                        Text(
+                        MaaUiText(
                             text = logItem.level.displayName,
                             style = ThemeTypography.labelMedium,
                             color = logItem.color,
                             modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                         )
                     }
-                    Text(
+                    MaaUiText(
                         text = logItem.formattedTime,
                         style = ThemeTypography.bodySmall,
                         color = ThemeColors.onSurfaceVariant
@@ -298,7 +298,7 @@ private fun LogDetailDialog(
                 }
 
                 // 日志内容
-                Text(
+                MaaUiText(
                     text = logItem.content,
                     style = ThemeTypography.bodyMedium,
                     color = logItem.color
@@ -309,17 +309,17 @@ private fun LogDetailDialog(
                 val plainTooltip = logItem.tooltip
                 if (richTooltip != null || plainTooltip != null) {
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text(
+                        MaaUiText(
                             text = stringResource(R.string.panel_log_details_section),
                             style = ThemeTypography.labelMedium,
                             color = ThemeColors.onSurfaceVariant
                         )
-                        Surface(
+                        MaaUiSurface(
                             shape = RoundedCornerShape(4.dp),
                             color = ThemeColors.surfaceVariant
                         ) {
                             if (richTooltip != null) {
-                                Text(
+                                MaaUiText(
                                     text = richTooltip,
                                     style = ThemeTypography.bodySmall,
                                     modifier = Modifier
@@ -329,7 +329,7 @@ private fun LogDetailDialog(
                                         .verticalScroll(rememberScrollState())
                                 )
                             } else {
-                                Text(
+                                MaaUiText(
                                     text = plainTooltip!!,
                                     style = ThemeTypography.bodySmall.copy(
                                         fontFamily = FontFamily.Monospace
@@ -349,12 +349,12 @@ private fun LogDetailDialog(
                 // 截图路径（预留）
                 logItem.screenshotPath?.let { path ->
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text(
+                        MaaUiText(
                             text = stringResource(R.string.panel_log_screenshot_section),
                             style = ThemeTypography.labelMedium,
                             color = ThemeColors.onSurfaceVariant
                         )
-                        Text(
+                        MaaUiText(
                             text = path,
                             style = ThemeTypography.bodySmall,
                             color = ThemeColors.primary,

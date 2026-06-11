@@ -31,14 +31,14 @@ import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.SwapVert
 import com.aliothmoon.maameow.ui.component.material.MaaUiButton
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.HorizontalDivider
+import com.aliothmoon.maameow.ui.component.material.MaaUiHorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.aliothmoon.maameow.ui.component.material.MaaUiIconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import com.aliothmoon.maameow.ui.component.material.MaaUiRadioButton
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import com.aliothmoon.maameow.ui.component.material.MaaUiSurface
+import com.aliothmoon.maameow.ui.component.material.MaaUiText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -86,7 +86,7 @@ fun MallConfigPanel(config: MallConfig, onConfigChange: (MallConfig) -> Unit) {
             horizontalArrangement = Arrangement.spacedBy(24.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
+            MaaUiText(
                 text = stringResource(R.string.common_tab_general),
                 style = ThemeTypography.bodyMedium,
                 color = if (pagerState.currentPage == 0) ThemeColors.primary else ThemeColors.onSurfaceVariant,
@@ -95,7 +95,7 @@ fun MallConfigPanel(config: MallConfig, onConfigChange: (MallConfig) -> Unit) {
                     coroutineScope.launch { pagerState.animateScrollToPage(0) }
                 }
             )
-            Text(
+            MaaUiText(
                 text = stringResource(R.string.common_tab_advanced),
                 style = ThemeTypography.bodyMedium,
                 color = if (pagerState.currentPage == 1) ThemeColors.primary else ThemeColors.onSurfaceVariant,
@@ -106,7 +106,7 @@ fun MallConfigPanel(config: MallConfig, onConfigChange: (MallConfig) -> Unit) {
             )
         }
 
-        HorizontalDivider(
+        MaaUiHorizontalDivider(
             modifier = Modifier.padding(top = 2.dp, bottom = 4.dp)
         )
 
@@ -132,7 +132,7 @@ fun MallConfigPanel(config: MallConfig, onConfigChange: (MallConfig) -> Unit) {
                             BasicMallSettings(config, onConfigChange)
                         }
                         item {
-                            HorizontalDivider(
+                            MaaUiHorizontalDivider(
                                 color = ThemeColors.outlineVariant,
                                 thickness = 0.5.dp
                             )
@@ -160,7 +160,7 @@ fun MallConfigPanel(config: MallConfig, onConfigChange: (MallConfig) -> Unit) {
                             BlacklistSection(config, onConfigChange)
                         }
                         item {
-                            HorizontalDivider(
+                            MaaUiHorizontalDivider(
                                 color = ThemeColors.outlineVariant,
                                 thickness = 0.5.dp
                             )
@@ -245,12 +245,12 @@ private fun BasicMallSettings(config: MallConfig, onConfigChange: (MallConfig) -
         }
 
         if (config.creditFight && !creditFightAvailability.isAvailable) {
-            Surface(
+            MaaUiSurface(
                 modifier = Modifier.fillMaxWidth(),
                 color = ThemeColors.tertiaryContainer,
                 shape = RoundedCornerShape(4.dp)
             ) {
-                Text(
+                MaaUiText(
                     text = creditFightAvailability.warningMessage
                         ?: stringResource(R.string.panel_mall_credit_fight_unavailable),
                     style = ThemeTypography.bodySmall,
@@ -266,12 +266,12 @@ private fun BasicMallSettings(config: MallConfig, onConfigChange: (MallConfig) -
                 selectedFormation = config.creditFightFormation,
                 onFormationChange = { onConfigChange(config.copy(creditFightFormation = it)) }
             )
-            Surface(
+            MaaUiSurface(
                 modifier = Modifier.fillMaxWidth(),
                 color = ThemeColors.secondaryContainer,
                 shape = RoundedCornerShape(4.dp)
             ) {
-                Text(
+                MaaUiText(
                     stringResource(R.string.panel_mall_credit_fight_notice),
                     style = ThemeTypography.bodySmall,
                     color = ThemeColors.onSecondaryContainer,
@@ -287,7 +287,7 @@ private fun FormationSelector(selectedFormation: Int, onFormationChange: (Int) -
     Column(
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        Text(stringResource(R.string.panel_mall_use_formation), style = ThemeTypography.bodySmall, fontWeight = FontWeight.Medium)
+        MaaUiText(stringResource(R.string.panel_mall_use_formation), style = ThemeTypography.bodySmall, fontWeight = FontWeight.Medium)
         FlowRow(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp)
@@ -309,7 +309,7 @@ private fun FormationSelector(selectedFormation: Int, onFormationChange: (Int) -
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text(label, style = ThemeTypography.bodySmall)
+                    MaaUiText(label, style = ThemeTypography.bodySmall)
                 }
             }
         }
@@ -336,7 +336,7 @@ private fun PriorityItemsSection(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text(
+                MaaUiText(
                     stringResource(R.string.panel_mall_priority_title),
                     style = ThemeTypography.bodyMedium,
                     fontWeight = FontWeight.Medium,
@@ -344,7 +344,7 @@ private fun PriorityItemsSection(
                 )
 
                 if (config.shopping && priorityItems.isNotEmpty()) {
-                    IconButton(
+                    MaaUiIconButton(
                         onClick = { onReorderModeChange(!isReorderMode) },
                         modifier = Modifier.size(32.dp),
                         colors = IconButtonDefaults.iconButtonColors(
@@ -373,7 +373,7 @@ private fun PriorityItemsSection(
                 tipText = stringResource(R.string.panel_mall_priority_reorder_tip)
             )
         }
-        Text(
+        MaaUiText(
             if (isReorderMode) {
                 stringResource(R.string.panel_mall_priority_mode_active)
             } else {
@@ -383,12 +383,12 @@ private fun PriorityItemsSection(
             color = if (isReorderMode) ThemeColors.primary else ThemeColors.onSurfaceVariant
         )
         if (!config.shopping) {
-            Surface(
+            MaaUiSurface(
                 modifier = Modifier.fillMaxWidth(),
                 color = ThemeColors.tertiaryContainer,
                 shape = RoundedCornerShape(4.dp)
             ) {
-                Text(
+                MaaUiText(
                     stringResource(R.string.panel_mall_enable_shopping_first),
                     style = ThemeTypography.bodySmall,
                     color = ThemeColors.onTertiaryContainer,
@@ -428,7 +428,7 @@ private fun PriorityItemsSection(
                 ),
                 shape = RoundedCornerShape(8.dp)
             ) {
-                Text(
+                MaaUiText(
                     if (showAddPanel) {
                         stringResource(R.string.common_collapse)
                     } else {
@@ -461,17 +461,17 @@ private fun PriorityItemsSection(
 @Composable
 private fun MallInfoText() {
     Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-        Text(
+        MaaUiText(
             stringResource(R.string.panel_mall_info_line_priority),
             style = ThemeTypography.bodySmall,
             color = ThemeColors.onSurfaceVariant
         )
-        Text(
+        MaaUiText(
             stringResource(R.string.panel_mall_info_line_blacklist),
             style = ThemeTypography.bodySmall,
             color = ThemeColors.onSurfaceVariant
         )
-        Text(
+        MaaUiText(
             stringResource(R.string.panel_mall_info_line_credit_fight),
             style = ThemeTypography.bodySmall,
             color = ThemeColors.onSurfaceVariant
@@ -493,7 +493,7 @@ private fun BlacklistSection(config: MallConfig, onConfigChange: (MallConfig) ->
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text(
+                MaaUiText(
                     stringResource(R.string.panel_mall_blacklist_title),
                     style = ThemeTypography.bodyMedium,
                     fontWeight = FontWeight.Medium
@@ -506,19 +506,19 @@ private fun BlacklistSection(config: MallConfig, onConfigChange: (MallConfig) ->
             )
         }
 
-        Text(
+        MaaUiText(
             stringResource(R.string.panel_mall_blacklist_delete_hint),
             style = ThemeTypography.bodySmall,
             color = ThemeColors.onSurfaceVariant
         )
 
         if (!config.shopping) {
-            Surface(
+            MaaUiSurface(
                 modifier = Modifier.fillMaxWidth(),
                 color = ThemeColors.tertiaryContainer,
                 shape = RoundedCornerShape(4.dp)
             ) {
-                Text(
+                MaaUiText(
                     stringResource(R.string.panel_mall_enable_shopping_first),
                     style = ThemeTypography.bodySmall,
                     color = ThemeColors.onTertiaryContainer,
@@ -528,7 +528,7 @@ private fun BlacklistSection(config: MallConfig, onConfigChange: (MallConfig) ->
         }
 
         // 黑名单列表
-        Surface(
+        MaaUiSurface(
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(max = 200.dp),
@@ -542,7 +542,7 @@ private fun BlacklistSection(config: MallConfig, onConfigChange: (MallConfig) ->
                         .height(80.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
+                    MaaUiText(
                         stringResource(R.string.panel_mall_blacklist_empty),
                         style = ThemeTypography.bodySmall,
                         color = ThemeColors.onSurfaceVariant
@@ -580,7 +580,7 @@ private fun BlacklistSection(config: MallConfig, onConfigChange: (MallConfig) ->
                 )
             )
         ) {
-            Text(
+            MaaUiText(
                 if (showAddPanel) {
                     stringResource(R.string.common_collapse)
                 } else {

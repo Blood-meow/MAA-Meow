@@ -16,10 +16,10 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PageSize
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.HorizontalDivider
+import com.aliothmoon.maameow.ui.component.material.MaaUiHorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import com.aliothmoon.maameow.ui.component.material.MaaUiSurface
+import com.aliothmoon.maameow.ui.component.material.MaaUiText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
@@ -64,7 +64,7 @@ fun ReclamationConfigPanel(config: ReclamationConfig, onConfigChange: (Reclamati
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
+            MaaUiText(
                 text = stringResource(R.string.common_tab_general),
                 style = ThemeTypography.bodyMedium,
                 color = if (pagerState.currentPage == 0) ThemeColors.primary else ThemeColors.onSurfaceVariant,
@@ -73,7 +73,7 @@ fun ReclamationConfigPanel(config: ReclamationConfig, onConfigChange: (Reclamati
                     coroutineScope.launch { pagerState.animateScrollToPage(0) }
                 }
             )
-            Text(
+            MaaUiText(
                 text = stringResource(R.string.common_tab_advanced),
                 style = ThemeTypography.bodyMedium,
                 color = if (pagerState.currentPage == 1) ThemeColors.primary else ThemeColors.onSurfaceVariant,
@@ -84,7 +84,7 @@ fun ReclamationConfigPanel(config: ReclamationConfig, onConfigChange: (Reclamati
             )
         }
 
-        HorizontalDivider(
+        MaaUiHorizontalDivider(
             modifier = Modifier.padding(top = 2.dp, bottom = 4.dp)
         )
 
@@ -171,12 +171,12 @@ fun ReclamationConfigPanel(config: ReclamationConfig, onConfigChange: (Reclamati
                                         ReclamationConfig.MODE_RA4 -> R.string.panel_reclamation_relaunch_anchor_tip_ra4
                                         else -> R.string.panel_reclamation_relaunch_anchor_tip_ra1
                                     }
-                                    Surface(
+                                    MaaUiSurface(
                                         modifier = Modifier.fillMaxWidth(),
                                         color = containerColor,
                                         shape = RoundedCornerShape(4.dp)
                                     ) {
-                                        Text(
+                                        MaaUiText(
                                             stringResource(tipRes),
                                             style = ThemeTypography.bodySmall,
                                             color = onContainerColor,
@@ -189,12 +189,12 @@ fun ReclamationConfigPanel(config: ReclamationConfig, onConfigChange: (Reclamati
                             config.mode == ReclamationConfig.MODE_PROSPERITY_NO_SAVE -> {
                                 // Tales 无存档
                                 item {
-                                    Surface(
+                                    MaaUiSurface(
                                         modifier = Modifier.fillMaxWidth(),
                                         color = ThemeColors.errorContainer,
                                         shape = RoundedCornerShape(4.dp)
                                     ) {
-                                        Text(
+                                        MaaUiText(
                                             stringResource(R.string.panel_reclamation_notice),
                                             style = ThemeTypography.bodySmall,
                                             color = ThemeColors.onErrorContainer,
@@ -205,32 +205,32 @@ fun ReclamationConfigPanel(config: ReclamationConfig, onConfigChange: (Reclamati
                                 }
                                 item {
                                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                        Text(
+                                        MaaUiText(
                                             stringResource(R.string.panel_reclamation_no_save_title),
                                             style = ThemeTypography.bodyMedium,
                                             fontWeight = FontWeight.Bold
                                         )
-                                        Text(
+                                        MaaUiText(
                                             stringResource(R.string.panel_reclamation_no_save_line1),
                                             style = ThemeTypography.bodySmall,
                                             color = ThemeColors.onSurfaceVariant
                                         )
-                                        Text(
+                                        MaaUiText(
                                             stringResource(R.string.panel_reclamation_no_save_line2),
                                             style = ThemeTypography.bodySmall,
                                             color = ThemeColors.onSurfaceVariant
                                         )
-                                        Text(
+                                        MaaUiText(
                                             stringResource(R.string.panel_reclamation_no_save_line3),
                                             style = ThemeTypography.bodySmall,
                                             color = ThemeColors.error
                                         )
-                                        Text(
+                                        MaaUiText(
                                             stringResource(R.string.panel_reclamation_no_save_line4),
                                             style = ThemeTypography.bodySmall,
                                             color = ThemeColors.onSurfaceVariant
                                         )
-                                        Text(
+                                        MaaUiText(
                                             stringResource(R.string.panel_reclamation_no_save_line5),
                                             style = ThemeTypography.bodySmall,
                                             color = ThemeColors.onSurfaceVariant
@@ -242,12 +242,12 @@ fun ReclamationConfigPanel(config: ReclamationConfig, onConfigChange: (Reclamati
                             else -> {
                                 // Tales 有存档(mode == 1)
                                 item {
-                                    Surface(
+                                    MaaUiSurface(
                                         modifier = Modifier.fillMaxWidth(),
                                         color = ThemeColors.tertiaryContainer,
                                         shape = RoundedCornerShape(4.dp)
                                     ) {
-                                        Text(
+                                        MaaUiText(
                                             stringResource(R.string.panel_reclamation_archive_tip),
                                             style = ThemeTypography.bodySmall,
                                             color = ThemeColors.onTertiaryContainer,
@@ -257,22 +257,22 @@ fun ReclamationConfigPanel(config: ReclamationConfig, onConfigChange: (Reclamati
                                 }
                                 item {
                                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                        Text(
+                                        MaaUiText(
                                             stringResource(R.string.panel_reclamation_with_save_title),
                                             style = ThemeTypography.bodyMedium,
                                             fontWeight = FontWeight.Bold
                                         )
-                                        Text(
+                                        MaaUiText(
                                             stringResource(R.string.panel_reclamation_with_save_line1),
                                             style = ThemeTypography.bodySmall,
                                             color = ThemeColors.onSurfaceVariant
                                         )
-                                        Text(
+                                        MaaUiText(
                                             stringResource(R.string.panel_reclamation_with_save_line2),
                                             style = ThemeTypography.bodySmall,
                                             color = ThemeColors.onSurfaceVariant
                                         )
-                                        Text(
+                                        MaaUiText(
                                             stringResource(R.string.panel_reclamation_with_save_line3),
                                             style = ThemeTypography.bodySmall,
                                             color = ThemeColors.onSurfaceVariant
@@ -289,7 +289,7 @@ fun ReclamationConfigPanel(config: ReclamationConfig, onConfigChange: (Reclamati
                                 && config.mode == ReclamationConfig.MODE_PROSPERITY_IN_SAVE
                         item {
                             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                                Text(
+                                MaaUiText(
                                     stringResource(R.string.panel_reclamation_tool_name),
                                     style = ThemeTypography.bodyMedium,
                                     fontWeight = FontWeight.Medium
@@ -302,7 +302,7 @@ fun ReclamationConfigPanel(config: ReclamationConfig, onConfigChange: (Reclamati
                                     singleLine = false,
                                     enabled = isArchiveMode
                                 )
-                                Text(
+                                MaaUiText(
                                     stringResource(R.string.panel_reclamation_tool_separator_tip),
                                     style = ThemeTypography.bodySmall,
                                     color = ThemeColors.onSurfaceVariant
@@ -320,7 +320,7 @@ fun ReclamationConfigPanel(config: ReclamationConfig, onConfigChange: (Reclamati
                         }
                         item {
                             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                                Text(
+                                MaaUiText(
                                     stringResource(R.string.panel_reclamation_max_craft_count),
                                     style = ThemeTypography.bodyMedium,
                                     fontWeight = FontWeight.Medium

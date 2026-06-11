@@ -15,9 +15,9 @@ import androidx.compose.foundation.layout.size
 import com.aliothmoon.maameow.ui.component.material.MaaUiCardContainer
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
+import com.aliothmoon.maameow.ui.component.material.MaaUiCircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import com.aliothmoon.maameow.ui.component.material.MaaUiText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -74,12 +74,12 @@ fun ResourceLoadingOverlay(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    CircularProgressIndicator(
+                    MaaUiCircularProgressIndicator(
                         modifier = Modifier.size(48.dp),
                         strokeWidth = 4.dp,
                         color = ThemeColors.primary
                     )
-                    Text(
+                    MaaUiText(
                         text = context.resourceLoaderMessage(state),
                         style = ThemeTypography.titleMedium,
                         color = ThemeColors.onSurface

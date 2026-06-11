@@ -4,7 +4,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import com.aliothmoon.maameow.ui.component.material.MaaUiText
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -26,7 +26,7 @@ fun ModeSpecificSettings(
 ) {
     when (config.mode) {
         RoguelikeMode.Exp -> {
-            Text(
+            MaaUiText(
                 stringResource(R.string.panel_roguelike_exp_settings),
                 style = ThemeTypography.bodyMedium,
                 fontWeight = FontWeight.Medium
@@ -51,7 +51,7 @@ fun ModeSpecificSettings(
         }
 
         RoguelikeMode.Collectible -> {
-            Text(
+            MaaUiText(
                 stringResource(R.string.panel_roguelike_collectible_settings),
                 style = ThemeTypography.bodyMedium,
                 fontWeight = FontWeight.Medium
@@ -110,7 +110,7 @@ fun ModeSpecificSettings(
             val computedOnlyEliteTwo = config.onlyStartWithEliteTwo && config.startWithEliteTwo && squadIsProfessional
             if (!computedOnlyEliteTwo) {
                 val awardOptions = localizedRoguelikeCollectibleAwardOptions(config.theme)
-                Text(
+                MaaUiText(
                     stringResource(R.string.panel_roguelike_collectible_rewards),
                     style = ThemeTypography.bodySmall,
                     fontWeight = FontWeight.Medium
@@ -134,7 +134,7 @@ fun ModeSpecificSettings(
         }
 
         RoguelikeMode.Squad -> {
-            Text(
+            MaaUiText(
                 stringResource(R.string.panel_roguelike_monthly_squad_settings),
                 style = ThemeTypography.bodyMedium,
                 fontWeight = FontWeight.Medium
@@ -155,7 +155,7 @@ fun ModeSpecificSettings(
         }
 
         RoguelikeMode.Exploration -> {
-            Text(
+            MaaUiText(
                 stringResource(R.string.panel_roguelike_exploration_settings),
                 style = ThemeTypography.bodyMedium,
                 fontWeight = FontWeight.Medium
@@ -168,7 +168,7 @@ fun ModeSpecificSettings(
         }
 
         RoguelikeMode.CLP_PDS -> {
-            Text(
+            MaaUiText(
                 stringResource(R.string.panel_roguelike_collapse_settings),
                 style = ThemeTypography.bodyMedium,
                 fontWeight = FontWeight.Medium
@@ -184,7 +184,7 @@ fun ModeSpecificSettings(
 
         RoguelikeMode.FindPlaytime -> {
             if (config.theme == "JieGarden") {
-                Text(
+                MaaUiText(
                     stringResource(R.string.panel_roguelike_playtime_settings),
                     style = ThemeTypography.bodyMedium,
                     fontWeight = FontWeight.Medium

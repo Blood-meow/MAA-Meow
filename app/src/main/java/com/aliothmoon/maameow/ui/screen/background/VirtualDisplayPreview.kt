@@ -29,6 +29,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.aliothmoon.maameow.R
 import com.aliothmoon.maameow.domain.service.AppWatchdog
 import org.koin.compose.koinInject
+import com.aliothmoon.maameow.ui.component.material.MaaUiText
+import com.aliothmoon.maameow.ui.theme.ThemeColors
+import com.aliothmoon.maameow.ui.theme.ThemeTypography
+import com.aliothmoon.maameow.ui.theme.ThemeTypography
 
 @Composable
 fun VirtualDisplayPreview(
@@ -62,7 +66,7 @@ fun VirtualDisplayPreview(
                 .width(cardWidth)
                 .height(cardHeight)
                 .clickable(onClick = onClick),
-            shape = MaterialTheme.shapes.medium,
+            shape = RoundedCornerShape(12.dp),
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
         ) {
             Box(modifier = Modifier.fillMaxSize()) {
@@ -73,13 +77,13 @@ fun VirtualDisplayPreview(
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
-                                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.8f)),
+                                .background(ThemeColors.surface.copy(alpha = 0.8f)),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text(
+                            MaaUiText(
                                 text = stringResource(R.string.virtual_display_pending),
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                style = ThemeTypography.bodyLarge,
+                                color = ThemeColors.onSurfaceVariant
                             )
                         }
                     }
@@ -88,13 +92,13 @@ fun VirtualDisplayPreview(
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
-                                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.8f)),
+                                .background(ThemeColors.surface.copy(alpha = 0.8f)),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text(
+                            MaaUiText(
                                 text = stringResource(R.string.virtual_display_waiting_surface),
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                style = ThemeTypography.bodyLarge,
+                                color = ThemeColors.onSurfaceVariant
                             )
                         }
                     }
@@ -132,9 +136,9 @@ fun VirtualDisplayPreview(
                             .background(dotColor)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text(
+                    MaaUiText(
                         text = label,
-                        style = MaterialTheme.typography.labelSmall,
+                        style = ThemeTypography.labelSmall,
                         color = Color.White
                     )
                 }

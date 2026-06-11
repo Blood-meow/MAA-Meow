@@ -8,9 +8,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.HorizontalDivider
+import com.aliothmoon.maameow.ui.component.material.MaaUiHorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import com.aliothmoon.maameow.ui.component.material.MaaUiText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -40,7 +40,7 @@ fun AdvancedRoguelikeSettings(
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         // 投资相关
-        Text(
+        MaaUiText(
             stringResource(R.string.panel_roguelike_investment_settings),
             style = ThemeTypography.bodyMedium,
             fontWeight = FontWeight.Medium
@@ -92,10 +92,10 @@ fun AdvancedRoguelikeSettings(
             }
         }
 
-        HorizontalDivider(color = ThemeColors.outlineVariant, thickness = 0.5.dp)
+        MaaUiHorizontalDivider(color = ThemeColors.outlineVariant, thickness = 0.5.dp)
 
         // 助战相关
-        Text(
+        MaaUiText(
             stringResource(R.string.panel_roguelike_support_settings),
             style = ThemeTypography.bodyMedium,
             fontWeight = FontWeight.Medium
@@ -142,7 +142,7 @@ fun AdvancedRoguelikeSettings(
             )
         }
 
-        HorizontalDivider(color = ThemeColors.outlineVariant, thickness = 0.5.dp)
+        MaaUiHorizontalDivider(color = ThemeColors.outlineVariant, thickness = 0.5.dp)
 
         // 开局次数 - WPF: Maximum="99999" (line 142)
         ITextField(
@@ -159,7 +159,7 @@ fun AdvancedRoguelikeSettings(
             modifier = Modifier.fillMaxWidth()
         )
 
-        HorizontalDivider(color = ThemeColors.outlineVariant, thickness = 0.5.dp)
+        MaaUiHorizontalDivider(color = ThemeColors.outlineVariant, thickness = 0.5.dp)
 
         // 模式特殊设置
         ModeSpecificSettings(config, onConfigChange)

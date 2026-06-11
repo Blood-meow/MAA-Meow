@@ -7,8 +7,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import com.aliothmoon.maameow.ui.component.material.MaaUiSurface
+import com.aliothmoon.maameow.ui.component.material.MaaUiText
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -83,12 +83,12 @@ fun MedicineAndStoneSection(
                 val showSeriesWarning = config.series > 0 &&
                         config.maxTimes % config.series != 0
                 if (showSeriesWarning) {
-                    Surface(
+                    MaaUiSurface(
                         modifier = Modifier.fillMaxWidth(),
                         color = ThemeColors.tertiaryContainer,
                         shape = RoundedCornerShape(4.dp)
                     ) {
-                        Text(
+                        MaaUiText(
                             text = stringResource(R.string.panel_fight_series_warning, config.maxTimes, config.series),
                             style = ThemeTypography.bodySmall,
                             color = ThemeColors.onTertiaryContainer,

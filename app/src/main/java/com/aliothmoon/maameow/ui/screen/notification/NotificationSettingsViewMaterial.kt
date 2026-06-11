@@ -45,6 +45,8 @@ import com.aliothmoon.maameow.ui.theme.MaaDesignTokens
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
+import com.aliothmoon.maameow.ui.theme.ThemeColors
+import com.aliothmoon.maameow.ui.theme.ThemeTypography
 
 private val PROVIDERS: List<Pair<String, Int>> = listOf(
     "ServerChan" to R.string.notification_provider_server_chan,
@@ -80,7 +82,7 @@ fun NotificationSettingsViewMaterial(
             TopAppBar(title = stringResource(R.string.notification_settings_title))
         }
     ) { paddingValues ->
-    val contentColor = MaterialTheme.colorScheme.onSurface
+    val contentColor = ThemeColors.onSurface
 
     LazyColumn(
         modifier = Modifier
@@ -127,7 +129,7 @@ fun NotificationSettingsViewMaterial(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(vertical = MaaDesignTokens.Spacing.sm),
-                            shape = MaterialTheme.shapes.small,
+                            shape = RoundedCornerShape(8.dp),
                             contentPadding = ButtonDefaults.ContentPadding
                         ) {
                             Text(stringResource(R.string.notification_send_test))
@@ -182,7 +184,7 @@ fun NotificationSettingsViewMaterial(
                         ) {
                         Text(
                             text = stringResource(displayNameRes),
-                            style = MaterialTheme.typography.bodyLarge,
+                            style = ThemeTypography.bodyLarge,
                             color = contentColor,
                             modifier = Modifier.weight(1f)
                         )
@@ -213,7 +215,7 @@ fun NotificationSettingsViewMaterial(
                     onClick = { viewModel.sendTest() },
                     modifier = Modifier.fillMaxWidth(),
                     enabled = enabledProviders.isNotEmpty(),
-                    shape = MaterialTheme.shapes.small,
+                    shape = RoundedCornerShape(8.dp),
                     contentPadding = ButtonDefaults.ContentPadding
                 ) {
                     Text(stringResource(R.string.notification_send_test))
@@ -233,7 +235,7 @@ private fun ProviderConfig(
     settings: com.aliothmoon.maameow.data.notification.NotificationSettings,
     viewModel: NotificationSettingsViewModel
 ) {
-    val contentColor = MaterialTheme.colorScheme.onSurface
+    val contentColor = ThemeColors.onSurface
 
     when (id) {
         "ServerChan" -> {
@@ -445,8 +447,8 @@ private fun ProviderConfig(
             )
             Text(
                 text = stringResource(R.string.notification_supported_placeholders),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                style = ThemeTypography.bodySmall,
+                color = ThemeColors.onSurfaceVariant.copy(alpha = 0.7f),
                 modifier = Modifier.padding(top = MaaDesignTokens.Spacing.xs)
             )
         }
@@ -457,8 +459,8 @@ private fun ProviderConfig(
 private fun SectionHeader(title: String) {
     Text(
         text = title,
-        style = MaterialTheme.typography.bodySmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        style = ThemeTypography.bodySmall,
+        color = ThemeColors.onSurfaceVariant,
         modifier = Modifier.padding(
             start = MaaDesignTokens.Spacing.xs,
             bottom = MaaDesignTokens.Spacing.sm
@@ -481,7 +483,7 @@ private fun SwitchItem(
                     ) {
         Text(
             text = title,
-            style = MaterialTheme.typography.bodyLarge,
+            style = ThemeTypography.bodyLarge,
             color = contentColor,
             modifier = Modifier.weight(1f)
         )

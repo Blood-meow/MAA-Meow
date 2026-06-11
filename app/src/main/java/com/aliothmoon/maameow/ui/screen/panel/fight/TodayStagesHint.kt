@@ -17,8 +17,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import com.aliothmoon.maameow.ui.component.material.MaaUiSurface
+import com.aliothmoon.maameow.ui.component.material.MaaUiText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -62,7 +62,7 @@ fun TodayStagesHint(
     var expanded by remember { mutableStateOf(false) }
     val title = stringResource(R.string.panel_fight_today_stage_hint_title, todayName)
 
-    Surface(
+    MaaUiSurface(
         modifier = Modifier.fillMaxWidth(),
         color = ThemeColors.secondaryContainer,
         shape = RoundedCornerShape(4.dp)
@@ -87,7 +87,7 @@ fun TodayStagesHint(
                             tip.startsWith("｢") -> ThemeColors.tertiary // 活动提示用橙色
                             else -> ThemeColors.onTertiaryContainer // 活动关卡掉落用深橙色
                         }
-                        Text(
+                        MaaUiText(
                             text = "· $tip",
                             style = ThemeTypography.labelSmall,
                             color = color
@@ -95,7 +95,7 @@ fun TodayStagesHint(
                     }
                     // 资源收集活动提示
                     if (isResourceCollectionOpen && activityTips.none { it.contains("资源收集") }) {
-                        Text(
+                        MaaUiText(
                             text = stringResource(R.string.panel_fight_resource_collection_open_tip),
                             style = ThemeTypography.labelSmall,
                             color = ThemeColors.primary
@@ -116,7 +116,7 @@ fun TodayStagesHint(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
+                    MaaUiText(
                         text = title,
                         style = ThemeTypography.bodySmall,
                         fontWeight = FontWeight.Medium,
@@ -144,7 +144,7 @@ fun TodayStagesHint(
                                 tip.trimStart().startsWith("(") -> ThemeColors.onSurfaceVariant // 仓库信息用灰色
                                 else -> ThemeColors.onSecondaryContainer // 资源提示用绿色
                             }
-                            Text(
+                            MaaUiText(
                                 text = "· $tip",
                                 style = ThemeTypography.labelSmall,
                                 color = color
@@ -154,7 +154,7 @@ fun TodayStagesHint(
                 }
             } else if (activityTips.isEmpty() && !isResourceCollectionOpen) {
                 // 无活动也无常驻提示时显示标题行
-                Text(
+                MaaUiText(
                     text = title,
                     style = ThemeTypography.bodySmall,
                     fontWeight = FontWeight.Medium,

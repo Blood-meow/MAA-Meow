@@ -8,7 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import com.aliothmoon.maameow.ui.component.material.MaaUiText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -31,7 +31,7 @@ fun AdvancedOptionsSection(config: MallConfig, onConfigChange: (MallConfig) -> U
 
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
 
-        Text(
+        MaaUiText(
             stringResource(R.string.panel_mall_advanced_options),
             style = ThemeTypography.bodyMedium,
             fontWeight = FontWeight.Medium

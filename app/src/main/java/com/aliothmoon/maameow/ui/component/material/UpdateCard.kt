@@ -33,15 +33,15 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
+import com.aliothmoon.maameow.ui.component.material.MaaUiCircularProgressIndicator
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.aliothmoon.maameow.ui.component.material.MaaUiIconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import com.aliothmoon.maameow.ui.component.material.MaaUiRadioButton
-import androidx.compose.material3.Text
+import com.aliothmoon.maameow.ui.component.material.MaaUiText
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -276,7 +276,7 @@ fun UpdateCard(
                 .padding(12.dp),
             verticalArrangement = Arrangement.spacedBy(2.dp)
         ) {
-            Text(
+            MaaUiText(
                 text = stringResource(R.string.update_card_title),
                 style = ThemeTypography.titleMedium,
                 fontWeight = FontWeight.Medium,
@@ -295,7 +295,7 @@ fun UpdateCard(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
+                    MaaUiText(
                         text = stringResource(R.string.update_card_app),
                         style = ThemeTypography.bodyMedium,
                         color = ThemeColors.onSurface,
@@ -310,12 +310,12 @@ fun UpdateCard(
                             contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
                         ) {
                             if (appIsChecking) {
-                                CircularProgressIndicator(
+                                MaaUiCircularProgressIndicator(
                                     modifier = Modifier.size(16.dp),
                                     strokeWidth = 2.dp
                                 )
                             } else {
-                                Text(stringResource(R.string.update_card_check_button), fontSize = 14.sp)
+                                MaaUiText(stringResource(R.string.update_card_check_button), fontSize = 14.sp)
                             }
                         }
                     }
@@ -338,7 +338,7 @@ fun UpdateCard(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
+                    MaaUiText(
                         text = stringResource(R.string.update_card_resource),
                         style = ThemeTypography.bodyMedium,
                         color = ThemeColors.onTertiaryContainer,
@@ -353,12 +353,12 @@ fun UpdateCard(
                             contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
                         ) {
                             if (resIsChecking) {
-                                CircularProgressIndicator(
+                                MaaUiCircularProgressIndicator(
                                     modifier = Modifier.size(16.dp),
                                     strokeWidth = 2.dp
                                 )
                             } else {
-                                Text(stringResource(R.string.update_card_check_button), fontSize = 14.sp)
+                                MaaUiText(stringResource(R.string.update_card_check_button), fontSize = 14.sp)
                             }
                         }
                     }
@@ -384,7 +384,7 @@ fun UpdateCard(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
+                    MaaUiText(
                         text = stringResource(R.string.update_card_source_label),
                         style = ThemeTypography.bodyMedium,
                         color = ThemeColors.onTertiaryContainer
@@ -435,7 +435,7 @@ fun UpdateCard(
                                         val mirrorBrand = stringResource(R.string.update_card_mirror_brand)
                                         val mirrorDesc = stringResource(R.string.update_card_mirror_desc)
                                         val primary = ThemeColors.primary
-                                        Text(
+                                        MaaUiText(
                                             text = buildAnnotatedString {
                                                 withStyle(
                                                     SpanStyle(
@@ -495,8 +495,8 @@ private fun CdkInputField(
                 localCdk = newValue
                 onCdkChange(newValue)
             },
-            label = { Text(stringResource(R.string.update_cdk_label)) },
-            placeholder = { Text(stringResource(R.string.update_cdk_placeholder)) },
+            label = { MaaUiText(stringResource(R.string.update_cdk_label)) },
+            placeholder = { MaaUiText(stringResource(R.string.update_cdk_placeholder)) },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
             visualTransformation = if (passwordVisible) {
@@ -508,7 +508,7 @@ private fun CdkInputField(
             trailingIcon = {
                 Row {
                     if (localCdk.isNotEmpty()) {
-                        IconButton(onClick = {
+                        MaaUiIconButton(onClick = {
                             localCdk = ""
                             onCdkChange("")
                         }) {
@@ -518,7 +518,7 @@ private fun CdkInputField(
                             )
                         }
                     }
-                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                    MaaUiIconButton(onClick = { passwordVisible = !passwordVisible }) {
                         Icon(
                             imageVector = if (passwordVisible) Icons.Outlined.Lock else Icons.Filled.Lock,
                             contentDescription = if (passwordVisible)
@@ -536,7 +536,7 @@ private fun CdkInputField(
         TextButton(
             onClick = { Misc.openUriSafely(context, "https://mirrorchyan.com/") }
         ) {
-            Text(
+            MaaUiText(
                 text = stringResource(R.string.update_cdk_subscribe),
                 style = ThemeTypography.bodySmall
             )
@@ -554,12 +554,12 @@ private fun AppUpdateProgress(appUpdateState: UpdateProcessState) {
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(
+                    MaaUiText(
                         text = stringResource(R.string.update_progress_app_downloading, appUpdateState.progress.toString()),
                         style = ThemeTypography.bodySmall,
                         color = ThemeColors.onTertiaryContainer
                     )
-                    Text(
+                    MaaUiText(
                         text = appUpdateState.speed,
                         style = ThemeTypography.bodySmall,
                         color = ThemeColors.onTertiaryContainer.copy(alpha = 0.7f)
@@ -579,11 +579,11 @@ private fun AppUpdateProgress(appUpdateState: UpdateProcessState) {
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                CircularProgressIndicator(
+                MaaUiCircularProgressIndicator(
                     modifier = Modifier.size(16.dp),
                     strokeWidth = 2.dp
                 )
-                Text(
+                MaaUiText(
                     text = stringResource(R.string.update_progress_app_installing),
                     style = ThemeTypography.bodySmall,
                     color = ThemeColors.onTertiaryContainer
@@ -607,12 +607,12 @@ private fun ResourceUpdateProgress(resourceUpdateState: UpdateProcessState) {
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(
+                    MaaUiText(
                         text = stringResource(R.string.update_progress_resource_downloading, resourceUpdateState.progress.toString()),
                         style = ThemeTypography.bodySmall,
                         color = ThemeColors.onTertiaryContainer
                     )
-                    Text(
+                    MaaUiText(
                         text = resourceUpdateState.speed,
                         style = ThemeTypography.bodySmall,
                         color = ThemeColors.onTertiaryContainer.copy(alpha = 0.7f)
@@ -632,12 +632,12 @@ private fun ResourceUpdateProgress(resourceUpdateState: UpdateProcessState) {
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(
+                    MaaUiText(
                         text = stringResource(R.string.update_progress_resource_extracting, resourceUpdateState.progress.toString()),
                         style = ThemeTypography.bodySmall,
                         color = ThemeColors.onTertiaryContainer
                     )
-                    Text(
+                    MaaUiText(
                         text = "${resourceUpdateState.current}/${resourceUpdateState.total}",
                         style = ThemeTypography.bodySmall,
                         color = ThemeColors.onTertiaryContainer.copy(alpha = 0.7f)
@@ -687,7 +687,7 @@ private fun UpdateSourceButtonGroup(
                     onClick = null
                 )
                 Spacer(modifier = Modifier.width(4.dp))
-                Text(
+                MaaUiText(
                     text = sourceName,
                     style = ThemeTypography.bodyMedium,
                     color = ThemeColors.onSurface
@@ -728,7 +728,7 @@ private fun AppUpdateConfirmDialog(
         landscapeAdaptive = true,
         content = {
             Column {
-                Text(
+                MaaUiText(
                     text = "$currentVersion → ${updateInfo.version}",
                     style = ThemeTypography.bodyMedium,
                     fontWeight = FontWeight.Bold,

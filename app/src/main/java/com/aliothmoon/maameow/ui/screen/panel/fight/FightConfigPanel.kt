@@ -22,11 +22,11 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PageSize
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.HorizontalDivider
+import com.aliothmoon.maameow.ui.component.material.MaaUiHorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import com.aliothmoon.maameow.ui.component.material.MaaUiRadioButton
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import com.aliothmoon.maameow.ui.component.material.MaaUiSurface
+import com.aliothmoon.maameow.ui.component.material.MaaUiText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -111,7 +111,7 @@ fun FightConfigPanel(
             horizontalArrangement = Arrangement.spacedBy(24.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
+            MaaUiText(
                 text = stringResource(R.string.common_tab_general),
                 style = ThemeTypography.bodyMedium,
                 color = if (pagerState.currentPage == 0) ThemeColors.primary else ThemeColors.onSurfaceVariant,
@@ -122,7 +122,7 @@ fun FightConfigPanel(
                     }
                 }
             )
-            Text(
+            MaaUiText(
                 text = stringResource(R.string.common_tab_advanced),
                 style = ThemeTypography.bodyMedium,
                 color = if (pagerState.currentPage == 1) ThemeColors.primary else ThemeColors.onSurfaceVariant,
@@ -135,7 +135,7 @@ fun FightConfigPanel(
             )
         }
 
-        HorizontalDivider(
+        MaaUiHorizontalDivider(
             modifier = Modifier.padding(
                 top = 2.dp,
                 bottom = 4.dp
@@ -172,7 +172,7 @@ fun FightConfigPanel(
                             MedicineAndStoneSection(config, onConfigChange)
                         }
                         item {
-                            HorizontalDivider(color = ThemeColors.outlineVariant, thickness = 0.5.dp)
+                            MaaUiHorizontalDivider(color = ThemeColors.outlineVariant, thickness = 0.5.dp)
                         }
                         item {
                             // 指定材料掉落
@@ -182,7 +182,7 @@ fun FightConfigPanel(
                             )
                         }
                         item {
-                            HorizontalDivider(color = ThemeColors.outlineVariant, thickness = 0.5.dp)
+                            MaaUiHorizontalDivider(color = ThemeColors.outlineVariant, thickness = 0.5.dp)
                         }
                         // 代理倍率（HideSeries=false 时显示）
                         if (!config.hideSeries) {
@@ -190,7 +190,7 @@ fun FightConfigPanel(
                                 SeriesSection(config, onConfigChange)
                             }
                             item {
-                                HorizontalDivider(color = ThemeColors.outlineVariant, thickness = 0.5.dp)
+                                MaaUiHorizontalDivider(color = ThemeColors.outlineVariant, thickness = 0.5.dp)
                             }
                         }
                         item {
@@ -286,7 +286,7 @@ fun FightConfigPanel(
                                         if (summaries.isNotEmpty()) {
                                             summaries.forEach { s ->
                                                 val dayText = if (s.daysLeft > 0) "${s.daysLeft}+" else lessThanOneDay
-                                                Text(
+                                                MaaUiText(
                                                     text = "｢${s.name}｣ $daysLeftLabel$dayText",
                                                     style = ThemeTypography.labelSmall,
                                                     color = if (s.isExpiringSoon) ThemeColors.error
@@ -294,7 +294,7 @@ fun FightConfigPanel(
                                                 )
                                             }
                                         } else {
-                                            Text(
+                                            MaaUiText(
                                                 text = stringResource(R.string.panel_fight_no_activity),
                                                 style = ThemeTypography.labelSmall,
                                                 color = ThemeColors.outline
@@ -375,7 +375,7 @@ private fun SeriesSection(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text(
+            MaaUiText(
                 text = stringResource(R.string.panel_fight_series_title),
                 style = ThemeTypography.bodyMedium,
                 fontWeight = FontWeight.Medium
@@ -413,7 +413,7 @@ private fun SeriesSection(
                         onClick = { onConfigChange(config.copy(series = value)) },
                         modifier = Modifier.size(20.dp)
                     )
-                    Text(
+                    MaaUiText(
                         text = displayLabel,
                         style = ThemeTypography.bodyMedium,
                         textAlign = TextAlign.Center,
@@ -443,7 +443,7 @@ private fun StageResetModeSection(
         verticalArrangement = Arrangement.spacedBy(4.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
-        Text(
+        MaaUiText(
             text = stringResource(R.string.panel_fight_stage_reset_title),
             style = ThemeTypography.bodyMedium,
             fontWeight = FontWeight.Medium
@@ -466,7 +466,7 @@ private fun StageResetModeSection(
                         onClick = { onConfigChange(config.copy(stageResetMode = mode)) },
                         modifier = Modifier.size(20.dp)
                     )
-                    Text(
+                    MaaUiText(
                         text = label,
                         style = ThemeTypography.bodyMedium,
                         textAlign = TextAlign.Center,
@@ -539,7 +539,7 @@ private fun GroupedStageSelectionSection(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text(
+                MaaUiText(
                     text = stringResource(R.string.panel_fight_stage_selection_title),
                     style = ThemeTypography.bodyMedium,
                     fontWeight = FontWeight.Medium
@@ -582,12 +582,12 @@ private fun GroupedStageSelectionSection(
 
         // 首选关卡不开放时显示警告
         if (!stage1Open && config.stage1.isNotBlank()) {
-            Surface(
+            MaaUiSurface(
                 modifier = Modifier.fillMaxWidth(),
                 color = ThemeColors.errorContainer.copy(alpha = 0.7f),
                 shape = RoundedCornerShape(4.dp)
             ) {
-                Text(
+                MaaUiText(
                     text = if (config.useAlternateStage) {
                         stringResource(
                             R.string.panel_fight_primary_stage_closed_with_alternate,
@@ -669,7 +669,7 @@ private fun GroupedStageButtonGroup(
         verticalArrangement = Arrangement.spacedBy(4.dp),
         modifier = modifier
     ) {
-        Text(
+        MaaUiText(
             text = label,
             style = ThemeTypography.bodySmall,
             color = ThemeColors.onSurfaceVariant
@@ -684,7 +684,7 @@ private fun GroupedStageButtonGroup(
                 group.title
             }
             // 分组标题
-            Text(
+            MaaUiText(
                 text = displayTitle,
                 style = ThemeTypography.labelSmall,
                 fontWeight = FontWeight.Medium,
@@ -702,7 +702,7 @@ private fun GroupedStageButtonGroup(
                 group.stages.forEach { stage ->
                     val isSelected = stage.code == selectedValue
                     val isOpen = stage.isOpenToday
-                    Surface(
+                    MaaUiSurface(
                         modifier = Modifier
                             .clip(RoundedCornerShape(16.dp))
                             .clickable { onItemSelected(stage.code) },
@@ -713,7 +713,7 @@ private fun GroupedStageButtonGroup(
                         },
                         shape = RoundedCornerShape(16.dp)
                     ) {
-                        Text(
+                        MaaUiText(
                             text = if (stage.code == "Annihilation" && annihilationDisplayName != null) {
                                 annihilationDisplayName
                             } else {
@@ -758,7 +758,7 @@ private fun CustomAnnihilationSection(
             exit = shrinkVertically()
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(
+                MaaUiText(
                     text = stringResource(R.string.panel_fight_annihilation_title),
                     style = ThemeTypography.bodyMedium,
                     fontWeight = FontWeight.Medium
@@ -780,7 +780,7 @@ private fun CustomAnnihilationSection(
                                 modifier = Modifier.size(20.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text(
+                            MaaUiText(
                                 text = displayName,
                                 style = ThemeTypography.bodyMedium
                             )
@@ -840,7 +840,7 @@ private fun StageInputField(
             placeholder = placeholder,
             singleLine = true,
             supportingText = if (showConvertedHint) {
-                { Text(stringResource(R.string.panel_fight_converted_prefix, convertedCode), color = ThemeColors.primary) }
+                { MaaUiText(stringResource(R.string.panel_fight_converted_prefix, convertedCode), color = ThemeColors.primary) }
             } else null
         )
     }
@@ -890,7 +890,7 @@ private fun WeeklyScheduleSection(
             ) {
                 weekDays.forEach { (key, display) ->
                     val selected = config.weeklySchedule[key] != false
-                    Surface(
+                    MaaUiSurface(
                         onClick = {
                             val updated = config.weeklySchedule.toMutableMap()
                             updated[key] = !selected
@@ -909,7 +909,7 @@ private fun WeeklyScheduleSection(
                                 ThemeColors.outlineVariant
                         )
                     ) {
-                        Text(
+                        MaaUiText(
                             text = display,
                             style = ThemeTypography.bodySmall,
                             color = if (selected)

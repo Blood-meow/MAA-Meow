@@ -24,12 +24,12 @@ import androidx.compose.material.icons.filled.Check
 import com.aliothmoon.maameow.ui.component.material.MaaUiCheckbox
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
-import androidx.compose.material3.HorizontalDivider
+import com.aliothmoon.maameow.ui.component.material.MaaUiHorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import com.aliothmoon.maameow.ui.component.material.MaaUiRadioButton
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import com.aliothmoon.maameow.ui.component.material.MaaUiSurface
+import com.aliothmoon.maameow.ui.component.material.MaaUiText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -87,7 +87,7 @@ fun RecruitConfigPanel(
             horizontalArrangement = Arrangement.spacedBy(24.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
+            MaaUiText(
                 text = stringResource(R.string.common_tab_general),
                 style = ThemeTypography.bodyMedium,
                 color = if (pagerState.currentPage == 0) ThemeColors.primary else ThemeColors.onSurfaceVariant,
@@ -98,7 +98,7 @@ fun RecruitConfigPanel(
                     }
                 }
             )
-            Text(
+            MaaUiText(
                 text = stringResource(R.string.common_tab_advanced),
                 style = ThemeTypography.bodyMedium,
                 color = if (pagerState.currentPage == 1) ThemeColors.primary else ThemeColors.onSurfaceVariant,
@@ -110,7 +110,7 @@ fun RecruitConfigPanel(
                 }
             )
         }
-        HorizontalDivider(
+        MaaUiHorizontalDivider(
             modifier = modifier.padding(
                 top = 2.dp,
                 bottom = 4.dp
@@ -160,7 +160,7 @@ fun RecruitConfigPanel(
                                 // 保留指定词条
                                 PreserveTagSection(config, onConfigChange)
 
-                                HorizontalDivider(color = ThemeColors.outlineVariant, thickness = 1.dp)
+                                MaaUiHorizontalDivider(color = ThemeColors.outlineVariant, thickness = 1.dp)
 
                                 // 自动选择三星
                                 ChooseLevel3Section(config, onConfigChange)
@@ -202,7 +202,7 @@ private fun UseExpeditedSection(
                 modifier = Modifier.size(20.dp)
             )
 
-            Text(
+            MaaUiText(
                 text = stringResource(R.string.panel_recruit_use_expedited),
                 style = ThemeTypography.bodyMedium
             )
@@ -226,7 +226,7 @@ private fun RecruitMaxTimesSection(
     onConfigChange: (RecruitConfig) -> Unit
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text(
+        MaaUiText(
             text = stringResource(R.string.panel_recruit_max_times_title),
             style = ThemeTypography.bodyMedium,
             fontWeight = FontWeight.Medium
@@ -241,7 +241,7 @@ private fun RecruitMaxTimesSection(
                 .height(56.dp)
         )
 
-        Text(
+        MaaUiText(
             text = stringResource(R.string.panel_recruit_max_times_desc),
             style = ThemeTypography.bodySmall,
             color = ThemeColors.onSurfaceVariant
@@ -268,7 +268,7 @@ private fun SelectExtraTagsSection(
     )
 
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        Text(
+        MaaUiText(
             modifier = Modifier.padding(vertical = 2.dp),
             text = stringResource(R.string.panel_recruit_extra_tags_strategy),
             style = ThemeTypography.bodyMedium,
@@ -292,7 +292,7 @@ private fun SelectExtraTagsSection(
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(
+                    MaaUiText(
                         text = label,
                         style = ThemeTypography.bodyMedium
                     )
@@ -320,7 +320,7 @@ private fun AutoRecruitFirstListSection(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text(
+            MaaUiText(
                 text = stringResource(R.string.panel_recruit_level3_preference),
                 style = ThemeTypography.bodyMedium,
                 fontWeight = FontWeight.Medium
@@ -338,7 +338,7 @@ private fun AutoRecruitFirstListSection(
         )
 
         // 多选标签面板 - 使用 FlowRow 自动换行布局
-        Surface(
+        MaaUiSurface(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(6.dp),
             color = ThemeColors.surfaceVariant,
@@ -368,7 +368,7 @@ private fun AutoRecruitFirstListSection(
                                 onConfigChange(config.copy(autoRecruitFirstList = newList))
                             },
                             label = {
-                                Text(
+                                MaaUiText(
                                     text = display,
                                     style = ThemeTypography.labelSmall,
                                     maxLines = 1
@@ -398,7 +398,7 @@ private fun AutoRecruitFirstListSection(
 
                 // 已选择计数
                 if (config.autoRecruitFirstList.isNotEmpty()) {
-                    Text(
+                    MaaUiText(
                         text = stringResource(R.string.panel_recruit_selected_count, config.autoRecruitFirstList.size),
                         style = ThemeTypography.labelSmall,
                         color = ThemeColors.primary
@@ -428,7 +428,7 @@ private fun RefreshLevel3Section(
             modifier = Modifier.size(20.dp)
         )
         Spacer(modifier = Modifier.width(8.dp))
-        Text(
+        MaaUiText(
             text = stringResource(R.string.panel_recruit_refresh_level3),
             style = ThemeTypography.bodyMedium
         )
@@ -457,7 +457,7 @@ private fun ForceRefreshSection(
             modifier = Modifier.size(20.dp)
         )
         Spacer(modifier = Modifier.width(8.dp))
-        Text(
+        MaaUiText(
             text = stringResource(R.string.panel_recruit_force_refresh),
             style = ThemeTypography.bodyMedium
         )
@@ -499,7 +499,7 @@ private fun PreserveTagSection(
                 onCheckedChange = { onConfigChange(config.copy(preserveTagEnabled = it)) },
                 modifier = Modifier.size(20.dp)
             )
-            Text(
+            MaaUiText(
                 text = stringResource(R.string.panel_recruit_preserve_tag_enabled),
                 style = ThemeTypography.bodyMedium
             )
@@ -515,7 +515,7 @@ private fun PreserveTagSection(
 
         if (config.preserveTagEnabled) {
             Spacer(modifier = Modifier.height(4.dp))
-            Surface(
+            MaaUiSurface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(6.dp),
                 color = ThemeColors.surfaceVariant,
@@ -545,7 +545,7 @@ private fun PreserveTagSection(
                                     onConfigChange(config.copy(preserveTagList = newList))
                                 },
                                 label = {
-                                    Text(
+                                    MaaUiText(
                                         text = display,
                                         style = ThemeTypography.labelSmall,
                                         maxLines = 1
@@ -574,7 +574,7 @@ private fun PreserveTagSection(
                     }
 
                     if (config.preserveTagList.isNotEmpty()) {
-                        Text(
+                        MaaUiText(
                             text = stringResource(R.string.panel_recruit_selected_count, config.preserveTagList.size),
                             style = ThemeTypography.labelSmall,
                             color = ThemeColors.primary
@@ -607,7 +607,7 @@ private fun ChooseLevel3Section(
                 modifier = Modifier.size(20.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
-            Text(
+            MaaUiText(
                 text = stringResource(R.string.panel_recruit_choose_level3),
                 style = ThemeTypography.bodyMedium
             )
@@ -647,7 +647,7 @@ private fun ChooseLevel4Section(
                 modifier = Modifier.size(20.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
-            Text(
+            MaaUiText(
                 text = stringResource(R.string.panel_recruit_choose_level4),
                 style = ThemeTypography.bodyMedium
             )
@@ -686,7 +686,7 @@ private fun ChooseLevel5Section(
                 modifier = Modifier.size(20.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
-            Text(
+            MaaUiText(
                 text = stringResource(R.string.panel_recruit_choose_level5),
                 style = ThemeTypography.bodyMedium
             )

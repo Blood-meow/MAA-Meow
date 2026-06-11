@@ -11,8 +11,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import com.aliothmoon.maameow.ui.component.material.MaaUiButton
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import com.aliothmoon.maameow.ui.component.material.MaaUiSurface
+import com.aliothmoon.maameow.ui.component.material.MaaUiText
 import com.aliothmoon.maameow.ui.component.material.MaaUiTextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -39,7 +39,7 @@ fun InlineBlacklistAddPanel(
 ) {
     var inputText by remember { mutableStateOf("") }
 
-    Surface(
+    MaaUiSurface(
         modifier = Modifier.fillMaxWidth(),
         color = ThemeColors.errorContainer,
         shape = RoundedCornerShape(8.dp)
@@ -48,7 +48,7 @@ fun InlineBlacklistAddPanel(
             modifier = Modifier.padding(12.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text(
+            MaaUiText(
                 stringResource(R.string.panel_mall_add_blacklist_title),
                 style = ThemeTypography.bodyMedium,
                 fontWeight = FontWeight.Medium
@@ -70,13 +70,13 @@ fun InlineBlacklistAddPanel(
                 horizontalArrangement = Arrangement.End,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                MaaUiTextButton(onClick = onCancel) { Text(stringResource(R.string.common_cancel)) }
+                MaaUiTextButton(onClick = onCancel) { MaaUiText(stringResource(R.string.common_cancel)) }
                 Spacer(modifier = Modifier.width(8.dp))
                 MaaUiButton(
                     onClick = { onItemAdded(inputText) },
                     enabled = inputText.isNotBlank(),
                     colors = ButtonDefaults.buttonColors(containerColor = ThemeColors.error)
-                ) { Text(stringResource(R.string.common_add)) }
+                ) { MaaUiText(stringResource(R.string.common_add)) }
             }
         }
     }

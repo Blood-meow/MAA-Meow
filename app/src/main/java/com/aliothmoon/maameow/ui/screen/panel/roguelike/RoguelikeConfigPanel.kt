@@ -13,10 +13,10 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PageSize
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.HorizontalDivider
+import com.aliothmoon.maameow.ui.component.material.MaaUiHorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import com.aliothmoon.maameow.ui.component.material.MaaUiSurface
+import com.aliothmoon.maameow.ui.component.material.MaaUiText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -63,7 +63,7 @@ fun RoguelikeConfigPanel(
             horizontalArrangement = Arrangement.spacedBy(24.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
+            MaaUiText(
                 text = stringResource(R.string.common_tab_general),
                 style = ThemeTypography.bodyMedium,
                 color = if (pagerState.currentPage == 0) ThemeColors.primary else ThemeColors.onSurfaceVariant,
@@ -72,7 +72,7 @@ fun RoguelikeConfigPanel(
                     coroutineScope.launch { pagerState.animateScrollToPage(0) }
                 }
             )
-            Text(
+            MaaUiText(
                 text = stringResource(R.string.common_tab_advanced),
                 style = ThemeTypography.bodyMedium,
                 color = if (pagerState.currentPage == 1) ThemeColors.primary else ThemeColors.onSurfaceVariant,
@@ -83,7 +83,7 @@ fun RoguelikeConfigPanel(
             )
         }
 
-        HorizontalDivider(modifier = Modifier.padding(top = 2.dp, bottom = 4.dp))
+        MaaUiHorizontalDivider(modifier = Modifier.padding(top = 2.dp, bottom = 4.dp))
 
         HorizontalPager(
             pageSize = PageSize.Fill,
@@ -212,12 +212,12 @@ private fun BasicRoguelikeSettings(
             // 模式说明 - 紧跟在策略按钮组下方
             val modeDescription = localizedRoguelikeModeDescription(config.mode)
             if (modeDescription.isNotEmpty()) {
-                Surface(
+                MaaUiSurface(
                     modifier = Modifier.fillMaxWidth(),
                     color = Color(0xFFE3F2FD),
                     shape = RoundedCornerShape(4.dp)
                 ) {
-                    Text(
+                    MaaUiText(
                         modeDescription,
                         style = ThemeTypography.bodySmall,
                         color = Color(0xFF1976D2),

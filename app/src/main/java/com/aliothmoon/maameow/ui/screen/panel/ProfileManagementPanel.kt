@@ -33,11 +33,11 @@ import com.aliothmoon.maameow.ui.component.material.MaaUiCardContainer
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.aliothmoon.maameow.ui.component.material.MaaUiIconButton
 import androidx.compose.material3.MaterialTheme
 import com.aliothmoon.maameow.ui.component.material.MaaUiOutlinedButton
 import com.aliothmoon.maameow.ui.component.material.MaaUiRadioButton
-import androidx.compose.material3.Text
+import com.aliothmoon.maameow.ui.component.material.MaaUiText
 import com.aliothmoon.maameow.ui.component.material.MaaUiTextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -89,7 +89,7 @@ fun ProfileManagementPanel(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
+            MaaUiText(
                 text = stringResource(R.string.panel_profile_title),
                 style = ThemeTypography.titleMedium,
                 fontWeight = FontWeight.Bold,
@@ -101,7 +101,7 @@ fun ProfileManagementPanel(
                 shape = RoundedCornerShape(4.dp),
                 border = BorderStroke(1.dp, ThemeColors.primary)
             ) {
-                Text(stringResource(R.string.panel_new_profile), color = ThemeColors.primary)
+                MaaUiText(stringResource(R.string.panel_new_profile), color = ThemeColors.primary)
             }
         }
 
@@ -227,7 +227,7 @@ private fun ProfileCard(
 
                 Spacer(modifier = Modifier.width(4.dp))
 
-                Text(
+                MaaUiText(
                     text = profile.name,
                     style = ThemeTypography.bodyMedium,
                     fontWeight = if (isActive) FontWeight.Medium else FontWeight.Normal,
@@ -242,7 +242,7 @@ private fun ProfileCard(
                 )
 
                 // 操作按钮
-                IconButton(
+                MaaUiIconButton(
                     onClick = onStartRename,
                     modifier = Modifier.size(28.dp)
                 ) {
@@ -253,7 +253,7 @@ private fun ProfileCard(
                         tint = ThemeColors.onSurfaceVariant
                     )
                 }
-                IconButton(
+                MaaUiIconButton(
                     onClick = onDuplicate,
                     modifier = Modifier.size(28.dp)
                 ) {
@@ -264,7 +264,7 @@ private fun ProfileCard(
                         tint = ThemeColors.onSurfaceVariant
                     )
                 }
-                IconButton(
+                MaaUiIconButton(
                     onClick = onDelete,
                     enabled = canDelete,
                     modifier = Modifier.size(28.dp)
@@ -308,11 +308,11 @@ private fun ProfileCard(
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         MaaUiTextButton(onClick = onRenameConfirm) {
-                            Text(stringResource(R.string.common_confirm), style = ThemeTypography.labelMedium)
+                            MaaUiText(stringResource(R.string.common_confirm), style = ThemeTypography.labelMedium)
                         }
                     }
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
+                        MaaUiText(
                             text = "ID: ${profile.id}",
                             style = ThemeTypography.labelSmall,
                             color = ThemeColors.onSurfaceVariant.copy(alpha = 0.6f),
@@ -320,7 +320,7 @@ private fun ProfileCard(
                             overflow = TextOverflow.Ellipsis,
                             modifier = Modifier.weight(1f)
                         )
-                        IconButton(
+                        MaaUiIconButton(
                             onClick = {
                                 clipboardManager.setText(AnnotatedString(profile.id))
                                 Toast.makeText(context, context.getString(R.string.panel_profile_id_copied), Toast.LENGTH_SHORT).show()

@@ -8,8 +8,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import com.aliothmoon.maameow.ui.component.material.MaaUiSurface
+import com.aliothmoon.maameow.ui.component.material.MaaUiText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
@@ -34,7 +34,7 @@ fun ReorderablePriorityList(
     onItemRemoved: (Int) -> Unit,
     onDraggingChanged: (Boolean) -> Unit = {}
 ) {
-    Surface(
+    MaaUiSurface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(4.dp),
         color = Color.Transparent
@@ -55,7 +55,7 @@ fun ReorderablePriorityList(
                     ),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
+                MaaUiText(
                     stringResource(R.string.panel_mall_priority_empty),
                     style = ThemeTypography.bodySmall,
                     color = ThemeColors.onSurfaceVariant,

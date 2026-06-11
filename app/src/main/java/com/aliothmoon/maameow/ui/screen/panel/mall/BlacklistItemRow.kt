@@ -11,9 +11,9 @@ import com.aliothmoon.maameow.ui.component.material.MaaUiCardContainer
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.aliothmoon.maameow.ui.component.material.MaaUiIconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import com.aliothmoon.maameow.ui.component.material.MaaUiText
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,14 +44,14 @@ fun BlacklistItemRow(item: String, enabled: Boolean, onRemove: () -> Unit) {
                 .padding(horizontal = 12.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
+            MaaUiText(
                 item,
                 style = ThemeTypography.bodyMedium,
                 color = if (enabled) ThemeColors.onSurface else ThemeColors.onSurfaceVariant,
                 modifier = Modifier.weight(1f)
             )
             // 删除按钮
-            IconButton(
+            MaaUiIconButton(
                 onClick = onRemove,
                 enabled = enabled,
                 modifier = Modifier.size(24.dp)

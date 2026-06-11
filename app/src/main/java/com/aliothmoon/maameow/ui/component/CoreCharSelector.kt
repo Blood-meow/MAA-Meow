@@ -13,8 +13,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import com.aliothmoon.maameow.ui.component.material.MaaUiSurface
+import com.aliothmoon.maameow.ui.component.material.MaaUiText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -140,13 +140,13 @@ fun CoreCharSelector(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
+            MaaUiText(
                 text = stringResource(R.string.core_char_selector_title),
                 style = ThemeTypography.bodySmall,
                 fontWeight = FontWeight.Medium
             )
             if (recommendedChars.isNotEmpty()) {
-                Text(
+                MaaUiText(
                     text = if (showSuggestions) {
                         stringResource(R.string.core_char_selector_collapse)
                     } else {
@@ -179,12 +179,12 @@ fun CoreCharSelector(
 
         // 错误提示 - 只有校验完成且失败时显示
         if (!isValid && !isValidating && inputText.isNotBlank()) {
-            Surface(
+            MaaUiSurface(
                 color = ThemeColors.errorContainer,
                 shape = RoundedCornerShape(4.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(
+                MaaUiText(
                     text = stringResource(R.string.core_char_selector_not_found),
                     style = ThemeTypography.bodySmall,
                     color = ThemeColors.onErrorContainer,
@@ -195,7 +195,7 @@ fun CoreCharSelector(
 
         // 建议列表
         if (showSuggestions && filteredSuggestions.isNotEmpty()) {
-            Surface(
+            MaaUiSurface(
                 modifier = Modifier
                     .fillMaxWidth()
                     .heightIn(max = 150.dp)
@@ -224,7 +224,7 @@ fun CoreCharSelector(
                                 .padding(horizontal = 12.dp, vertical = 8.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
+                            MaaUiText(
                                 text = charName,
                                 style = ThemeTypography.bodySmall,
                                 color = if (charName in recommendedChars) {

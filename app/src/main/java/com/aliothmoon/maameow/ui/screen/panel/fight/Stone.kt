@@ -16,8 +16,8 @@ import com.aliothmoon.maameow.ui.component.material.MaaUiButton
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import com.aliothmoon.maameow.ui.component.material.MaaUiOutlinedButton
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import com.aliothmoon.maameow.ui.component.material.MaaUiSurface
+import com.aliothmoon.maameow.ui.component.material.MaaUiText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -69,7 +69,7 @@ private fun AllowUseStoneSaveSection(
             enter = expandVertically(),
             exit = shrinkVertically()
         ) {
-            Surface(
+            MaaUiSurface(
                 modifier = Modifier.fillMaxWidth(),
                 color = ThemeColors.errorContainer,
                 shape = RoundedCornerShape(8.dp),
@@ -79,13 +79,13 @@ private fun AllowUseStoneSaveSection(
                     modifier = Modifier.padding(12.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text(
+                    MaaUiText(
                         text = stringResource(R.string.common_warning),
                         style = ThemeTypography.titleSmall,
                         fontWeight = FontWeight.Bold,
                         color = ThemeColors.onErrorContainer
                     )
-                    Text(
+                    MaaUiText(
                         text = stringResource(R.string.panel_stone_warning_message),
                         style = ThemeTypography.bodySmall,
                         color = ThemeColors.onErrorContainer
@@ -99,7 +99,7 @@ private fun AllowUseStoneSaveSection(
                             modifier = Modifier.height(32.dp),
                             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp)
                         ) {
-                            Text(stringResource(R.string.common_cancel), style = ThemeTypography.bodySmall)
+                            MaaUiText(stringResource(R.string.common_cancel), style = ThemeTypography.bodySmall)
                         }
                         MaaUiButton(
                             onClick = {
@@ -112,7 +112,7 @@ private fun AllowUseStoneSaveSection(
                                 containerColor = ThemeColors.error
                             )
                         ) {
-                            Text(stringResource(R.string.panel_stone_enable_confirm), style = ThemeTypography.bodySmall)
+                            MaaUiText(stringResource(R.string.panel_stone_enable_confirm), style = ThemeTypography.bodySmall)
                         }
                     }
                 }

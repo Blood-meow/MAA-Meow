@@ -34,8 +34,8 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import com.aliothmoon.maameow.ui.component.material.MaaUiSurface
+import com.aliothmoon.maameow.ui.component.material.MaaUiText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -205,7 +205,7 @@ private fun EmptyStateHint(
     ) {
         Spacer(modifier = Modifier.height(48.dp)) // 固定顶部高度，防止切换标题时跳变
 
-        Text(
+        MaaUiText(
             text = title,
             style = ThemeTypography.titleLarge,
             color = ThemeColors.onSurface,
@@ -240,7 +240,7 @@ private fun HintItem(icon: androidx.compose.ui.graphics.vector.ImageVector, text
             tint = ThemeColors.primary.copy(alpha = 0.6f)
         )
         Spacer(modifier = Modifier.width(12.dp))
-        Text(
+        MaaUiText(
             text = text,
             style = ThemeTypography.bodyMedium,
             color = ThemeColors.onSurfaceVariant,
@@ -256,7 +256,7 @@ private fun TaskGalleryView(onAddNode: (TaskTypeInfo) -> Unit) {
             .fillMaxSize()
             .padding(12.dp)
     ) {
-        Text(
+        MaaUiText(
             stringResource(R.string.panel_config_select_type),
             style = ThemeTypography.titleSmall,
             color = ThemeColors.primary,
@@ -270,7 +270,7 @@ private fun TaskGalleryView(onAddNode: (TaskTypeInfo) -> Unit) {
             contentPadding = PaddingValues(bottom = 12.dp)
         ) {
             items(TaskTypeInfo.entries) { typeInfo ->
-                Surface(
+                MaaUiSurface(
                     shape = RoundedCornerShape(8.dp),
                     color = ThemeColors.surfaceVariant.copy(alpha = 0.5f),
                     border = BorderStroke(1.dp, ThemeColors.outlineVariant),
@@ -280,7 +280,7 @@ private fun TaskGalleryView(onAddNode: (TaskTypeInfo) -> Unit) {
                         modifier = Modifier.padding(12.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
+                        MaaUiText(
                             text = taskTypeLabel(typeInfo),
                             style = ThemeTypography.bodyMedium,
                             fontWeight = FontWeight.Medium,
@@ -316,11 +316,11 @@ private fun TaskManagementView(
             .verticalScroll(rememberScrollState())
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Surface(
+            MaaUiSurface(
                 color = ThemeColors.secondaryContainer,
                 shape = RoundedCornerShape(4.dp)
             ) {
-                Text(
+                MaaUiText(
                     text = stringResource(R.string.panel_config_editing_badge),
                     modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
                     style = ThemeTypography.labelLarge,
@@ -329,7 +329,7 @@ private fun TaskManagementView(
                 )
             }
             Spacer(modifier = Modifier.width(8.dp))
-            Text(
+            MaaUiText(
                 text = typeDisplayName,
                 style = ThemeTypography.bodyMedium,
                 color = ThemeColors.onSurface,
@@ -354,16 +354,16 @@ private fun TaskManagementView(
             modifier = Modifier.fillMaxWidth(),
             supportingText = {
                 if (isError) {
-                    Text(stringResource(R.string.panel_config_name_empty))
+                    MaaUiText(stringResource(R.string.panel_config_name_empty))
                 } else if (isTooLong) {
-                    Text(stringResource(R.string.panel_config_name_too_long))
+                    MaaUiText(stringResource(R.string.panel_config_name_too_long))
                 }
             },
             outlineColor = if (isError || isTooLong) ThemeColors.error else null
         )
 
         // 字数统计在 ITextField 下方展示，因为 ITextField 内部目前可能不支持 trailingIcon（取决于具体实现）
-        Text(
+        MaaUiText(
             text = "${text.length}/20",
             style = ThemeTypography.labelSmall,
             color = if (isTooLong) ThemeColors.error else ThemeColors.outline,
@@ -382,7 +382,7 @@ private fun TaskManagementView(
         ) {
             Icon(Icons.Default.ContentCopy, contentDescription = null, modifier = Modifier.size(18.dp))
             Spacer(modifier = Modifier.width(8.dp))
-            Text(stringResource(R.string.panel_config_duplicate_task))
+            MaaUiText(stringResource(R.string.panel_config_duplicate_task))
         }
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -398,7 +398,7 @@ private fun TaskManagementView(
         ) {
             Icon(Icons.Default.Delete, contentDescription = null, modifier = Modifier.size(18.dp))
             Spacer(modifier = Modifier.width(8.dp))
-            Text(stringResource(R.string.panel_config_delete_task))
+            MaaUiText(stringResource(R.string.panel_config_delete_task))
         }
     }
 }

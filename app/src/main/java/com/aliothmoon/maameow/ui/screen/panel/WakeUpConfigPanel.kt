@@ -9,9 +9,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.HorizontalDivider
+import com.aliothmoon.maameow.ui.component.material.MaaUiHorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import com.aliothmoon.maameow.ui.component.material.MaaUiText
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -76,7 +76,7 @@ fun WakeUpConfigPanel(
                     placeholder = "123****4567"
                 )
 
-                Text(
+                MaaUiText(
                     text = stringResource(R.string.panel_wakeup_account_hint),
                     style = ThemeTypography.bodySmall,
                     color = ThemeColors.onSurface,
@@ -88,7 +88,7 @@ fun WakeUpConfigPanel(
             }
         }
 
-        HorizontalDivider(color = ThemeColors.outlineVariant, thickness = 0.5.dp)
+        MaaUiHorizontalDivider(color = ThemeColors.outlineVariant, thickness = 0.5.dp)
 
         // 启动游戏开关
         CheckBoxWithLabel(

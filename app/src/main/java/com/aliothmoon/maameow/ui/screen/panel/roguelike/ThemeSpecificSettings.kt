@@ -4,9 +4,9 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.HorizontalDivider
+import com.aliothmoon.maameow.ui.component.material.MaaUiHorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import com.aliothmoon.maameow.ui.component.material.MaaUiText
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -29,12 +29,12 @@ fun ThemeSpecificSettings(
 ) {
     when (config.theme) {
         "Mizuki" -> {
-            HorizontalDivider(
+            MaaUiHorizontalDivider(
                 color = ThemeColors.outlineVariant,
                 thickness = 0.5.dp,
                 modifier = Modifier.padding(vertical = 4.dp)
             )
-            Text(
+            MaaUiText(
                 stringResource(R.string.panel_roguelike_mizuki_settings),
                 style = ThemeTypography.bodyMedium,
                 fontWeight = FontWeight.Medium
@@ -55,12 +55,12 @@ fun ThemeSpecificSettings(
             val isCollectibleAvailable = config.mode == RoguelikeMode.Collectible
 
             if (squadIsFoldartal || isCollectibleAvailable) {
-                HorizontalDivider(
+                MaaUiHorizontalDivider(
                     color = ThemeColors.outlineVariant,
                     thickness = 0.5.dp,
                     modifier = Modifier.padding(vertical = 4.dp)
                 )
-                Text(
+                MaaUiText(
                     stringResource(R.string.panel_roguelike_sami_settings),
                     style = ThemeTypography.bodyMedium,
                     fontWeight = FontWeight.Medium
@@ -107,7 +107,7 @@ fun ThemeSpecificSettings(
         }
 
         "JieGarden" -> {
-            HorizontalDivider(
+            MaaUiHorizontalDivider(
                 color = ThemeColors.outlineVariant,
                 thickness = 0.5.dp,
                 modifier = Modifier.padding(vertical = 4.dp)

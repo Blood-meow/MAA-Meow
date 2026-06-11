@@ -16,7 +16,7 @@ import androidx.compose.material.icons.filled.Warning
 import com.aliothmoon.maameow.ui.component.material.MaaUiCardContainer
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.HorizontalDivider
+import com.aliothmoon.maameow.ui.component.material.MaaUiHorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -200,7 +200,7 @@ fun ExpandedControlPanel(
                 }
 
                 if (uiState.currentTab == PanelTab.TASKS || uiState.currentTab == PanelTab.AUTO_BATTLE || uiState.currentTab == PanelTab.TOOLS) {
-                    HorizontalDivider(
+                    MaaUiHorizontalDivider(
                         modifier = Modifier.padding(vertical = 6.dp),
                         thickness = 1.dp,
                         color = ThemeColors.outlineVariant

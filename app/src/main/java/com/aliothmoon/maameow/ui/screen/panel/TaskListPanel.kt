@@ -33,7 +33,7 @@ import com.aliothmoon.maameow.ui.component.material.MaaUiCheckbox
 import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import com.aliothmoon.maameow.ui.component.material.MaaUiText
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
@@ -94,7 +94,7 @@ fun TaskListPanel(
                     tint = if (isProfileMode) ThemeColors.onPrimary else ThemeColors.primary
                 )
                 Spacer(modifier = Modifier.width(6.dp))
-                Text(
+                MaaUiText(
                     text = if (isProfileMode) stringResource(R.string.common_done) else stringResource(R.string.panel_task_list_edit_config),
                     style = ThemeTypography.bodyMedium,
                     fontWeight = if (isProfileMode) FontWeight.Bold else FontWeight.Normal,
@@ -131,7 +131,7 @@ fun TaskListPanel(
                     tint = if (isEditMode) ThemeColors.onPrimary else ThemeColors.primary
                 )
                 Spacer(modifier = Modifier.width(6.dp))
-                Text(
+                MaaUiText(
                     text = if (isEditMode) stringResource(R.string.common_done) else stringResource(R.string.panel_task_list_edit_tasks),
                     style = ThemeTypography.bodyMedium,
                     fontWeight = if (isEditMode) FontWeight.Bold else FontWeight.Normal,
@@ -171,7 +171,7 @@ fun TaskListPanel(
                             tint = ThemeColors.secondary
                         )
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text(
+                        MaaUiText(
                             stringResource(R.string.panel_task_list_add),
                             style = ThemeTypography.bodyMedium,
                             color = ThemeColors.onSurface
@@ -243,7 +243,7 @@ private fun TaskNodeRow(
                 )
             }
             Spacer(modifier = Modifier.width(6.dp))
-            Text(
+            MaaUiText(
                 text = node.name,
                 style = ThemeTypography.bodyMedium,
                 color = if (isSelected) ThemeColors.onPrimaryContainer else ThemeColors.onSurface,

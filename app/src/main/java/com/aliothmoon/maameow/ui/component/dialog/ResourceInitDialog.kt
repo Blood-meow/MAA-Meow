@@ -11,8 +11,8 @@ import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import com.aliothmoon.maameow.ui.component.material.MaaUiSurface
+import com.aliothmoon.maameow.ui.component.material.MaaUiText
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -47,7 +47,7 @@ fun ResourceInitDialog(
                     dismissOnClickOutside = false
                 )
             ) {
-                Surface(
+                MaaUiSurface(
                     shape = RoundedCornerShape(8.dp),
                     color = ThemeColors.surface,
                     tonalElevation = 6.dp
@@ -58,7 +58,7 @@ fun ResourceInitDialog(
                             .padding(24.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text(
+                        MaaUiText(
                             text = stringResource(R.string.resource_init_in_progress_title),
                             style = ThemeTypography.titleMedium
                         )
@@ -74,7 +74,7 @@ fun ResourceInitDialog(
                         Spacer(modifier = Modifier.height(12.dp))
 
                         // 进度文本
-                        Text(
+                        MaaUiText(
                             text = "${state.extractedCount} / ${state.totalCount} (${state.progress}%)",
                             style = ThemeTypography.bodyMedium,
                             color = ThemeColors.onSurfaceVariant
@@ -82,7 +82,7 @@ fun ResourceInitDialog(
 
                         if (state.currentFile.isNotEmpty()) {
                             Spacer(modifier = Modifier.height(4.dp))
-                            Text(
+                            MaaUiText(
                                 text = state.currentFile,
                                 style = ThemeTypography.bodySmall,
                                 color = ThemeColors.onSurfaceVariant.copy(alpha = 0.7f),
@@ -92,7 +92,7 @@ fun ResourceInitDialog(
 
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        Text(
+                        MaaUiText(
                             text = stringResource(R.string.resource_init_in_progress_message),
                             style = ThemeTypography.bodySmall,
                             color = ThemeColors.onSurfaceVariant,

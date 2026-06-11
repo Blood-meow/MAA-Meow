@@ -28,13 +28,13 @@ import com.aliothmoon.maameow.ui.component.material.MaaUiCardContainer
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import com.aliothmoon.maameow.ui.component.material.MaaUiCheckbox
-import androidx.compose.material3.HorizontalDivider
+import com.aliothmoon.maameow.ui.component.material.MaaUiHorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import com.aliothmoon.maameow.ui.component.material.MaaUiOutlinedButton
 import com.aliothmoon.maameow.ui.component.material.MaaUiRadioButton
 import com.aliothmoon.maameow.ui.component.material.MaaUiSlider
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import com.aliothmoon.maameow.ui.component.material.MaaUiSurface
+import com.aliothmoon.maameow.ui.component.material.MaaUiText
 import androidx.compose.runtime.Composable
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -101,7 +101,7 @@ fun InfrastConfigPanel(
             horizontalArrangement = Arrangement.spacedBy(24.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
+            MaaUiText(
                 text = stringResource(R.string.common_tab_general),
                 style = ThemeTypography.bodyMedium,
                 color = if (pagerState.currentPage == 0) ThemeColors.primary else ThemeColors.onSurfaceVariant,
@@ -111,7 +111,7 @@ fun InfrastConfigPanel(
                         pagerState.animateScrollToPage(0)
                     }
                 })
-            Text(
+            MaaUiText(
                 text = stringResource(R.string.common_tab_advanced),
                 style = ThemeTypography.bodyMedium,
                 color = if (pagerState.currentPage == 1) ThemeColors.primary else ThemeColors.onSurfaceVariant,
@@ -123,7 +123,7 @@ fun InfrastConfigPanel(
                 })
         }
 
-        HorizontalDivider(
+        MaaUiHorizontalDivider(
             modifier = Modifier.padding(
                 top = 4.dp, bottom = 8.dp
             )
@@ -245,7 +245,7 @@ private fun InfrastModeSection(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            Text(
+            MaaUiText(
                 text = stringResource(R.string.panel_infrast_mode_title),
                 style = ThemeTypography.bodyMedium,
                 fontWeight = FontWeight.Medium
@@ -261,7 +261,7 @@ private fun InfrastModeSection(
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text(
+                    MaaUiText(
                         text = infrastModeLabel(it),
                         style = ThemeTypography.bodyMedium
                     )
@@ -275,12 +275,12 @@ private fun InfrastModeSection(
             enter = expandVertically(),
             exit = shrinkVertically()
         ) {
-            Surface(
+            MaaUiSurface(
                 modifier = Modifier.fillMaxWidth(),
                 color = ThemeColors.surfaceVariant,
                 shape = RoundedCornerShape(4.dp)
             ) {
-                Text(
+                MaaUiText(
                     text = stringResource(R.string.panel_infrast_mode_rotation_tip),
                     style = ThemeTypography.bodySmall,
                     color = ThemeColors.onSurfaceVariant,
@@ -408,7 +408,7 @@ private fun CustomInfrastSection(
                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text(
+                                MaaUiText(
                                     text = custom.title.replace("\\n", "\n"),
                                     style = ThemeTypography.bodyMedium,
                                     fontWeight = FontWeight.Medium,
@@ -426,7 +426,7 @@ private fun CustomInfrastSection(
                             enter = expandVertically(),
                             exit = shrinkVertically()
                         ) {
-                            Text(
+                            MaaUiText(
                                 text = custom.description?.replace("\\n", "\n") ?: "",
                                 style = ThemeTypography.bodySmall,
                                 color = ThemeColors.onSurfaceVariant
@@ -439,7 +439,7 @@ private fun CustomInfrastSection(
 
         // 在线生成器链接
         val context = LocalContext.current
-        Text(
+        MaaUiText(
             text = stringResource(R.string.panel_infrast_scheduler_builder),
             style = ThemeTypography.bodySmall.copy(
                 textDecoration = TextDecoration.Underline
@@ -489,7 +489,7 @@ private fun CustomInfrastSection(
 
         //  解析错误提示
         if (error != null) {
-            Text(
+            MaaUiText(
                 text = error,
                 style = ThemeTypography.bodySmall,
                 color = ThemeColors.error
@@ -506,7 +506,7 @@ private fun PresetButtonGroup(
     selectedPreset: String, onPresetSelected: (String) -> Unit
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        Text(
+        MaaUiText(
             text = stringResource(R.string.panel_infrast_presets_title),
             style = ThemeTypography.bodyMedium,
             fontWeight = FontWeight.Medium
@@ -522,7 +522,7 @@ private fun PresetButtonGroup(
                     modifier = Modifier.size(20.dp)
                 )
                 Spacer(modifier = Modifier.width(4.dp))
-                Text(
+                MaaUiText(
                     text = infrastPresetLabel(key),
                     style = ThemeTypography.bodyMedium
                 )
@@ -569,7 +569,7 @@ private fun PlanSelectButtonGroup(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
+            MaaUiText(
                 text = stringResource(R.string.panel_infrast_plan_title),
                 style = ThemeTypography.bodyMedium,
                 fontWeight = FontWeight.Medium
@@ -595,7 +595,7 @@ private fun PlanSelectButtonGroup(
                     modifier = Modifier.size(20.dp)
                 )
                 Spacer(modifier = Modifier.width(4.dp))
-                    Text(
+                    MaaUiText(
                         text = stringResource(
                             R.string.panel_infrast_plan_auto_switch,
                             currentPlanDisplayName
@@ -626,7 +626,7 @@ private fun PlanSelectButtonGroup(
                     modifier = Modifier.size(20.dp)
                 )
                 Spacer(modifier = Modifier.width(4.dp))
-                Text(
+                MaaUiText(
                     text = label, style = ThemeTypography.bodyMedium
                 )
             }
@@ -636,7 +636,7 @@ private fun PlanSelectButtonGroup(
         if (selectedPlanIndex >= 0 && selectedPlanIndex < plans.size) {
             val desc = plans[selectedPlanIndex].description
             if (!desc.isNullOrBlank()) {
-                Text(
+                MaaUiText(
                     text = desc,
                     style = ThemeTypography.bodySmall,
                     color = ThemeColors.onSurfaceVariant
@@ -646,7 +646,7 @@ private fun PlanSelectButtonGroup(
 
         // 部分计划无时间段警告
         if (hasPeriodicPlan && hasNonPeriodicPlan) {
-            Text(
+            MaaUiText(
                 text = stringResource(R.string.panel_infrast_plan_missing_period_warning),
                 style = ThemeTypography.bodySmall,
                 color = ThemeColors.error
@@ -718,7 +718,7 @@ private fun UsesOfDronesSection(
 ) {
     val options = localizedDroneUsageOptions()
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(
+            MaaUiText(
                 text = stringResource(R.string.panel_infrast_drones_title),
                 style = ThemeTypography.bodyMedium,
             fontWeight = FontWeight.Medium
@@ -741,7 +741,7 @@ private fun UsesOfDronesSection(
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text(
+                    MaaUiText(
                         text = label, style = ThemeTypography.bodyMedium
                     )
                 }
@@ -768,7 +768,7 @@ private fun DormThresholdSection(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
+                MaaUiText(
                     text = stringResource(R.string.panel_infrast_dorm_threshold_title),
                     style = ThemeTypography.bodyMedium,
                     fontWeight = FontWeight.Medium
@@ -776,7 +776,7 @@ private fun DormThresholdSection(
                 ExpandableTipIcon(
                     expanded = tipExpanded, onExpandedChange = { tipExpanded = it })
             }
-            Text(
+            MaaUiText(
                 text = "${config.dormThreshold}%",
                 style = ThemeTypography.bodyMedium,
                 fontWeight = FontWeight.Bold,
@@ -813,7 +813,7 @@ private fun FacilitiesSection(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text(
+            MaaUiText(
                 text = stringResource(R.string.panel_infrast_facilities_title),
                 style = ThemeTypography.bodyMedium,
                 fontWeight = FontWeight.Medium
@@ -844,7 +844,7 @@ private fun FacilitiesSection(
                     )
                 }, modifier = Modifier.weight(1f)
             ) {
-                Text(stringResource(R.string.common_select_all))
+                MaaUiText(stringResource(R.string.common_select_all))
             }
 
             MaaUiOutlinedButton(
@@ -855,7 +855,7 @@ private fun FacilitiesSection(
                     )
                 }, modifier = Modifier.weight(1f)
             ) {
-                Text(stringResource(R.string.common_clear))
+                MaaUiText(stringResource(R.string.common_clear))
             }
         }
     }
@@ -873,7 +873,7 @@ private fun FacilityList(
     onFacilitiesChange: (List<Pair<InfrastRoomType, Boolean>>) -> Unit
 ) {
 
-    Surface(
+    MaaUiSurface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(4.dp),
         color = ThemeColors.surfaceVariant,
@@ -911,7 +911,7 @@ private fun FacilityList(
                             }, modifier = Modifier.size(20.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text(
+                        MaaUiText(
                             text = infrastRoomTypeLabel(facility),
                             style = ThemeTypography.bodyMedium
                         )
@@ -938,7 +938,7 @@ private fun DormTrustEnabledSection(
             modifier = Modifier.size(20.dp)
         )
         Spacer(modifier = Modifier.width(8.dp))
-        Text(
+        MaaUiText(
             text = stringResource(R.string.panel_infrast_dorm_trust),
             style = ThemeTypography.bodyMedium
         )
@@ -966,7 +966,7 @@ private fun DormFilterNotStationedSection(
                 onCheckedChange = { onConfigChange(config.copy(dormFilterNotStationedEnabled = it)) },
                 modifier = Modifier.size(20.dp)
             )
-            Text(
+            MaaUiText(
                 text = stringResource(R.string.panel_infrast_dorm_filter_not_stationed),
                 style = ThemeTypography.bodyMedium
             )
@@ -996,7 +996,7 @@ private fun OriginiumShardAutoReplenishmentSection(
             modifier = Modifier.size(20.dp)
         )
         Spacer(modifier = Modifier.width(8.dp))
-        Text(
+        MaaUiText(
             text = stringResource(R.string.panel_infrast_originium_shard_auto_replenishment),
             style = ThemeTypography.bodyMedium,
             lineHeight = ThemeTypography.bodyMedium.lineHeight
@@ -1020,7 +1020,7 @@ private fun ReceptionMessageBoardReceiveSection(
             modifier = Modifier.size(20.dp)
         )
         Spacer(modifier = Modifier.width(8.dp))
-        Text(
+        MaaUiText(
             text = stringResource(R.string.panel_infrast_reception_message_board),
             style = ThemeTypography.bodyMedium,
             lineHeight = ThemeTypography.bodyMedium.lineHeight
@@ -1044,7 +1044,7 @@ private fun ReceptionClueExchangeSection(
             modifier = Modifier.size(20.dp)
         )
         Spacer(modifier = Modifier.width(8.dp))
-        Text(
+        MaaUiText(
             text = stringResource(R.string.panel_infrast_reception_clue_exchange),
             style = ThemeTypography.bodyMedium,
             lineHeight = ThemeTypography.bodyMedium.lineHeight
@@ -1068,7 +1068,7 @@ private fun ReceptionSendClueSection(
             modifier = Modifier.size(20.dp)
         )
         Spacer(modifier = Modifier.width(8.dp))
-        Text(
+        MaaUiText(
             text = stringResource(R.string.panel_infrast_reception_send_clue),
             style = ThemeTypography.bodyMedium,
             lineHeight = ThemeTypography.bodyMedium.lineHeight
@@ -1092,7 +1092,7 @@ private fun ContinueTrainingSection(
             modifier = Modifier.size(20.dp)
         )
         Spacer(modifier = Modifier.width(8.dp))
-        Text(
+        MaaUiText(
             text = stringResource(R.string.panel_infrast_continue_training),
             style = ThemeTypography.bodyMedium,
             lineHeight = ThemeTypography.bodyMedium.lineHeight

@@ -11,10 +11,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import com.aliothmoon.maameow.ui.component.material.MaaUiButton
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
+import com.aliothmoon.maameow.ui.component.material.MaaUiCircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import com.aliothmoon.maameow.ui.component.material.MaaUiOutlinedButton
-import androidx.compose.material3.Text
+import com.aliothmoon.maameow.ui.component.material.MaaUiText
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,7 +48,7 @@ fun BottomButtons(
                 disabledContentColor = ThemeColors.onSurfaceVariant.copy(alpha = MaaThemeAlphas.Disabled)
             )
         ) {
-            Text(stringResource(R.string.panel_bottom_hide))
+            MaaUiText(stringResource(R.string.panel_bottom_hide))
         }
 
         Spacer(modifier = Modifier.width(16.dp))
@@ -69,16 +69,16 @@ fun BottomButtons(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center
                 ) {
-                    CircularProgressIndicator(
+                    MaaUiCircularProgressIndicator(
                         modifier = Modifier.size(16.dp),
                         color = ThemeColors.onPrimary,
                         strokeWidth = 2.dp
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(stringResource(R.string.panel_bottom_starting))
+                    MaaUiText(stringResource(R.string.panel_bottom_starting))
                 }
             } else {
-                Text(stringResource(R.string.panel_bottom_start))
+                MaaUiText(stringResource(R.string.panel_bottom_start))
             }
         }
     }

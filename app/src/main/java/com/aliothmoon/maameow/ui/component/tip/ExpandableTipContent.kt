@@ -6,8 +6,8 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import com.aliothmoon.maameow.ui.component.material.MaaUiSurface
+import com.aliothmoon.maameow.ui.component.material.MaaUiText
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -30,11 +30,11 @@ fun ExpandableTipContent(
         exit = shrinkVertically(),
         modifier = modifier
     ) {
-        Surface(
+        MaaUiSurface(
             color = ThemeColors.secondaryContainer,
             shape = RoundedCornerShape(6.dp)
         ) {
-            Text(
+            MaaUiText(
                 text = tipText,
                 style = ThemeTypography.bodySmall,
                 color = ThemeColors.onSecondaryContainer,

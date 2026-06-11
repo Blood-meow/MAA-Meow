@@ -120,6 +120,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import com.aliothmoon.maameow.ui.screen.panel.ToolboxPanel
+import com.aliothmoon.maameow.ui.theme.ThemeColors
+import com.aliothmoon.maameow.ui.theme.ThemeTypography
 
 @Composable
 fun BackgroundTaskViewMaterial(
@@ -400,7 +402,7 @@ fun BackgroundTaskViewMaterial(
                                                 .weight(1f)
                                                 .fillMaxHeight(),
                                             colors = CardDefaults.cardColors(
-                                                containerColor = MaterialTheme.colorScheme.surface
+                                                containerColor = ThemeColors.surface
                                             )
                                         ) {
                                             Column(modifier = Modifier.padding(top = 10.dp)) {
@@ -497,7 +499,7 @@ fun BackgroundTaskViewMaterial(
                                     if (maaState == MaaExecutionState.STARTING) {
                                         CircularProgressIndicator(
                                             modifier = Modifier.size(20.dp),
-                                            color = MaterialTheme.colorScheme.onPrimary,
+                                            color = ThemeColors.onPrimary,
                                             strokeWidth = 2.dp
                                         )
                                     } else {
@@ -518,13 +520,13 @@ fun BackgroundTaskViewMaterial(
                                     modifier = Modifier.weight(1f),
                                     shape = RoundedCornerShape(8.dp),
                                     colors = ButtonDefaults.outlinedButtonColors(
-                                        contentColor = MaterialTheme.colorScheme.error
+                                        contentColor = ThemeColors.error
                                     )
                                 ) {
                                     if (maaState == MaaExecutionState.STOPPING) {
                                         CircularProgressIndicator(
                                             modifier = Modifier.size(20.dp),
-                                            color = MaterialTheme.colorScheme.error,
+                                            color = ThemeColors.error,
                                             strokeWidth = 2.dp
                                         )
                                     } else {
@@ -681,9 +683,9 @@ fun BackgroundTaskViewMaterial(
         activeDialog?.let { dialog ->
             val (onDismiss, onConfirm) = activeDialogCallbacks!!
             val confirmColor = when (dialog.type) {
-                PanelDialogType.SUCCESS -> MaterialTheme.colorScheme.primary
-                PanelDialogType.WARNING -> MaterialTheme.colorScheme.tertiary
-                PanelDialogType.ERROR -> MaterialTheme.colorScheme.error
+                PanelDialogType.SUCCESS -> ThemeColors.primary
+                PanelDialogType.WARNING -> ThemeColors.tertiary
+                PanelDialogType.ERROR -> ThemeColors.error
             }
             val dialogTitle = dialog.title.asString()
             val dialogMessage = dialog.message.asString()
@@ -723,8 +725,8 @@ fun BackgroundTaskViewMaterial(
                 confirmText = stringResource(R.string.dialog_close_app_confirm),
                 dismissText = stringResource(R.string.common_cancel),
                 icon = Icons.Filled.Warning,
-                iconTint = MaterialTheme.colorScheme.error,
-                confirmColor = MaterialTheme.colorScheme.error,
+                iconTint = ThemeColors.error,
+                confirmColor = ThemeColors.error,
             )
         }
 
@@ -793,17 +795,17 @@ private fun BackgroundMoreActionsOverlay(
                 ),
             shape = RoundedCornerShape(4.dp),
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surface
+                containerColor = ThemeColors.surface
             ),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-            border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.outlineVariant)
+            border = BorderStroke(0.5.dp, ThemeColors.outlineVariant)
         ) {
             Column(modifier = Modifier.padding(10.dp)) {
                 // 标题与快速操作组
                 Text(
                     text = stringResource(R.string.bg_actions_title),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.primary,
+                    style = ThemeTypography.labelMedium,
+                    color = ThemeColors.primary,
                     fontWeight = FontWeight.Bold
                 )
 
@@ -820,16 +822,16 @@ private fun BackgroundMoreActionsOverlay(
                             if (useHardwareScreenOff) onScreenOff() else onShowScreenSaver()
                         },
                         modifier = Modifier.weight(1f),
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = MaterialTheme.colorScheme.onSurface
+                        containerColor = ThemeColors.primary,
+                        contentColor = ThemeColors.onSurface
                     )
                     ActionTile(
                         icon = Icons.AutoMirrored.Filled.ExitToApp,
                         label = stringResource(R.string.bg_action_close_game),
                         onClick = onCloseApp,
                         modifier = Modifier.weight(1f),
-                        containerColor = MaterialTheme.colorScheme.error,
-                        contentColor = MaterialTheme.colorScheme.error
+                        containerColor = ThemeColors.error,
+                        contentColor = ThemeColors.error
                     )
                 }
 
@@ -847,22 +849,22 @@ private fun BackgroundMoreActionsOverlay(
                             stringResource(R.string.bg_action_mute_game),
                         onClick = onToggleGameSound,
                         modifier = Modifier.weight(1f),
-                        containerColor = if (isGameMuted) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.secondary,
-                        contentColor = if (isGameMuted) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurface
+                        containerColor = if (isGameMuted) ThemeColors.tertiary else ThemeColors.secondary,
+                        contentColor = if (isGameMuted) ThemeColors.tertiary else ThemeColors.onSurface
                     )
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
                 HorizontalDivider(
-                    color = MaterialTheme.colorScheme.outlineVariant,
+                    color = ThemeColors.outlineVariant,
                     thickness = 0.5.dp
                 )
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Text(
                     text = stringResource(R.string.bg_auto_settings_title),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.primary,
+                    style = ThemeTypography.labelMedium,
+                    color = ThemeColors.primary,
                     fontWeight = FontWeight.Bold
                 )
 
@@ -925,8 +927,8 @@ private fun BackgroundMoreActionsOverlay(
             confirmText = stringResource(R.string.common_confirm),
             dismissText = stringResource(R.string.common_cancel),
             icon = Icons.Filled.PowerSettingsNew,
-            iconTint = MaterialTheme.colorScheme.primary,
-            confirmColor = MaterialTheme.colorScheme.primary,
+            iconTint = ThemeColors.primary,
+            confirmColor = ThemeColors.primary,
         )
     }
 }
@@ -963,7 +965,7 @@ private fun ActionTile(
             Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = label,
-                style = MaterialTheme.typography.bodySmall,
+                style = ThemeTypography.bodySmall,
                 fontWeight = FontWeight.Medium
             )
         }
@@ -988,13 +990,13 @@ private fun SettingSwitchRow(
             imageVector = icon,
             contentDescription = null,
             modifier = Modifier.size(16.dp),
-            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+            tint = ThemeColors.onSurfaceVariant.copy(alpha = 0.6f)
         )
         Spacer(modifier = Modifier.width(10.dp))
         Text(
             text = label,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurface,
+            style = ThemeTypography.bodyMedium,
+            color = ThemeColors.onSurface,
             modifier = Modifier.weight(1f)
         )
         CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides Dp.Unspecified) {

@@ -89,6 +89,8 @@ import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import com.aliothmoon.maameow.ui.theme.ThemeColors
+import com.aliothmoon.maameow.ui.theme.ThemeTypography
 
 
 @Composable
@@ -179,15 +181,15 @@ fun HomeViewMaterial(
                 Column {
                     Text(
                         text = appVersionLine + resourceMessage,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = ThemeTypography.bodyMedium,
+                        color = ThemeColors.onSurfaceVariant,
                     )
                     if (!releaseNote.isNullOrBlank()) {
                         Spacer(modifier = Modifier.height(12.dp))
                         MarkdownText(
                             markdown = releaseNote,
                             modifier = Modifier.fillMaxWidth(),
-                            style = MaterialTheme.typography.bodyMedium,
+                            style = ThemeTypography.bodyMedium,
                         )
                     }
                 }
@@ -214,13 +216,13 @@ fun HomeViewMaterial(
                     Text(
                         text = stringResource(R.string.home_app_title),
                         fontWeight = FontWeight.SemiBold,
-                        style = MaterialTheme.typography.headlineMedium
+                        style = ThemeTypography.headlineMedium
                     )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    titleContentColor = MaterialTheme.colorScheme.onBackground,
-                    actionIconContentColor = MaterialTheme.colorScheme.primary
+                    containerColor = ThemeColors.background,
+                    titleContentColor = ThemeColors.onBackground,
+                    actionIconContentColor = ThemeColors.primary
                 )
             )
             LazyColumn(
@@ -307,12 +309,12 @@ fun HomeViewMaterial(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(48.dp),
-                            shape = MaterialTheme.shapes.large,
+                            shape = RoundedCornerShape(16.dp),
                             enabled = !uiState.isLoading
                         ) {
                             Text(
                                 text = stringResource(R.string.home_btn_reload_services),
-                                style = MaterialTheme.typography.bodyLarge,
+                                style = ThemeTypography.bodyLarge,
                                 fontWeight = FontWeight.Medium
                             )
                         }
@@ -329,18 +331,18 @@ fun HomeViewMaterial(
                             .fillMaxWidth()
                             .height(48.dp),
                         colors = ButtonDefaults.outlinedButtonColors(
-                            contentColor = MaterialTheme.colorScheme.error
+                            contentColor = ThemeColors.error
                         ),
                         border = BorderStroke(
                             1.dp,
-                            MaterialTheme.colorScheme.error.copy(alpha = 0.6f)
+                            ThemeColors.error.copy(alpha = 0.6f)
                         ),
-                        shape = MaterialTheme.shapes.large,
+                        shape = RoundedCornerShape(16.dp),
                         enabled = !uiState.isLoading
                     ) {
                         Text(
                             text = stringResource(R.string.home_btn_stop_all_services),
-                            style = MaterialTheme.typography.bodyLarge,
+                            style = ThemeTypography.bodyLarge,
                             fontWeight = FontWeight.Medium
                         )
                     }
@@ -446,9 +448,9 @@ private fun ScreenInfoCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        shape = MaterialTheme.shapes.medium,
+        shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = ThemeColors.surface
         )
     ) {
         Column(
@@ -464,14 +466,14 @@ private fun ScreenInfoCard(
             ) {
                 Text(
                     text = stringResource(R.string.home_screen_resolution),
-                    style = MaterialTheme.typography.bodyLarge,
+                    style = ThemeTypography.bodyLarge,
                     fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = ThemeColors.onSurface
                 )
                 Text(
                     text = "$screenWidth × $screenHeight",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    style = ThemeTypography.bodyLarge,
+                    color = ThemeColors.onSurfaceVariant
                 )
             }
             Row(
@@ -481,18 +483,18 @@ private fun ScreenInfoCard(
             ) {
                 Text(
                     text = stringResource(R.string.home_resource_version_label),
-                    style = MaterialTheme.typography.bodyLarge,
+                    style = ThemeTypography.bodyLarge,
                     fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = ThemeColors.onSurface
                 )
                 val notInstalled = stringResource(R.string.home_resource_not_installed)
                 Text(
                     text = resourceVersion.ifBlank { notInstalled },
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = ThemeTypography.bodyMedium,
                     color = if (resourceVersion.isBlank())
-                        MaterialTheme.colorScheme.error
+                        ThemeColors.error
                     else
-                        MaterialTheme.colorScheme.onSurfaceVariant
+                        ThemeColors.onSurfaceVariant
                 )
             }
             Row(
@@ -502,14 +504,14 @@ private fun ScreenInfoCard(
             ) {
                 Text(
                     text = stringResource(R.string.home_app_version_label),
-                    style = MaterialTheme.typography.bodyLarge,
+                    style = ThemeTypography.bodyLarge,
                     fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = ThemeColors.onSurface
                 )
                 Text(
                     text = appVersion,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    style = ThemeTypography.bodyMedium,
+                    color = ThemeColors.onSurfaceVariant
                 )
             }
             Row(
@@ -519,16 +521,16 @@ private fun ScreenInfoCard(
             ) {
                 Text(
                     text = stringResource(R.string.home_service_status),
-                    style = MaterialTheme.typography.bodyLarge,
+                    style = ThemeTypography.bodyLarge,
                     fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = ThemeColors.onSurface
                 )
 
                 val statusColor = when (serviceStatusColor) {
-                    StatusColorType.PRIMARY -> MaterialTheme.colorScheme.primary
+                    StatusColorType.PRIMARY -> ThemeColors.primary
                     StatusColorType.WARNING -> Color(0xFFFF9800)
-                    StatusColorType.ERROR -> MaterialTheme.colorScheme.error
-                    StatusColorType.NEUTRAL -> MaterialTheme.colorScheme.onSurfaceVariant
+                    StatusColorType.ERROR -> ThemeColors.error
+                    StatusColorType.NEUTRAL -> ThemeColors.onSurfaceVariant
                 }
 
                 Row(
@@ -543,7 +545,7 @@ private fun ScreenInfoCard(
                     )
                     Text(
                         text = serviceStatusLabel,
-                        style = MaterialTheme.typography.bodyMedium,
+                        style = ThemeTypography.bodyMedium,
                         color = statusColor
                     )
                     if (serviceStatusLoading) {
@@ -569,9 +571,9 @@ private fun RunModeCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        shape = MaterialTheme.shapes.medium,
+        shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = ThemeColors.surface
         )
     ) {
         Row(
@@ -584,9 +586,9 @@ private fun RunModeCard(
             Column {
                 Text(
                     text = stringResource(R.string.home_run_mode_title),
-                    style = MaterialTheme.typography.bodyLarge,
+                    style = ThemeTypography.bodyLarge,
                     fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = ThemeColors.onSurface
                 )
             }
             Row(
@@ -595,8 +597,8 @@ private fun RunModeCard(
             ) {
                 Text(
                     text = context.runModeDisplayName(runMode),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface
+                    style = ThemeTypography.bodyMedium,
+                    color = ThemeColors.onSurface
                 )
                 Switch(
                     checked = runMode == RunMode.BACKGROUND,
@@ -627,7 +629,7 @@ private fun PermissionRow(
     ) {
         Text(
             text = title,
-            style = MaterialTheme.typography.bodyMedium,
+            style = ThemeTypography.bodyMedium,
             color = contentColor
         )
         TextButton(
@@ -661,14 +663,14 @@ private fun PermissionCard(
 ) {
     val context = LocalContext.current
     var expandedPermissions by remember { mutableStateOf(false) }
-    val contentColor = MaterialTheme.colorScheme.onSurface
+    val contentColor = ThemeColors.onSurface
 
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        shape = MaterialTheme.shapes.medium,
+        shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = ThemeColors.surface
         )
     ) {
         Column(
@@ -679,7 +681,7 @@ private fun PermissionCard(
         ) {
             Text(
                 text = stringResource(R.string.home_permission_section),
-                style = MaterialTheme.typography.titleMedium,
+                style = ThemeTypography.titleMedium,
                 fontWeight = FontWeight.Medium,
                 color = contentColor,
                 modifier = Modifier.padding(bottom = 6.dp)
@@ -706,7 +708,7 @@ private fun PermissionCard(
                         stringResource(R.string.home_permission_collapse)
                     else
                         stringResource(R.string.home_permission_expand),
-                    style = MaterialTheme.typography.bodySmall,
+                    style = ThemeTypography.bodySmall,
                     color = contentColor.copy(alpha = 0.7f)
                 )
                 Icon(
@@ -779,17 +781,17 @@ private fun ForegroundModeSection(
         Card(
             modifier = Modifier.fillMaxWidth(),
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-            shape = MaterialTheme.shapes.medium,
+            shape = RoundedCornerShape(12.dp),
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surface
+                containerColor = ThemeColors.surface
             )
         ) {
             Column(modifier = Modifier.padding(12.dp)) {
                 Text(
                     text = stringResource(R.string.home_resolution_title),
-                    style = MaterialTheme.typography.titleMedium,
+                    style = ThemeTypography.titleMedium,
                     fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onSurface,
+                    color = ThemeColors.onSurface,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
                 FlowRow(
@@ -801,16 +803,16 @@ private fun ForegroundModeSection(
                     Button(
                         onClick = onChangeTo16x9Resolution,
                         modifier = Modifier.weight(1f),
-                        shape = MaterialTheme.shapes.medium,
+                        shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.primary,
-                            contentColor = MaterialTheme.colorScheme.onPrimary
+                            containerColor = ThemeColors.primary,
+                            contentColor = ThemeColors.onPrimary
                         ),
                         contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp)
                     ) {
                         Text(
                             text = stringResource(R.string.home_resolution_apply_16_9),
-                            style = MaterialTheme.typography.bodyMedium,
+                            style = ThemeTypography.bodyMedium,
                             textAlign = TextAlign.Center,
                             maxLines = 1
                         )
@@ -819,16 +821,16 @@ private fun ForegroundModeSection(
                     Button(
                         onClick = onResetResolution,
                         modifier = Modifier.weight(1f),
-                        shape = MaterialTheme.shapes.medium,
+                        shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.primary,
-                            contentColor = MaterialTheme.colorScheme.onPrimary
+                            containerColor = ThemeColors.primary,
+                            contentColor = ThemeColors.onPrimary
                         ),
                         contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp)
                     ) {
                         Text(
                             text = stringResource(R.string.home_resolution_reset),
-                            style = MaterialTheme.typography.bodyMedium,
+                            style = ThemeTypography.bodyMedium,
                             textAlign = TextAlign.Center,
                             maxLines = 1
                         )
@@ -839,9 +841,9 @@ private fun ForegroundModeSection(
         Card(
             modifier = Modifier.fillMaxWidth(),
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-            shape = MaterialTheme.shapes.medium,
+            shape = RoundedCornerShape(12.dp),
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surface
+                containerColor = ThemeColors.surface
             )
         ) {
             Row(
@@ -854,17 +856,17 @@ private fun ForegroundModeSection(
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = stringResource(R.string.home_overlay_mode_title),
-                        style = MaterialTheme.typography.bodyLarge,
+                        style = ThemeTypography.bodyLarge,
                         fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = ThemeColors.onSurface
                     )
                     Text(
                         text = if (overlayControlMode == OverlayControlMode.ACCESSIBILITY)
                             stringResource(R.string.home_overlay_mode_accessibility_desc)
                         else
                             stringResource(R.string.home_overlay_mode_floatball_desc),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        style = ThemeTypography.bodySmall,
+                        color = ThemeColors.onSurfaceVariant
                     )
                 }
                 Row(
@@ -873,8 +875,8 @@ private fun ForegroundModeSection(
                 ) {
                     Text(
                         text = context.overlayControlModeDisplayName(overlayControlMode),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurface
+                        style = ThemeTypography.bodyMedium,
+                        color = ThemeColors.onSurface
                     )
                     Switch(
                         checked = overlayControlMode == OverlayControlMode.ACCESSIBILITY,
@@ -896,16 +898,16 @@ private fun ForegroundModeSection(
                 .height(56.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = if (isShowControlOverlay)
-                    MaterialTheme.colorScheme.error
+                    ThemeColors.error
                 else
-                    MaterialTheme.colorScheme.primary
+                    ThemeColors.primary
             ),
-            shape = MaterialTheme.shapes.large,
+            shape = RoundedCornerShape(16.dp),
         ) {
             if (isLoading) {
                 CircularProgressIndicator(
                     modifier = Modifier.size(20.dp),
-                    color = MaterialTheme.colorScheme.onPrimary,
+                    color = ThemeColors.onPrimary,
                     strokeWidth = 2.dp
                 )
             } else {
@@ -914,7 +916,7 @@ private fun ForegroundModeSection(
                         stringResource(R.string.home_overlay_close)
                     else
                         stringResource(R.string.home_overlay_open),
-                    style = MaterialTheme.typography.titleMedium,
+                    style = ThemeTypography.titleMedium,
                     fontWeight = FontWeight.Medium
                 )
             }

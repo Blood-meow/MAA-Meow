@@ -23,11 +23,11 @@ import androidx.compose.foundation.clickable
 import com.aliothmoon.maameow.ui.component.material.MaaUiCheckbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.HorizontalDivider
+import com.aliothmoon.maameow.ui.component.material.MaaUiHorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import com.aliothmoon.maameow.ui.component.material.MaaUiSurface
 import com.aliothmoon.maameow.ui.component.material.MaaUiSwitch
-import androidx.compose.material3.Text
+import com.aliothmoon.maameow.ui.component.material.MaaUiText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -80,7 +80,7 @@ fun RecruitCalcPanel(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(
+                MaaUiText(
                     text = stringResource(R.string.panel_recruit_calc_auto_time),
                     style = ThemeTypography.bodyMedium,
                     fontWeight = FontWeight.Medium
@@ -131,7 +131,7 @@ fun RecruitCalcPanel(
                     },
                     modifier = Modifier.padding(end = 8.dp)
                 )
-                Text(
+                MaaUiText(
                     text = stringResource(R.string.panel_recruit_calc_auto_select_tags, level),
                     style = ThemeTypography.bodyMedium,
                     modifier = Modifier.weight(1f)
@@ -162,7 +162,7 @@ fun RecruitCalcPanel(
             item {
                 Spacer(Modifier.height(4.dp))
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text(
+                    MaaUiText(
                         text = stringResource(R.string.panel_recruit_calc_detected_tags),
                         style = ThemeTypography.labelSmall,
                         color = ThemeColors.onSurfaceVariant
@@ -172,11 +172,11 @@ fun RecruitCalcPanel(
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         tags.forEach { tag ->
-                            Surface(
+                            MaaUiSurface(
                                 shape = RoundedCornerShape(6.dp),
                                 color = ThemeColors.secondaryContainer,
                             ) {
-                                Text(
+                                MaaUiText(
                                     text = tag,
                                     style = ThemeTypography.bodySmall,
                                     color = ThemeColors.onSecondaryContainer,
@@ -192,7 +192,7 @@ fun RecruitCalcPanel(
         // 分隔线（有标签或有结果时显示）
         if (tags.isNotEmpty() || results.isNotEmpty()) {
             item {
-                HorizontalDivider(
+                MaaUiHorizontalDivider(
                     modifier = Modifier.padding(vertical = 4.dp),
                     thickness = 0.5.dp,
                     color = ThemeColors.outlineVariant
@@ -211,7 +211,7 @@ fun RecruitCalcPanel(
         // 空提示
         if (tags.isEmpty() && results.isEmpty()) {
             item {
-                Text(
+                MaaUiText(
                     text = resolvedStatusMessage.ifBlank {
                         stringResource(R.string.panel_recruit_calc_empty_hint)
                     },
@@ -242,7 +242,7 @@ private fun RecruitResultItem(result: RecruitCalcResult) {
         else -> ThemeColors.surfaceVariant.copy(alpha = 0.4f)
     }
 
-    Surface(
+    MaaUiSurface(
         shape = RoundedCornerShape(8.dp),
         color = bgColor,
         modifier = Modifier
@@ -254,11 +254,11 @@ private fun RecruitResultItem(result: RecruitCalcResult) {
             verticalAlignment = Alignment.Top,
         ) {
             // 左侧星级徽标
-            Surface(
+            MaaUiSurface(
                 shape = RoundedCornerShape(6.dp),
                 color = levelColor.copy(alpha = 0.15f),
             ) {
-                Text(
+                MaaUiText(
                     text = "${result.level}★",
                     style = ThemeTypography.labelMedium,
                     fontWeight = FontWeight.Bold,
@@ -277,11 +277,11 @@ private fun RecruitResultItem(result: RecruitCalcResult) {
                     verticalArrangement = Arrangement.spacedBy(3.dp)
                 ) {
                     result.tags.forEach { tag ->
-                        Surface(
+                        MaaUiSurface(
                             shape = RoundedCornerShape(4.dp),
                             color = ThemeColors.primaryContainer.copy(alpha = 0.6f),
                         ) {
-                            Text(
+                            MaaUiText(
                                 text = tag,
                                 style = ThemeTypography.labelSmall.copy(fontSize = 11.sp),
                                 color = ThemeColors.onPrimaryContainer,
@@ -292,7 +292,7 @@ private fun RecruitResultItem(result: RecruitCalcResult) {
                 }
                 // 干员列表
                 if (result.operators.isNotEmpty()) {
-                    Text(
+                    MaaUiText(
                         text = result.operators.joinToString("  ") { it.name },
                         style = ThemeTypography.bodySmall.copy(
                             fontSize = 12.sp,

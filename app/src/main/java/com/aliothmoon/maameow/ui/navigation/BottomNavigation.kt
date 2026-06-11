@@ -49,7 +49,10 @@ import com.aliothmoon.maameow.ui.component.bottombar.FloatingBottomBarAdvanced
 import com.aliothmoon.maameow.ui.component.bottombar.FloatingBottomBarItemAdvanced
 import com.aliothmoon.maameow.ui.component.blur.BlurredBar
 import com.aliothmoon.maameow.ui.component.blur.rememberBlurBackdrop
+import com.aliothmoon.maameow.ui.component.material.MaaUiText
+import com.aliothmoon.maameow.ui.component.material.MaaUiSurface
 import com.aliothmoon.maameow.ui.theme.MaaDesignTokens
+import com.aliothmoon.maameow.ui.theme.ThemeTypography
 import com.aliothmoon.maameow.ui.theme.ThemeColors
 import top.yukonga.miuix.kmp.blur.Backdrop
 import top.yukonga.miuix.kmp.basic.NavigationBar
@@ -104,7 +107,7 @@ private fun AppBottomNavigationMaterial(
     currentRoute: String,
     onTabSelected: (BottomNavTab) -> Unit
 ) {
-    Surface(
+    MaaUiSurface(
         color = ThemeColors.surface,
         shadowElevation = 0.dp
     ) {
@@ -142,9 +145,9 @@ private fun AppBottomNavigationMaterial(
                             modifier = Modifier.size(20.dp),
                             tint = contentColor
                         )
-                        Text(
+                        MaaUiText(
                             text = label,
-                            style = MaterialTheme.typography.labelMedium,
+                            style = ThemeTypography.labelMedium,
                             color = contentColor
                         )
                     }
@@ -199,7 +202,7 @@ fun MiuixBottomNavigation(
                         tint = if (selected) MiuixTheme.colorScheme.primary
                         else MiuixTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                     )
-                    Text(
+                    MaaUiText(
                         text = label,
                         fontSize = 10.sp,
                         fontWeight = if (selected) FontWeight.Medium else FontWeight.Normal,

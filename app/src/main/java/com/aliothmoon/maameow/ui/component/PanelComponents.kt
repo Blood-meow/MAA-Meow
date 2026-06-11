@@ -14,7 +14,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import com.aliothmoon.maameow.ui.component.material.MaaUiCheckbox
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import com.aliothmoon.maameow.ui.component.material.MaaUiText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -113,14 +113,14 @@ fun CheckBoxWithLabel(
         )
         Spacer(modifier = Modifier.width(8.dp))
         Column {
-            Text(
+            MaaUiText(
                 text = label,
                 style = ThemeTypography.bodyMedium,
                 color = if (enabled) ThemeColors.onSurface 
                         else ThemeColors.onSurface.copy(alpha = MaaThemeAlphas.Disabled)
             )
             if (subtitle != null) {
-                Text(
+                MaaUiText(
                     text = subtitle,
                     style = ThemeTypography.bodySmall,
                     color = ThemeColors.onSurfaceVariant
@@ -141,7 +141,7 @@ fun EmptyConfigHint() {
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
-        Text(
+        MaaUiText(
             text = stringResource(R.string.panel_empty_config_hint),
             style = ThemeTypography.bodyLarge,
             color = ThemeColors.onSurfaceVariant
@@ -171,14 +171,14 @@ fun PlaceholderContent(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Text(
+            MaaUiText(
                 text = title,
                 style = ThemeTypography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 color = ThemeColors.onSurfaceVariant
             )
             Spacer(modifier = Modifier.height(8.dp))
-            Text(
+            MaaUiText(
                 text = description,
                 style = ThemeTypography.bodyMedium,
                 color = ThemeColors.onSurfaceVariant

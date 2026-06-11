@@ -8,8 +8,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import com.aliothmoon.maameow.ui.component.material.MaaUiSurface
+import com.aliothmoon.maameow.ui.component.material.MaaUiText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -61,12 +61,12 @@ fun SpecifiedDropsSection(
         // 材料选择和数量输入（启用后显示）
         if (config.isSpecifiedDrops) {
             // 材料选择说明提示
-            Surface(
+            MaaUiSurface(
                 modifier = Modifier.fillMaxWidth(),
                 color = ThemeColors.tertiaryContainer,
                 shape = RoundedCornerShape(4.dp)
             ) {
-                Text(
+                MaaUiText(
                     text = stringResource(R.string.panel_fight_specified_drops_stage_tip),
                     style = ThemeTypography.bodySmall,
                     color = ThemeColors.onTertiaryContainer,
@@ -95,7 +95,7 @@ fun SpecifiedDropsSection(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
+                MaaUiText(
                     text = stringResource(R.string.panel_fight_target_count),
                     style = ThemeTypography.bodyMedium,
                     modifier = Modifier.weight(1f)

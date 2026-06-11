@@ -33,8 +33,8 @@ import com.aliothmoon.maameow.ui.component.material.MaaUiCheckbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import com.aliothmoon.maameow.ui.component.material.MaaUiSurface
+import com.aliothmoon.maameow.ui.component.material.MaaUiText
 import com.aliothmoon.maameow.ui.component.material.MaaUiTextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -140,7 +140,7 @@ fun AnnouncementDialog(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
-            Surface(
+            MaaUiSurface(
                 modifier = Modifier
                     .dialogWidth(max = 600.dp, fraction = 0.95f)
                     .heightIn(max = screenHeight * 0.85f)
@@ -176,7 +176,7 @@ fun AnnouncementDialog(
                             modifier = Modifier.size(20.dp),
                         )
                     }
-                    Text(
+                    MaaUiText(
                         text = stringResource(R.string.announcement_title),
                         style = ThemeTypography.titleLarge,
                         fontWeight = FontWeight.Bold,
@@ -201,7 +201,7 @@ fun AnnouncementDialog(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(2.dp),
                             ) {
-                                Text(
+                                MaaUiText(
                                     text = stringResource(R.string.announcement_dont_show_again),
                                     style = ThemeTypography.bodySmall,
                                     color = if (canCheck) {
@@ -231,7 +231,7 @@ fun AnnouncementDialog(
                                             expanded = showHint,
                                             onDismissRequest = { showHint = false },
                                         ) {
-                                            Text(
+                                            MaaUiText(
                                                 text = hintText,
                                                 modifier = Modifier.padding(12.dp),
                                                 style = ThemeTypography.bodySmall,
@@ -245,7 +245,7 @@ fun AnnouncementDialog(
                             onClick = { onDismiss(dontShowAgain) },
                             contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
                         ) {
-                            Text(
+                            MaaUiText(
                                 text = stringResource(R.string.announcement_confirm),
                                 maxLines = 1,
                                 style = ThemeTypography.bodySmall,
@@ -302,7 +302,7 @@ fun AnnouncementDialog(
                             checked = dontShowAgain,
                             onCheckedChange = null,
                         )
-                        Text(
+                        MaaUiText(
                             text = stringResource(R.string.announcement_dont_show_again),
                             style = ThemeTypography.bodyMedium,
                             color = if (canCheck) {
@@ -317,7 +317,7 @@ fun AnnouncementDialog(
                     if (!canCheck) {
                         if (!scrolledToBottom) {
                             // 尚未滚动到底部（无论 elapsedSeconds 是多少）
-                            Text(
+                            MaaUiText(
                                 text = stringResource(R.string.announcement_scroll_to_bottom_hint),
                                 style = ThemeTypography.bodySmall,
                                 color = ThemeColors.onSurfaceVariant,
@@ -326,7 +326,7 @@ fun AnnouncementDialog(
                         } else {
                             // 已滚动到底部，但时间未到
                             val remaining = maxOf(0, STAY_SECONDS_REQUIRED - elapsedSeconds)
-                            Text(
+                            MaaUiText(
                                 text = stringResource(
                                     R.string.announcement_dont_show_again_hint,
                                     remaining,
@@ -345,7 +345,7 @@ fun AnnouncementDialog(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(16.dp),
                     ) {
-                        Text(stringResource(R.string.announcement_confirm))
+                        MaaUiText(stringResource(R.string.announcement_confirm))
                     }
                     }
                 }
