@@ -7,7 +7,7 @@ import java.time.format.DateTimeFormatter
 
 object ResourceVersionHelper {
     private val VERSION_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")
-    private val DISPLAY_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+    private val DISPLAY_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
     fun compareVersions(v1: String, v2: String): Int {
         return try {
