@@ -1308,7 +1308,7 @@
     <string name="overlay_floatball_state_running">Running</string>
     <string name="overlay_floatball_state_stopping">Stopping</string>
     <string name="overlay_floatball_state_error">Error</string>
-    <string name="settings_font_size_title">Font Size</string>
-    <string name="settings_font_size_summary">Adjust global font scaling ratio</string>
-    <string name="settings_font_size_preview">Sample text: Arknights auto-battle assistant</string>
+    <string name="settings_font_size_title">Page Scale</string>
+    <string name="settings_font_size_summary">Adjust the global display scale</string>
+    <string name="settings_font_size_preview">The quick brown fox jumps over the lazy dog</string>
 </resources>

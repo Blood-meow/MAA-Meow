@@ -40,6 +40,7 @@ import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.Style
 import androidx.compose.material.icons.rounded.ViewAgenda
+import androidx.compose.material.icons.rounded.AspectRatio
 import androidx.compose.material.icons.rounded.WaterDrop
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -552,6 +553,18 @@ private fun FontSizeSectionMiuix(fontSizeScale: Int, onFontSizeChange: (Int) -> 
         color = MiuixTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
     ) {
         Column {
+            // Page Scale icon header
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                SettingsIconMiuix(Icons.Rounded.AspectRatio)
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    MiuixText(text = stringResource(R.string.settings_font_size_title), style = MiuixTheme.textStyles.body1, color = MiuixTheme.colorScheme.onSurface)
+                    MiuixText(text = stringResource(R.string.settings_font_size_summary), style = MiuixTheme.textStyles.body2, color = MiuixTheme.colorScheme.onSurfaceSecondary)
+                }
+            }
             Box(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp).clip(RoundedCornerShape(12.dp)).background(MiuixTheme.colorScheme.surfaceVariant).padding(horizontal = 16.dp, vertical = 14.dp)
             ) {
@@ -565,8 +578,8 @@ private fun FontSizeSectionMiuix(fontSizeScale: Int, onFontSizeChange: (Int) -> 
                 value = localSlider,
                 onValueChange = { newValue: Float -> localSlider = newValue },
                 onValueChangeFinished = { onFontSizeChange(localSlider.toInt().coerceIn(80, 110)) },
-                title = stringResource(R.string.settings_font_size_title),
-                summary = stringResource(R.string.settings_font_size_summary),
+                title = "",
+                summary = "",
                 valueText = current.toString(),
                 valueRange = 80f..110f,
                 steps = 29,

@@ -18,6 +18,9 @@ import androidx.compose.ui.unit.dp
 import com.aliothmoon.maameow.ui.isMiuixUi
 import com.aliothmoon.maameow.ui.theme.MaaDesignTokens
 import com.aliothmoon.maameow.ui.theme.ThemeColors
+import top.yukonga.miuix.kmp.basic.Surface as MiuixSurface
+import top.yukonga.miuix.kmp.basic.Text as MiuixText
+import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
 fun MaaUiCard(
@@ -29,34 +32,53 @@ fun MaaUiCard(
     content: @Composable ColumnScope.() -> Unit
 ) {
     val miuix = isMiuixUi
-    val shape = if (miuix) RoundedCornerShape(22.dp) else MaterialTheme.shapes.medium
-    val background = if (miuix) {
-        ThemeColors.surfaceContainer.copy(alpha = 0.72f)
-    } else {
-        containerColor
-    }
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(shape),
-        elevation = CardDefaults.cardElevation(defaultElevation = if (miuix) 0.dp else MaaDesignTokens.Card.elevation),
-        shape = shape,
-        colors = CardDefaults.cardColors(containerColor = background)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(contentPadding)
+    if (miuix) {
+        MiuixSurface(
+            modifier = modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(22.dp),
+            color = MiuixTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
         ) {
-            if (title.isNotEmpty()) {
-                Text(
-                    text = title,
-                    style = if (miuix) MaterialTheme.typography.titleMedium else MaterialTheme.typography.labelLarge,
-                    color = if (miuix) ThemeColors.onSurface else contentColor,
-                    modifier = Modifier.padding(bottom = MaaDesignTokens.Spacing.sm)
-                )
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(contentPadding)
+            ) {
+                if (title.isNotEmpty()) {
+                    MiuixText(
+                        text = title,
+                        style = MiuixTheme.textStyles.body1,
+                        color = MiuixTheme.colorScheme.onSurface,
+                        modifier = Modifier.padding(bottom = MaaDesignTokens.Spacing.sm)
+                    )
+                }
+                content()
             }
-            content()
+        }
+    } else {
+        val shape = MaterialTheme.shapes.medium
+        Card(
+            modifier = modifier
+                .fillMaxWidth()
+                .clip(shape),
+            elevation = CardDefaults.cardElevation(defaultElevation = MaaDesignTokens.Card.elevation),
+            shape = shape,
+            colors = CardDefaults.cardColors(containerColor = containerColor)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(contentPadding)
+            ) {
+                if (title.isNotEmpty()) {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.labelLarge,
+                        color = contentColor,
+                        modifier = Modifier.padding(bottom = MaaDesignTokens.Spacing.sm)
+                    )
+                }
+                content()
+            }
         }
     }
 }
