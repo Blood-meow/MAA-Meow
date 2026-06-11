@@ -4,8 +4,11 @@ import androidx.compose.animation.core.EaseInOut
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
@@ -160,13 +163,13 @@ fun MainScreen(
         }
 
         MiuixScaffold(bottomBar = bottomBar) { paddingValues ->
-            // When floating bar is active: paddingValues ignored, content extends behind the
-            // translucent bar (KernelSU/feat-miuix-ui pattern). The floating bar itself
-            // positions above gesture bar (12dp + navigationBarsPadding).
+            // When floating bar is active: content fills the full screen behind the translucent bar,
+            // but we still need to pad the bottom so content isn't hidden by the gesture bar.
             // When floating bar is OFF: standard NavigationBar, apply scaffold padding.
+            val navBarPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
             val contentModifier = if (useFloatingBar) {
-                if (uiBlurEnabled && backdrop != null) Modifier.layerBackdrop(backdrop)
-                else Modifier
+                val base = if (uiBlurEnabled && backdrop != null) Modifier.layerBackdrop(backdrop) else Modifier
+                base.padding(bottom = navBarPadding)
             } else {
                 Modifier.padding(paddingValues)
             }
