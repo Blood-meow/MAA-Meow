@@ -25,6 +25,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.aliothmoon.maameow.data.preferences.AppSettingsManager
@@ -232,6 +234,10 @@ fun MainScreen(
                     else MiuixTheme.colorScheme.surface
             ) { paddingValues ->
                 val activeBackdrop = if (useFloatingBar) floatingBackdrop else backdrop
+                // Floating bar: content fills entire screen including gesture bar area
+                // Non-floating: use scaffold paddingValues
+                val contentBottomPadding = if (useFloatingBar) 0.dp
+                    else paddingValues.calculateBottomPadding()
                 Box(
                     modifier = if (uiBlurEnabled && activeBackdrop != null)
                         Modifier.layerBackdrop(activeBackdrop) else Modifier
@@ -239,7 +245,7 @@ fun MainScreen(
                     pagerContent(
                         Modifier
                             .fillMaxSize()
-                            .padding(bottom = paddingValues.calculateBottomPadding())
+                            .padding(bottom = contentBottomPadding)
                     )
                 }
             }

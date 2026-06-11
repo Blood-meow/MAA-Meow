@@ -4,11 +4,14 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.ViewTreeObserver
 import android.view.WindowManager
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.compose.ui.platform.LocalDensity
@@ -68,6 +71,29 @@ class MainActivity : AppCompatActivity() {
             val keyColor by appSettingsManager.uiKeyColor.collectAsStateWithLifecycle()
             val fontSizeScale by appSettingsManager.fontSizeScale.collectAsStateWithLifecycle()
             val systemDensity = LocalDensity.current
+
+            // Re-apply transparent system bars on dark mode change (KernelSU pattern)
+            val darkMode = when (themeMode) {
+                AppSettingsManager.ThemeMode.DARK,
+                AppSettingsManager.ThemeMode.PURE_DARK -> true
+                AppSettingsManager.ThemeMode.WHITE -> false
+                AppSettingsManager.ThemeMode.SYSTEM -> isSystemInDarkTheme()
+            }
+            DisposableEffect(darkMode) {
+                enableEdgeToEdge(
+                    statusBarStyle = SystemBarStyle.auto(
+                        android.graphics.Color.TRANSPARENT,
+                        android.graphics.Color.TRANSPARENT
+                    ) { darkMode },
+                    navigationBarStyle = SystemBarStyle.auto(
+                        android.graphics.Color.TRANSPARENT,
+                        android.graphics.Color.TRANSPARENT
+                    ) { darkMode },
+                )
+                window.isNavigationBarContrastEnforced = false
+                onDispose { }
+            }
+
             MaaMeowTheme(
                 themeMode = themeMode,
                 monetEnabled = monetEnabled,
