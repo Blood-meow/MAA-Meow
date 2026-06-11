@@ -119,8 +119,12 @@ fun ScheduleEditViewMiuix(
             MiuixTopAppBar(
                 title = if (state.isNew) stringResource(R.string.schedule_edit_title_new)
                 else stringResource(R.string.schedule_edit_title_edit),
-                navigationIcon = Icons.AutoMirrored.Filled.ArrowBack,
-                onNavigationClick = { navController.popBackStack() },
+                navigationIcon = {
+                        MiuixIconButton(onClick = { navController.popBackStack() }) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+                        }
+                    },
+
                 actions = {
                     if (state.isSaving) {
                         CircularProgressIndicator(modifier = Modifier.size(24.dp).padding(end = 16.dp), strokeWidth = 2.dp)
@@ -141,7 +145,7 @@ fun ScheduleEditViewMiuix(
                     MiuixText(
                         text = "ID: ${state.strategyId}",
                         style = MaterialTheme.typography.bodySmall,
-                        color = MiuixTheme.colorScheme.onSurfaceSecondary,
+                        color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
                     )
                 }
@@ -263,7 +267,7 @@ fun ScheduleEditViewMiuix(
                             OutlinedTextField(value = if (state.intervalHours > 0) state.intervalHours.toString() else "", onValueChange = { viewModel.onIntervalHoursChanged(it.toIntOrNull() ?: 0) }, label = { Text(stringResource(R.string.schedule_hours_unit)) }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), singleLine = true, modifier = Modifier.width(80.dp))
                             val totalMinutes = state.intervalDays * 24 * 60 + state.intervalHours * 60
                             if (totalMinutes > 0) {
-                                MiuixText(text = stringResource(R.string.schedule_total_hours, totalMinutes / 60), style = MaterialTheme.typography.bodySmall, color = MiuixTheme.colorScheme.onSurfaceSecondary)
+                                MiuixText(text = stringResource(R.string.schedule_total_hours, totalMinutes / 60), style = MaterialTheme.typography.bodySmall, color = MiuixTheme.colorScheme.onSurfaceVariantSummary)
                             }
                         }
                     }
@@ -273,7 +277,7 @@ fun ScheduleEditViewMiuix(
             item { SectionHeaderMiuix(stringResource(R.string.schedule_section_task_config)) }
             item {
                 if (state.profiles.isEmpty()) {
-                    MiuixText(text = stringResource(R.string.schedule_no_profiles), style = MaterialTheme.typography.bodyMedium, color = MiuixTheme.colorScheme.onSurfaceSecondary, modifier = Modifier.padding(horizontal = 16.dp))
+                    MiuixText(text = stringResource(R.string.schedule_no_profiles), style = MaterialTheme.typography.bodyMedium, color = MiuixTheme.colorScheme.onSurfaceVariantSummary, modifier = Modifier.padding(horizontal = 16.dp))
                 } else {
                     FlowRow(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         state.profiles.forEach { profile ->
@@ -284,7 +288,7 @@ fun ScheduleEditViewMiuix(
                     val selectedProfile = state.profiles.find { it.id == state.selectedProfileId }
                     val enabledTasks = selectedProfile?.chain?.filter { it.enabled }?.joinToString("、") { it.name }
                     if (!enabledTasks.isNullOrEmpty()) {
-                        MiuixText(text = stringResource(R.string.schedule_enabled_tasks, enabledTasks), style = MaterialTheme.typography.bodySmall, color = MiuixTheme.colorScheme.onSurfaceSecondary, modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp))
+                        MiuixText(text = stringResource(R.string.schedule_enabled_tasks, enabledTasks), style = MaterialTheme.typography.bodySmall, color = MiuixTheme.colorScheme.onSurfaceVariantSummary, modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp))
                     }
                 }
             }
@@ -352,7 +356,7 @@ private fun TimePickerDialog(initialTime: LocalTime? = null, onDismiss: () -> Un
     BasicAlertDialog(onDismissRequest = onDismiss) {
         MiuixSurface(shape = MaterialTheme.shapes.extraLarge, color = MiuixTheme.colorScheme.surface) {
             Column(modifier = Modifier.padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                MiuixText(text = stringResource(R.string.schedule_time_picker_title), style = MaterialTheme.typography.labelMedium, color = MiuixTheme.colorScheme.onSurfaceSecondary, modifier = Modifier.fillMaxWidth().padding(bottom = 20.dp))
+                MiuixText(text = stringResource(R.string.schedule_time_picker_title), style = MaterialTheme.typography.labelMedium, color = MiuixTheme.colorScheme.onSurfaceVariantSummary, modifier = Modifier.fillMaxWidth().padding(bottom = 20.dp))
                 if (showDial) TimePicker(state = timePickerState) else TimeInput(state = timePickerState)
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                     TextButton(onClick = { showDial = !showDial }) { Text(if (showDial) stringResource(R.string.schedule_time_picker_keyboard_input) else stringResource(R.string.schedule_time_picker_dial_selection)) }

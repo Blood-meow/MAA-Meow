@@ -127,8 +127,12 @@ private fun ErrorLogListMiuix(
         topBar = {
             MiuixTopAppBar(
                 title = stringResource(R.string.settings_log_error_title),
-                navigationIcon = Icons.AutoMirrored.Filled.ArrowBack,
-                onNavigationClick = onBack,
+                navigationIcon = {
+                        MiuixIconButton(onClick = onBack) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+                        }
+                    },
+
                 actions = {
                     MiuixIconButton(onClick = onExport) {
                         Icon(Icons.Default.Share, contentDescription = stringResource(R.string.common_export), tint = MiuixTheme.colorScheme.primary)
@@ -147,7 +151,7 @@ private fun ErrorLogListMiuix(
                 MiuixText(
                     text = stringResource(R.string.log_empty_error),
                     modifier = Modifier.align(Alignment.Center),
-                    color = MiuixTheme.colorScheme.onSurfaceSecondary
+                    color = MiuixTheme.colorScheme.onSurfaceVariantSummary
                 )
             } else {
                 LazyColumn(
@@ -168,16 +172,16 @@ private fun ErrorLogListMiuix(
                             ) {
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(
-                        text = logFile.name,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Medium,
-                        color = MiuixTheme.colorScheme.onSurface
+                                        text = logFile.name,
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Medium,
+                                        color = MiuixTheme.colorScheme.onSurface
                                     )
                                     Spacer(modifier = Modifier.height(4.dp))
                                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                        MiuixText(text = formatFileSize(logFile.size), style = MaterialTheme.typography.bodySmall, color = MiuixTheme.colorScheme.onSurfaceSecondary)
-                                        MiuixText(text = "•", style = MaterialTheme.typography.bodySmall, color = MiuixTheme.colorScheme.onSurfaceSecondary)
-                                        MiuixText(text = formatTime(logFile.lastModified), style = MaterialTheme.typography.bodySmall, color = MiuixTheme.colorScheme.onSurfaceSecondary)
+                                        MiuixText(text = formatFileSize(logFile.size), style = MaterialTheme.typography.bodySmall, color = MiuixTheme.colorScheme.onSurfaceVariantSummary)
+                                        MiuixText(text = "•", style = MaterialTheme.typography.bodySmall, color = MiuixTheme.colorScheme.onSurfaceVariantSummary)
+                                        MiuixText(text = formatTime(logFile.lastModified), style = MaterialTheme.typography.bodySmall, color = MiuixTheme.colorScheme.onSurfaceVariantSummary)
                                     }
                                 }
                             }
@@ -198,8 +202,11 @@ private fun ErrorLogDetailMiuix(
         topBar = {
             MiuixTopAppBar(
                 title = stringResource(R.string.log_detail_title),
-                navigationIcon = Icons.AutoMirrored.Filled.ArrowBack,
-                onNavigationClick = onBack
+                navigationIcon = {
+                        MiuixIconButton(onClick = onBack) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+                        }
+                    },
             )
         }
     ) { paddingValues ->

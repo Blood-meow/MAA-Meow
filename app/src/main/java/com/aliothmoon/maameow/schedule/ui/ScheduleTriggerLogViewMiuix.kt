@@ -79,8 +79,12 @@ fun ScheduleTriggerLogViewMiuix(
         topBar = {
             MiuixTopAppBar(
                 title = stringResource(R.string.schedule_trigger_log_title),
-                navigationIcon = Icons.AutoMirrored.Filled.ArrowBack,
-                onNavigationClick = { navController.popBackStack() },
+                navigationIcon = {
+                        MiuixIconButton(onClick = { navController.popBackStack() }) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+                        }
+                    },
+
                 actions = {
                     if (summaries.isNotEmpty()) {
                         MiuixIconButton(onClick = { showClearConfirm = true }) {
@@ -115,13 +119,13 @@ fun ScheduleTriggerLogViewMiuix(
                             imageVector = Icons.Default.DateRange,
                             contentDescription = null,
                             modifier = Modifier.size(64.dp),
-                            tint = MiuixTheme.colorScheme.onSurfaceSecondary.copy(alpha = 0.5f)
+                            tint = MiuixTheme.colorScheme.onSurfaceVariantSummary.copy(alpha = 0.5f)
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         MiuixText(
                             stringResource(R.string.schedule_log_empty_state),
                             style = MaterialTheme.typography.bodyLarge,
-                            color = MiuixTheme.colorScheme.onSurfaceSecondary
+                            color = MiuixTheme.colorScheme.onSurfaceVariantSummary
                         )
                     }
                 }
@@ -189,7 +193,7 @@ private fun SummaryCardMiuix(
     onDelete: () -> Unit,
 ) {
     val resultColor = summary.footer?.result?.let { resultColorMiuix(it) }
-        ?: MiuixTheme.colorScheme.onSurfaceSecondary
+        ?: MiuixTheme.colorScheme.onSurfaceVariantSummary
     val resultLabel = summary.footer?.result?.let { scheduleExecutionResultLabel(it) }
         ?: stringResource(R.string.schedule_result_in_progress)
 
@@ -226,13 +230,13 @@ private fun SummaryCardMiuix(
                     MiuixText(
                         text = stringResource(R.string.schedule_log_scheduled_time, formatTime(summary.header.scheduledTimeMs)),
                         style = MaterialTheme.typography.bodySmall,
-                        color = MiuixTheme.colorScheme.onSurfaceSecondary
+                        color = MiuixTheme.colorScheme.onSurfaceVariantSummary
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     MiuixText(
                         text = stringResource(R.string.schedule_log_triggered_time, formatTime(summary.header.actualTimeMs)),
                         style = MaterialTheme.typography.bodySmall,
-                        color = MiuixTheme.colorScheme.onSurfaceSecondary
+                        color = MiuixTheme.colorScheme.onSurfaceVariantSummary
                     )
                 }
                 if (summary.footer?.message != null) {
@@ -240,7 +244,7 @@ private fun SummaryCardMiuix(
                     MiuixText(
                         text = summary.footer.message,
                         style = MaterialTheme.typography.bodySmall,
-                        color = MiuixTheme.colorScheme.onSurfaceSecondary.copy(alpha = 0.8f)
+                        color = MiuixTheme.colorScheme.onSurfaceVariantSummary.copy(alpha = 0.8f)
                     )
                 }
             }
@@ -248,7 +252,7 @@ private fun SummaryCardMiuix(
                 Icon(
                     Icons.Outlined.Delete,
                     contentDescription = stringResource(R.string.common_delete),
-                    tint = MiuixTheme.colorScheme.onSurfaceSecondary
+                    tint = MiuixTheme.colorScheme.onSurfaceVariantSummary
                 )
             }
         }
@@ -266,8 +270,12 @@ private fun DetailViewMiuix(
         topBar = {
             MiuixTopAppBar(
                 title = header?.strategyName ?: stringResource(R.string.schedule_log_detail_title),
-                navigationIcon = Icons.AutoMirrored.Filled.ArrowBack,
-                onNavigationClick = onBack,
+                navigationIcon = {
+                        MiuixIconButton(onClick = onBack) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+                        }
+                    },
+
             )
         }
     ) { padding ->
@@ -284,12 +292,12 @@ private fun DetailViewMiuix(
                         MiuixText(
                             text = stringResource(R.string.schedule_log_scheduled_time, formatTimeFull(entry.scheduledTimeMs)),
                             style = MaterialTheme.typography.bodySmall,
-                            color = MiuixTheme.colorScheme.onSurfaceSecondary
+                            color = MiuixTheme.colorScheme.onSurfaceVariantSummary
                         )
                         MiuixText(
                             text = stringResource(R.string.schedule_log_triggered_time, formatTimeFull(entry.actualTimeMs)),
                             style = MaterialTheme.typography.bodySmall,
-                            color = MiuixTheme.colorScheme.onSurfaceSecondary
+                            color = MiuixTheme.colorScheme.onSurfaceVariantSummary
                         )
                         HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
                     }
@@ -299,7 +307,7 @@ private fun DetailViewMiuix(
                             MiuixText(
                                 text = formatTimeShort(entry.time),
                                 style = MaterialTheme.typography.bodySmall,
-                                color = MiuixTheme.colorScheme.onSurfaceSecondary
+                                color = MiuixTheme.colorScheme.onSurfaceVariantSummary
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             MiuixText(
@@ -316,7 +324,7 @@ private fun DetailViewMiuix(
                             MiuixText(
                                 text = formatTimeShort(entry.time),
                                 style = MaterialTheme.typography.bodySmall,
-                                color = MiuixTheme.colorScheme.onSurfaceSecondary
+                                color = MiuixTheme.colorScheme.onSurfaceVariantSummary
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             MiuixText(
@@ -329,7 +337,7 @@ private fun DetailViewMiuix(
                                 MiuixText(
                                     text = entry.message,
                                     style = MaterialTheme.typography.bodySmall,
-                                    color = MiuixTheme.colorScheme.onSurfaceSecondary
+                                    color = MiuixTheme.colorScheme.onSurfaceVariantSummary
                                 )
                             }
                         }

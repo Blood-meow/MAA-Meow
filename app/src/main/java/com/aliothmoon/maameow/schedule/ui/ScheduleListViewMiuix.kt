@@ -108,18 +108,18 @@ fun ScheduleListViewMiuix(
                         imageVector = Icons.Default.DateRange,
                         contentDescription = null,
                         modifier = Modifier.size(64.dp),
-                        tint = MiuixTheme.colorScheme.onSurfaceSecondary.copy(alpha = 0.5f)
+                        tint = MiuixTheme.colorScheme.onSurfaceVariantSummary.copy(alpha = 0.5f)
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     MiuixText(
                         text = stringResource(R.string.schedule_empty_state),
                         style = MaterialTheme.typography.bodyLarge,
-                        color = MiuixTheme.colorScheme.onSurfaceSecondary
+                        color = MiuixTheme.colorScheme.onSurfaceVariantSummary
                     )
                     MiuixText(
                         text = stringResource(R.string.schedule_empty_hint_add),
                         style = MaterialTheme.typography.bodySmall,
-                        color = MiuixTheme.colorScheme.onSurfaceSecondary.copy(alpha = 0.7f)
+                        color = MiuixTheme.colorScheme.onSurfaceVariantSummary.copy(alpha = 0.7f)
                     )
                 }
             }
@@ -195,13 +195,13 @@ private fun StrategyCardMiuix(
                 MiuixText(
                     text = localizedScheduleStrategySummary(strategy),
                     style = MaterialTheme.typography.bodySmall,
-                    color = MiuixTheme.colorScheme.onSurfaceSecondary
+                    color = MiuixTheme.colorScheme.onSurfaceVariantSummary
                 )
                 if (profileName != null) {
                     MiuixText(
                         text = profileName,
                         style = MaterialTheme.typography.bodySmall,
-                        color = MiuixTheme.colorScheme.onSurfaceSecondary
+                        color = MiuixTheme.colorScheme.onSurfaceVariantSummary
                     )
                 }
 
@@ -236,7 +236,7 @@ private fun StrategyCardMiuix(
                 Icon(
                     imageVector = Icons.Outlined.Delete,
                     contentDescription = stringResource(R.string.common_delete),
-                    tint = MiuixTheme.colorScheme.onSurfaceSecondary
+                    tint = MiuixTheme.colorScheme.onSurfaceVariantSummary
                 )
             }
 

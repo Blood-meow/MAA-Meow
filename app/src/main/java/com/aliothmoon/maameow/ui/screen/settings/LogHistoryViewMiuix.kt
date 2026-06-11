@@ -135,8 +135,12 @@ private fun LogFileListMiuix(
         topBar = {
             MiuixTopAppBar(
                 title = stringResource(R.string.settings_log_history_title),
-                navigationIcon = Icons.AutoMirrored.Filled.ArrowBack,
-                onNavigationClick = onBack,
+                navigationIcon = {
+                        MiuixIconButton(onClick = onBack) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+                        }
+                    },
+
                 actions = {
                     MiuixIconButton(onClick = onExport) {
                         Icon(Icons.Default.Share, contentDescription = stringResource(R.string.common_export), tint = MiuixTheme.colorScheme.primary)
@@ -155,7 +159,7 @@ private fun LogFileListMiuix(
                 MiuixText(
                     text = stringResource(R.string.log_empty_history),
                     modifier = Modifier.align(Alignment.Center),
-                    color = MiuixTheme.colorScheme.onSurfaceSecondary
+                    color = MiuixTheme.colorScheme.onSurfaceVariantSummary
                 )
             } else {
                 LazyColumn(
@@ -203,7 +207,7 @@ private fun LogFileItemMiuix(
                 Text(
                     text = stringResource(R.string.log_list_meta, logFile.taskCount, formatFileSizeMiuix(logFile.fileSize)),
                     style = MaterialTheme.typography.bodySmall,
-                    color = MiuixTheme.colorScheme.onSurfaceSecondary
+                    color = MiuixTheme.colorScheme.onSurfaceVariantSummary
                 )
             }
             MiuixIconButton(onClick = onDelete) {
@@ -222,8 +226,11 @@ private fun LogDetailMiuix(
         topBar = {
             MiuixTopAppBar(
                 title = stringResource(R.string.log_detail_title),
-                navigationIcon = Icons.AutoMirrored.Filled.ArrowBack,
-                onNavigationClick = onBack
+                navigationIcon = {
+                        MiuixIconButton(onClick = onBack) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+                        }
+                    },
             )
         }
     ) { paddingValues ->
