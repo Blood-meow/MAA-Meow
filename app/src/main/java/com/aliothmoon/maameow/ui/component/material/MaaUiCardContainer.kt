@@ -29,8 +29,9 @@ fun MaaUiCardContainer(
     shape: Shape = RoundedCornerShape(12.dp),
     containerColor: Color = Color.Unspecified,
     contentColor: Color = Color.Unspecified,
-    elevation: Dp = 0.dp,
+    elevation: androidx.compose.material3.CardElevation = CardDefaults.cardElevation(),
     border: BorderStroke? = null,
+    colors: androidx.compose.material3.CardColors? = null,
     content: @Composable ColumnScope.() -> Unit
 ) {
     if (isMiuixUi) {
@@ -40,13 +41,14 @@ fun MaaUiCardContainer(
             content()
         }
     } else {
+        val resolvedColors = colors ?: if (containerColor != Color.Unspecified)
+            CardDefaults.cardColors(containerColor = containerColor)
+        else CardDefaults.cardColors()
         Card(
             modifier = modifier,
             shape = shape,
-            colors = if (containerColor != Color.Unspecified)
-                CardDefaults.cardColors(containerColor = containerColor)
-            else CardDefaults.cardColors(),
-            elevation = CardDefaults.cardElevation(defaultElevation = elevation),
+            colors = resolvedColors,
+            elevation = elevation,
             border = border
         ) {
             content()

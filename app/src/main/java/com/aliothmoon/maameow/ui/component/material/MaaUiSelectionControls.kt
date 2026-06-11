@@ -1,8 +1,12 @@
 package com.aliothmoon.maameow.ui.component.material
 
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.unit.dp
 import com.aliothmoon.maameow.ui.isMiuixUi
 
 /**
@@ -132,6 +136,8 @@ fun MaaUiButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    shape: Shape = RoundedCornerShape(8.dp),
+    contentPadding: PaddingValues = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
     content: @Composable () -> Unit,
 ) {
     if (isMiuixUi) {
@@ -139,6 +145,7 @@ fun MaaUiButton(
             onClick = onClick,
             modifier = modifier,
             enabled = enabled,
+            insideMargin = contentPadding,
             content = content,
         )
     } else {
@@ -146,6 +153,8 @@ fun MaaUiButton(
             onClick = onClick,
             modifier = modifier,
             enabled = enabled,
+            shape = shape,
+            contentPadding = contentPadding,
             content = content,
         )
     }
@@ -159,6 +168,8 @@ fun MaaUiOutlinedButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    shape: Shape = RoundedCornerShape(8.dp),
+    contentPadding: PaddingValues = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
     content: @Composable () -> Unit,
 ) {
     if (isMiuixUi) {
@@ -166,6 +177,7 @@ fun MaaUiOutlinedButton(
             onClick = onClick,
             modifier = modifier,
             enabled = enabled,
+            insideMargin = contentPadding,
             content = content,
         )
     } else {
@@ -173,6 +185,8 @@ fun MaaUiOutlinedButton(
             onClick = onClick,
             modifier = modifier,
             enabled = enabled,
+            shape = shape,
+            contentPadding = contentPadding,
             content = content,
         )
     }
@@ -187,15 +201,16 @@ fun MaaUiTextButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    shape: Shape = RoundedCornerShape(8.dp),
+    contentPadding: PaddingValues = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
     content: @Composable () -> Unit,
 ) {
     if (isMiuixUi) {
-        // Miuix doesn't have a generic TextButton with composable content,
-        // so we use Button with default (transparent-ish) styling
         top.yukonga.miuix.kmp.basic.Button(
             onClick = onClick,
             modifier = modifier,
             enabled = enabled,
+            insideMargin = contentPadding,
             content = content,
         )
     } else {
@@ -203,6 +218,8 @@ fun MaaUiTextButton(
             onClick = onClick,
             modifier = modifier,
             enabled = enabled,
+            shape = shape,
+            contentPadding = contentPadding,
             content = content,
         )
     }
