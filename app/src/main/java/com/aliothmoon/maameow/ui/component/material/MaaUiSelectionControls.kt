@@ -29,13 +29,17 @@ fun MaaUiRadioButton(
     enabled: Boolean = true,
 ) {
     if (isMiuixUi) {
-        top.yukonga.miuix.kmp.basic.RadioButton(
-            selected = selected, onClick = onClick, modifier = modifier, enabled = enabled,
-        )
+        CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides Dp.Unspecified) {
+            top.yukonga.miuix.kmp.basic.RadioButton(
+                selected = selected, onClick = onClick, modifier = modifier, enabled = enabled,
+            )
+        }
     } else {
-        androidx.compose.material3.RadioButton(
-            selected = selected, onClick = onClick, modifier = modifier, enabled = enabled,
-        )
+        CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides Dp.Unspecified) {
+            androidx.compose.material3.RadioButton(
+                selected = selected, onClick = onClick, modifier = modifier, enabled = enabled,
+            )
+        }
     }
 }
 
@@ -76,15 +80,19 @@ fun MaaUiSwitch(
     enabled: Boolean = true,
 ) {
     if (isMiuixUi) {
-        top.yukonga.miuix.kmp.basic.Switch(
-            checked = checked, onCheckedChange = onCheckedChange,
-            modifier = modifier, enabled = enabled,
-        )
+        CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides Dp.Unspecified) {
+            top.yukonga.miuix.kmp.basic.Switch(
+                checked = checked, onCheckedChange = onCheckedChange,
+                modifier = modifier, enabled = enabled,
+            )
+        }
     } else {
-        androidx.compose.material3.Switch(
-            checked = checked, onCheckedChange = onCheckedChange,
-            modifier = modifier, enabled = enabled,
-        )
+        CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides Dp.Unspecified) {
+            androidx.compose.material3.Switch(
+                checked = checked, onCheckedChange = onCheckedChange,
+                modifier = modifier, enabled = enabled,
+            )
+        }
     }
 }
 
