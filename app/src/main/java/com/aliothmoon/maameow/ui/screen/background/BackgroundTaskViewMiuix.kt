@@ -43,12 +43,11 @@ import androidx.compose.material.icons.filled.Warning
 import top.yukonga.miuix.kmp.basic.Button as MiuixButton
 import top.yukonga.miuix.kmp.basic.ButtonDefaults as MiuixButtonDefaults
 import top.yukonga.miuix.kmp.basic.Card as MiuixCard
-import androidx.compose.material3.Checkbox
+import top.yukonga.miuix.kmp.basic.Checkbox
 import top.yukonga.miuix.kmp.basic.CircularProgressIndicator
 import top.yukonga.miuix.kmp.basic.HorizontalDivider
 import androidx.compose.material3.Icon
 import top.yukonga.miuix.kmp.basic.IconButton as MiuixIconButton
-import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import top.yukonga.miuix.kmp.basic.Surface as MiuixSurface
 import top.yukonga.miuix.kmp.basic.Text as MiuixText
 import androidx.compose.runtime.Composable
@@ -164,9 +163,7 @@ fun BackgroundTaskViewMiuix(
         snapshotFlow { pagerState.settledPage }.collect { page ->
             val newTab = PanelTab.entries[page]
             if (newTab != state.current) {
-                viewModel.onTabChange(newTab)
-            }
-        }
+                viewModel.onTabChange(newTab)        }
     }
 
     LaunchedEffect(state.current) {
@@ -989,8 +986,7 @@ private fun SettingSwitchRow(
             color = MiuixTheme.colorScheme.onSurface,
             modifier = Modifier.weight(1f)
         )
-        CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides Dp.Unspecified) {
-            Checkbox(
+        Checkbox(
                 checked = checked,
                 onCheckedChange = onCheckedChange,
                 modifier = Modifier.size(20.dp)
