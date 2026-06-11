@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import com.aliothmoon.maameow.ui.component.material.MaaUiCardContainer
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -22,7 +23,7 @@ import com.aliothmoon.maameow.R
 
 @Composable
 fun BlacklistItemRow(item: String, enabled: Boolean, onRemove: () -> Unit) {
-    Card(
+    MaaUiCardContainer(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
             containerColor = if (enabled) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.surfaceVariant

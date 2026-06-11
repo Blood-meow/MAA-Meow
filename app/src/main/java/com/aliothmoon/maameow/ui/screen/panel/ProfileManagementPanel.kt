@@ -29,6 +29,7 @@ import androidx.compose.material.icons.filled.Warning
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
+import com.aliothmoon.maameow.ui.component.material.MaaUiCardContainer
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -187,7 +188,7 @@ private fun ProfileCard(
 ) {
     val clipboardManager = LocalClipboardManager.current
     val context = LocalContext.current
-    Card(
+    MaaUiCardContainer(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onSwitch() },

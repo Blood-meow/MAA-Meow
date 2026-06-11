@@ -26,6 +26,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import com.aliothmoon.maameow.ui.component.material.MaaUiButton
 import androidx.compose.material3.ButtonDefaults
+import com.aliothmoon.maameow.ui.component.material.MaaUiCardContainer
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -86,7 +87,7 @@ fun OverlayDialog(
                 enter = scaleIn(initialScale = 0.85f, animationSpec = tween(200)),
                 exit = scaleOut(targetScale = 0.85f, animationSpec = tween(150))
             ) {
-                Card(
+                MaaUiCardContainer(
                     modifier = Modifier
                         .widthIn(max = 280.dp)
                         .wrapContentHeight()

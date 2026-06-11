@@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.List
+import com.aliothmoon.maameow.ui.component.material.MaaUiCardContainer
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import com.aliothmoon.maameow.ui.component.material.MaaUiCheckbox
@@ -68,7 +69,7 @@ fun TaskListPanel(
 ) {
     Column(modifier = modifier.width(IntrinsicSize.Max)) {
         // 配置选择按钮 - 在编辑任务按钮上方
-        Card(
+        MaaUiCardContainer(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable { onToggleProfileMode() },
@@ -105,7 +106,7 @@ fun TaskListPanel(
         Spacer(modifier = Modifier.height(6.dp))
 
         // 编辑任务按钮 - 具备高亮状态
-        Card(
+        MaaUiCardContainer(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable { onToggleEditMode() },
@@ -145,7 +146,7 @@ fun TaskListPanel(
         ) {
             Column {
                 Spacer(modifier = Modifier.height(6.dp))
-                Card(
+                MaaUiCardContainer(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable { onToggleAddingTask() },
@@ -214,7 +215,7 @@ private fun TaskNodeRow(
     onSelected: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Card(
+    MaaUiCardContainer(
         modifier = modifier
             .fillMaxWidth(),
         shape = RoundedCornerShape(4.dp),

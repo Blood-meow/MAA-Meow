@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Menu
+import com.aliothmoon.maameow.ui.component.material.MaaUiCardContainer
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -36,7 +37,7 @@ fun PriorityItemRow(
     onRemove: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Card(
+    MaaUiCardContainer(
         modifier = modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
             containerColor = when {

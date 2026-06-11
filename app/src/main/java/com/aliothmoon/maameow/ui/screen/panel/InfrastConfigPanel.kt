@@ -24,6 +24,7 @@ import androidx.compose.foundation.pager.PageSize
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import com.aliothmoon.maameow.ui.component.material.MaaUiButton
+import com.aliothmoon.maameow.ui.component.material.MaaUiCardContainer
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import com.aliothmoon.maameow.ui.component.material.MaaUiCheckbox
@@ -390,7 +391,7 @@ private fun CustomInfrastSection(
         if (custom != null && custom.plans.isNotEmpty()) {
             if (!custom.title.isNullOrBlank() || !custom.description.isNullOrBlank()) {
                 var descExpanded by remember { mutableStateOf(false) }
-                Card(
+                MaaUiCardContainer(
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
                     ), modifier = Modifier.clickable(
