@@ -346,6 +346,7 @@ private fun TaskPromptCard(
                     style = ThemeTypography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Start,
+                    color = ThemeColors.onSurface,
                     modifier = Modifier.weight(1f)
                 )
 
@@ -472,6 +473,7 @@ private fun TaskPromptButtons(
         dismissText?.let {
             MaaUiTextButton(
                 onClick = onDismissRequest,
+                modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp)
             ) {
                 MaaUiText(it, color = ThemeColors.onSurfaceVariant)
