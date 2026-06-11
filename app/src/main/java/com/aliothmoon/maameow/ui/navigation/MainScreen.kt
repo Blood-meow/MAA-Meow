@@ -40,7 +40,6 @@ import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import top.yukonga.miuix.kmp.basic.Scaffold as MiuixScaffold
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-import androidx.compose.ui.unit.dp
 import top.yukonga.miuix.kmp.blur.layerBackdrop
 import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
 import kotlin.math.abs
@@ -65,6 +64,7 @@ class MainPagerState(
         if (targetIndex == selectedPage) return
 
         navJob?.cancel()
+
         selectedPage = targetIndex
         isNavigating = true
 
@@ -110,6 +110,12 @@ fun rememberMainPagerState(
     }
 }
 
+/**
+ * Main screen with HorizontalPager for smooth tab switching.
+ * Follows KernelSU pattern: bottomBar is ALWAYS passed to Scaffold,
+ * content always uses scaffold paddingValues. The floating bar handles
+ * its own positioning internally (12dp + navigationBars).
+ */
 @Composable
 fun MainScreen(
     navController: NavController,
@@ -125,7 +131,7 @@ fun MainScreen(
     val uiBlurEnabled by appSettings.uiBlurEnabled.collectAsStateWithLifecycle()
     val uiFloatingBottomBar by appSettings.uiFloatingBottomBar.collectAsStateWithLifecycle()
 
-    // Create backdrop only for Miuix mode (used by FloatingBottomBar blur effects)
+    // Create backdrop for Miuix mode (used by FloatingBottomBar blur effects)
     val backdrop = if (miuix) {
         val surfaceColor = MiuixTheme.colorScheme.surface
         rememberLayerBackdrop {
@@ -141,79 +147,67 @@ fun MainScreen(
     val currentPage = mainPagerState.pagerState.currentPage
     LaunchedEffect(currentPage) { mainPagerState.syncPage() }
 
-    if (miuix) {
-        val useFloatingBar = uiFloatingBottomBar && visible
+    // Bottom bar composable — always built, passed to scaffold in both modes
+    val bottomBar: @Composable () -> Unit = if (visible) {
+        @Composable {
+            Box(modifier = Modifier.fillMaxWidth()) {
+                AppBottomNavigation(
+                    currentRoute = BottomNavTab.all[mainPagerState.selectedPage].route,
+                    onTabSelected = { tab ->
+                        val index = BottomNavTab.all.indexOf(tab)
+                        if (index >= 0) mainPagerState.animateToPage(index)
+                    },
+                    backdrop = backdrop
+                )
+            }
+        }
+    } else {
+        { {} }
+    }
 
-        // For floating bar: DON'T pass it to MiuixScaffold (it paints background behind it).
-        // Instead overlay it manually after the scaffold.
-        // For non-floating: pass to scaffold normally.
-        val scaffoldBottomBar: @Composable () -> Unit = if (visible && !useFloatingBar) {
-            @Composable {
-                Box(modifier = Modifier.fillMaxWidth()) {
-                    AppBottomNavigation(
-                        currentRoute = BottomNavTab.all[mainPagerState.selectedPage].route,
-                        onTabSelected = { tab ->
-                            val index = BottomNavTab.all.indexOf(tab)
-                            if (index >= 0) mainPagerState.animateToPage(index)
-                        },
-                        backdrop = backdrop
+    // Pager content shared between Material and Miuix modes
+    val pagerContent: @Composable (Modifier) -> Unit = { mod ->
+        Box(modifier = mod) {
+            HorizontalPager(
+                state = mainPagerState.pagerState,
+                modifier = Modifier.fillMaxSize(),
+                beyondViewportPageCount = 3,
+                userScrollEnabled = true
+            ) { page ->
+                when (page) {
+                    0 -> HomeView(navController = navController)
+                    1 -> BackgroundTaskView(
+                        onFullscreenChanged = onFullscreenChanged,
+                        viewModel = backgroundTaskViewModel,
+                    )
+                    2 -> ScheduleListView(navController = navController)
+                    3 -> SettingsView(
+                        navController = navController,
+                        onViewAnnouncement = onViewAnnouncement,
                     )
                 }
             }
-        } else {
-            { {} }
         }
+    }
 
-        Box(modifier = Modifier.fillMaxSize()) {
-            MiuixScaffold(bottomBar = scaffoldBottomBar) { paddingValues ->
-                val contentModifier = if (useFloatingBar) {
-                    val base = Modifier.fillMaxSize()
-                    val withBackdrop = if (uiBlurEnabled && backdrop != null) base.layerBackdrop(backdrop) else base
-                    withBackdrop.padding(bottom = 80.dp)
-                } else {
-                    Modifier.fillMaxSize().padding(paddingValues)
-                }
-                Box(modifier = contentModifier) {
-                    HorizontalPager(
-                        state = mainPagerState.pagerState,
-                        modifier = Modifier.fillMaxSize(),
-                        beyondViewportPageCount = 3,
-                        userScrollEnabled = true
-                    ) { page ->
-                        when (page) {
-                            0 -> HomeView(navController = navController)
-                            1 -> BackgroundTaskView(
-                                onFullscreenChanged = onFullscreenChanged,
-                                viewModel = backgroundTaskViewModel,
-                            )
-                            2 -> ScheduleListView(navController = navController)
-                            3 -> SettingsView(
-                                navController = navController,
-                                onViewAnnouncement = onViewAnnouncement,
-                            )
-                        }
-                    }
-                }
-            }
-
-            // Floating bar overlay — positioned outside scaffold so no background bleeds through
-            if (useFloatingBar) {
-                Box(modifier = Modifier.fillMaxSize()) {
-                    Box(modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth()) {
-                        AppBottomNavigation(
-                            currentRoute = BottomNavTab.all[mainPagerState.selectedPage].route,
-                            onTabSelected = { tab ->
-                                val index = BottomNavTab.all.indexOf(tab)
-                                if (index >= 0) mainPagerState.animateToPage(index)
-                            },
-                            backdrop = backdrop
-                        )
-                    }
+    if (miuix) {
+        // Miuix mode: scaffold with backdrop layer (KernelSU pattern)
+        CompositionLocalProvider(LocalMainPagerState provides mainPagerState) {
+            MiuixScaffold(bottomBar = bottomBar) { paddingValues ->
+                Box(
+                    modifier = if (uiBlurEnabled && backdrop != null)
+                        Modifier.layerBackdrop(backdrop) else Modifier
+                ) {
+                    pagerContent(
+                        Modifier
+                            .fillMaxSize()
+                            .padding(bottom = paddingValues.calculateBottomPadding())
+                    )
                 }
             }
         }
     } else {
-        // Material mode: no blur, no backdrop, no FloatingBottomBar
+        // Material mode: standard scaffold
         CompositionLocalProvider(LocalMainPagerState provides mainPagerState) {
             Scaffold(
                 bottomBar = if (visible) ({
