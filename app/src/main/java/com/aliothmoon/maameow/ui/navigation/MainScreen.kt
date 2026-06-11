@@ -4,8 +4,11 @@ import androidx.compose.animation.core.EaseInOut
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
@@ -24,6 +27,8 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.aliothmoon.maameow.data.preferences.AppSettingsManager
@@ -190,9 +195,17 @@ fun MainScreen(
     }
 
     if (miuix) {
+        val useFloatingBar = uiFloatingBottomBar && visible
         // Miuix mode: scaffold with backdrop layer (KernelSU / feat-miuix-ui pattern)
+        // When floating bar is active: transparent container + padding for gesture bar only
+        // When floating bar is off: standard scaffold with full paddingValues
         CompositionLocalProvider(LocalMainPagerState provides mainPagerState) {
-            MiuixScaffold(bottomBar = bottomBar) { paddingValues ->
+            MiuixScaffold(
+                bottomBar = bottomBar,
+                containerColor = if (useFloatingBar) Color.Transparent
+                    else MiuixTheme.colorScheme.surface
+            ) { paddingValues ->
+                val gestureBarPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
                 Box(
                     modifier = if (uiBlurEnabled && backdrop != null)
                         Modifier.layerBackdrop(backdrop) else Modifier
@@ -200,7 +213,11 @@ fun MainScreen(
                     pagerContent(
                         Modifier
                             .fillMaxSize()
-                            .padding(bottom = paddingValues.calculateBottomPadding())
+                            .padding(
+                                top = paddingValues.calculateTopPadding(),
+                                bottom = if (useFloatingBar) gestureBarPadding
+                                    else paddingValues.calculateBottomPadding()
+                            )
                     )
                 }
             }
