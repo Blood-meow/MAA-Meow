@@ -29,11 +29,13 @@ fun MaaUiRadioButton(
     enabled: Boolean = true,
 ) {
     if (isMiuixUi) {
-        CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides Dp.Unspecified) {
-            top.yukonga.miuix.kmp.basic.RadioButton(
-                selected = selected, onClick = onClick, modifier = modifier, enabled = enabled,
-            )
-        }
+        // In Miuix mode, render as Checkbox for a more consistent look
+        MaaUiCheckbox(
+            checked = selected,
+            onCheckedChange = onClick?.let { cb -> { cb() } },
+            modifier = modifier,
+            enabled = enabled,
+        )
     } else {
         CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides Dp.Unspecified) {
             androidx.compose.material3.RadioButton(
