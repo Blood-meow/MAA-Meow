@@ -121,9 +121,13 @@ class MainActivity : AppCompatActivity() {
     private fun doObserveThemeMode() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
+                // Track the last applied night mode to avoid redundant recreate
+                // when only the UI style changes but the light/dark mode stays the same.
+                var lastAppliedNightMode: Int = delegate.localNightMode
                 appSettingsManager.themeMode.drop(1).collect { mode ->
                     val target = mode.toAppCompatNightMode()
-                    if (delegate.localNightMode != target) {
+                    if (lastAppliedNightMode != target) {
+                        lastAppliedNightMode = target
                         delegate.localNightMode = target
                     }
                 }
