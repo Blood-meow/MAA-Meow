@@ -258,7 +258,7 @@ private fun ThemePreviewMiuix(
             modifier = Modifier
                 .fillMaxWidth(0.62f)
                 .aspectRatio(0.58f)
-                .border(1.dp, MiuixTheme.colorScheme.outline.copy(alpha = 0.12f), RoundedCornerShape(24.dp)),
+                .border(1.5.dp, MiuixTheme.colorScheme.outlineVariant, RoundedCornerShape(24.dp)),
             shape = RoundedCornerShape(24.dp),
             color = MiuixTheme.colorScheme.background,
         ) {
@@ -314,7 +314,7 @@ private fun ThemePreviewMiuix(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 18.dp, vertical = 10.dp)
-                        .border(1.dp, MiuixTheme.colorScheme.outline.copy(alpha = 0.12f), CircleShape),
+                        .border(1.5.dp, MiuixTheme.colorScheme.outlineVariant, CircleShape),
                     shape = CircleShape,
                     color = surfaceVariant.copy(alpha = if (blurEnabled) 0.72f else 0.92f),
                 ) {
