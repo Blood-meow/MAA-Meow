@@ -281,6 +281,21 @@ private fun ThemePreviewMiuix(
                         value = serviceStatusText,
                         accent = primary
                     )
+                    PreviewInfoMiuix(
+                        label = stringResource(R.string.home_screen_resolution),
+                        value = "${screenWidth}×${screenHeight}",
+                        accent = primary
+                    )
+                    PreviewInfoMiuix(
+                        label = stringResource(R.string.home_resource_version_label),
+                        value = resourceVersion,
+                        accent = primary
+                    )
+                    PreviewInfoMiuix(
+                        label = stringResource(R.string.home_app_version_label),
+                        value = appVersion,
+                        accent = primary
+                    )
                 }
 
                 MiuixSurface(

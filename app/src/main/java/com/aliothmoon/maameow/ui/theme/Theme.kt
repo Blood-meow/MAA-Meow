@@ -211,16 +211,25 @@ fun MaaMeowTheme(
         }
     }
 
-    val miuixMode = when (themeMode) {
-        AppSettingsManager.ThemeMode.SYSTEM -> ColorSchemeMode.System
-        AppSettingsManager.ThemeMode.WHITE -> ColorSchemeMode.Light
-        AppSettingsManager.ThemeMode.DARK,
-        AppSettingsManager.ThemeMode.PURE_DARK -> ColorSchemeMode.Dark
+    val miuixMode = if (monetEnabled) {
+        when (themeMode) {
+            AppSettingsManager.ThemeMode.SYSTEM -> ColorSchemeMode.MonetSystem
+            AppSettingsManager.ThemeMode.WHITE -> ColorSchemeMode.MonetLight
+            AppSettingsManager.ThemeMode.DARK,
+            AppSettingsManager.ThemeMode.PURE_DARK -> ColorSchemeMode.MonetDark
+        }
+    } else {
+        when (themeMode) {
+            AppSettingsManager.ThemeMode.SYSTEM -> ColorSchemeMode.System
+            AppSettingsManager.ThemeMode.WHITE -> ColorSchemeMode.Light
+            AppSettingsManager.ThemeMode.DARK,
+            AppSettingsManager.ThemeMode.PURE_DARK -> ColorSchemeMode.Dark
+        }
     }
     val miuixKeyColor = when {
-        !monetEnabled -> BlueLight.primary
+        !monetEnabled -> null
         keyColor != 0L -> Color(keyColor.toInt())
-        else -> colorScheme.primary  // Use dynamic/material primary so MiuixTheme matches
+        else -> null  // null = use system wallpaper dynamic colors (MonetSystem)
     }
     val miuixController = remember(miuixMode, miuixKeyColor) {
         ThemeController(
