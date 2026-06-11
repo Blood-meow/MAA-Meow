@@ -21,6 +21,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -142,7 +143,10 @@ fun MainScreen(
     if (miuix) {
         val useFloatingBar = uiFloatingBottomBar && visible
 
-        val bottomBar: @Composable () -> Unit = if (visible) {
+        // For floating bar: DON'T pass it to MiuixScaffold (it paints background behind it).
+        // Instead overlay it manually after the scaffold.
+        // For non-floating: pass to scaffold normally.
+        val scaffoldBottomBar: @Composable () -> Unit = if (visible && !useFloatingBar) {
             @Composable {
                 Box(modifier = Modifier.fillMaxWidth()) {
                     AppBottomNavigation(
@@ -159,34 +163,49 @@ fun MainScreen(
             { {} }
         }
 
-        MiuixScaffold(bottomBar = bottomBar) { paddingValues ->
-            // Floating bar: content fills entire screen (feat-miuix-ui pattern).
-            // The floating bar itself positions above gesture bar (12dp + navigationBars),
-            // so gesture bar area is handled by the floating bar.
-            // Non-floating: standard NavigationBar, apply scaffold padding.
-            val contentModifier = if (useFloatingBar) {
-                if (uiBlurEnabled && backdrop != null) Modifier.layerBackdrop(backdrop)
-                else Modifier
-            } else {
-                Modifier.padding(paddingValues)
+        Box(modifier = Modifier.fillMaxSize()) {
+            MiuixScaffold(bottomBar = scaffoldBottomBar) { paddingValues ->
+                val contentModifier = if (useFloatingBar) {
+                    val base = Modifier.fillMaxSize()
+                    val withBackdrop = if (uiBlurEnabled && backdrop != null) base.layerBackdrop(backdrop) else base
+                    withBackdrop.padding(bottom = 80.dp)
+                } else {
+                    Modifier.fillMaxSize().padding(paddingValues)
+                }
+                Box(modifier = contentModifier) {
+                    HorizontalPager(
+                        state = mainPagerState.pagerState,
+                        modifier = Modifier.fillMaxSize(),
+                        beyondViewportPageCount = 3,
+                        userScrollEnabled = true
+                    ) { page ->
+                        when (page) {
+                            0 -> HomeView(navController = navController)
+                            1 -> BackgroundTaskView(
+                                onFullscreenChanged = onFullscreenChanged,
+                                viewModel = backgroundTaskViewModel,
+                            )
+                            2 -> ScheduleListView(navController = navController)
+                            3 -> SettingsView(
+                                navController = navController,
+                                onViewAnnouncement = onViewAnnouncement,
+                            )
+                        }
+                    }
+                }
             }
-            Box(modifier = contentModifier) {
-                HorizontalPager(
-                    state = mainPagerState.pagerState,
-                    modifier = Modifier.fillMaxSize(),
-                    beyondViewportPageCount = 3,
-                    userScrollEnabled = true
-                ) { page ->
-                    when (page) {
-                        0 -> HomeView(navController = navController)
-                        1 -> BackgroundTaskView(
-                            onFullscreenChanged = onFullscreenChanged,
-                            viewModel = backgroundTaskViewModel,
-                        )
-                        2 -> ScheduleListView(navController = navController)
-                        3 -> SettingsView(
-                            navController = navController,
-                            onViewAnnouncement = onViewAnnouncement,
+
+            // Floating bar overlay — positioned outside scaffold so no background bleeds through
+            if (useFloatingBar) {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    Box(modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth()) {
+                        AppBottomNavigation(
+                            currentRoute = BottomNavTab.all[mainPagerState.selectedPage].route,
+                            onTabSelected = { tab ->
+                                val index = BottomNavTab.all.indexOf(tab)
+                                if (index >= 0) mainPagerState.animateToPage(index)
+                            },
+                            backdrop = backdrop
                         )
                     }
                 }
