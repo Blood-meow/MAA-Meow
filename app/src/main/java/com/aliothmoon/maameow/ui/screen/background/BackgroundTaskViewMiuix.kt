@@ -40,16 +40,20 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Warning
-import top.yukonga.miuix.kmp.basic.Button as MiuixButton
-import top.yukonga.miuix.kmp.basic.ButtonDefaults as MiuixButtonDefaults
-import top.yukonga.miuix.kmp.basic.Card as MiuixCard
-import top.yukonga.miuix.kmp.basic.Checkbox
-import top.yukonga.miuix.kmp.basic.CircularProgressIndicator
-import top.yukonga.miuix.kmp.basic.HorizontalDivider
-import androidx.compose.material3.Icon
+import com.aliothmoon.maameow.ui.component.material.MaaUiButton
+import com.aliothmoon.maameow.ui.component.material.MaaUiOutlinedButton
+import com.aliothmoon.maameow.ui.component.material.MaaUiTextButton
+import com.aliothmoon.maameow.ui.component.material.MaaUiCheckbox
+import com.aliothmoon.maameow.ui.component.material.MaaUiSwitch
 import top.yukonga.miuix.kmp.basic.IconButton as MiuixIconButton
 import top.yukonga.miuix.kmp.basic.Surface as MiuixSurface
+import top.yukonga.miuix.kmp.basic.Card as MiuixCard
+import top.yukonga.miuix.kmp.basic.CircularProgressIndicator as MiuixCircularProgressIndicator
+import top.yukonga.miuix.kmp.basic.HorizontalDivider as MiuixHorizontalDivider
 import top.yukonga.miuix.kmp.basic.Text as MiuixText
+import top.yukonga.miuix.kmp.theme.MiuixTheme
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -163,7 +167,9 @@ fun BackgroundTaskViewMiuix(
         snapshotFlow { pagerState.settledPage }.collect { page ->
             val newTab = PanelTab.entries[page]
             if (newTab != state.current) {
-                viewModel.onTabChange(newTab)        }
+                viewModel.onTabChange(newTab)
+            }
+        }
     }
 
     LaunchedEffect(state.current) {
@@ -211,7 +217,6 @@ fun BackgroundTaskViewMiuix(
             })
     }
 
-
     LaunchedEffect(state.isFullscreenMonitor) {
         onFullscreenChanged(state.isFullscreenMonitor)
     }
@@ -252,7 +257,6 @@ fun BackgroundTaskViewMiuix(
     LaunchedEffect(shouldHideMoreActions) {
         if (shouldHideMoreActions) showMoreActions = false
     }
-
 
     var isSurfaceAvailable by remember { mutableStateOf(false) }
     var lastSentSurface by remember { mutableStateOf<Surface?>(null) }
@@ -311,7 +315,6 @@ fun BackgroundTaskViewMiuix(
             }
         }
     }
-
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -471,7 +474,7 @@ fun BackgroundTaskViewMiuix(
                                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                MiuixButton(
+                                MaaUiButton(
                                     onClick = {
                                         focusManager.clearFocus()
                                         when (state.current) {
@@ -483,7 +486,7 @@ fun BackgroundTaskViewMiuix(
                                     },
                                     enabled = maaState != MaaExecutionState.RUNNING && maaState != MaaExecutionState.STARTING && maaState != MaaExecutionState.STOPPING,
                                     modifier = Modifier.weight(1f),
-                                    cornerRadius = 8.dp
+                                    shape = RoundedCornerShape(8.dp)
                                 ) {
                                     if (maaState == MaaExecutionState.STARTING) {
                                         CircularProgressIndicator(
@@ -496,7 +499,7 @@ fun BackgroundTaskViewMiuix(
                                     }
                                 }
 
-                                MiuixButton(
+                                MaaUiOutlinedButton(
                                     onClick = {
                                         when (state.current) {
                                             PanelTab.TASKS -> viewModel.onStopTasks()
@@ -507,8 +510,10 @@ fun BackgroundTaskViewMiuix(
                                     },
                                     enabled = maaState == MaaExecutionState.RUNNING,
                                     modifier = Modifier.weight(1f),
-                                    cornerRadius = 8.dp,
-                                    colors = MiuixButtonDefaults.buttonColors()
+                                    shape = RoundedCornerShape(8.dp),
+                                    colors = ButtonDefaults.outlinedButtonColors(
+                                        contentColor = MiuixTheme.colorScheme.error
+                                    )
                                 ) {
                                     if (maaState == MaaExecutionState.STOPPING) {
                                         CircularProgressIndicator(
@@ -740,7 +745,6 @@ private inline fun viewToVirtualDisplay(
     block(vx, vy)
 }
 
-
 @Composable
 private fun BackgroundMoreActionsOverlay(
     onDismissRequest: () -> Unit,
@@ -780,11 +784,7 @@ private fun BackgroundMoreActionsOverlay(
                     indication = null,
                     onClick = {}
                 ),
-            cornerRadius = 4.dp,
-            colors =
-                containerColor = MiuixTheme.colorScheme.surface
-            ),
-            elevation =
+            shape = RoundedCornerShape(4.dp),,,
             border = BorderStroke(0.5.dp, MiuixTheme.colorScheme.outlineVariant)
         ) {
             Column(modifier = Modifier.padding(10.dp)) {
@@ -932,7 +932,7 @@ private fun ActionTile(
     MiuixSurface(
         onClick = onClick,
         modifier = modifier.height(36.dp),
-        cornerRadius = 4.dp,
+        shape = RoundedCornerShape(4.dp),
         color = containerColor.copy(alpha = 0.08f),
         contentColor = contentColor,
         border = BorderStroke(0.5.dp, containerColor.copy(alpha = 0.2f))
@@ -986,11 +986,10 @@ private fun SettingSwitchRow(
             color = MiuixTheme.colorScheme.onSurface,
             modifier = Modifier.weight(1f)
         )
-        Checkbox(
+        MaaUiCheckbox(
                 checked = checked,
                 onCheckedChange = onCheckedChange,
                 modifier = Modifier.size(20.dp)
             )
-        }
     }
 }
