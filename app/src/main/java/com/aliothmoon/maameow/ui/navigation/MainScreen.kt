@@ -24,8 +24,6 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.aliothmoon.maameow.data.preferences.AppSettingsManager
@@ -143,16 +141,6 @@ fun MainScreen(
     } else {
         null
     }
-
-    // For floating bar: backdrop without surface fill so gesture bar stays transparent
-    val floatingBackdrop = if (miuix) {
-        rememberLayerBackdrop {
-            drawContent()
-        }
-    } else {
-        null
-    }
-
     val settledPage = mainPagerState.pagerState.settledPage
     LaunchedEffect(settledPage) { mainPagerState.syncPage() }
     val currentPage = mainPagerState.pagerState.currentPage
@@ -202,31 +190,17 @@ fun MainScreen(
     }
 
     if (miuix) {
-        val useFloatingBar = uiFloatingBottomBar && visible
-
-        // Miuix mode: scaffold with backdrop layer (KernelSU pattern)
-        // For floating bar: transparent container + backdrop without surface fill
-        // so gesture bar area stays transparent
-        // For standard bar: default container color + backdrop with surface fill
+        // Miuix mode: scaffold with backdrop layer (KernelSU / feat-miuix-ui pattern)
         CompositionLocalProvider(LocalMainPagerState provides mainPagerState) {
-            MiuixScaffold(
-                bottomBar = bottomBar,
-                containerColor = if (useFloatingBar) Color.Transparent
-                    else MiuixTheme.colorScheme.surface
-            ) { paddingValues ->
-                val activeBackdrop = if (useFloatingBar) floatingBackdrop else backdrop
-                // Floating bar: content fills entire screen including gesture bar area
-                // Non-floating: use scaffold paddingValues
-                val contentBottomPadding = if (useFloatingBar) 0.dp
-                    else paddingValues.calculateBottomPadding()
+            MiuixScaffold(bottomBar = bottomBar) { paddingValues ->
                 Box(
-                    modifier = if (uiBlurEnabled && activeBackdrop != null)
-                        Modifier.layerBackdrop(activeBackdrop) else Modifier
+                    modifier = if (uiBlurEnabled && backdrop != null)
+                        Modifier.layerBackdrop(backdrop) else Modifier
                 ) {
                     pagerContent(
                         Modifier
                             .fillMaxSize()
-                            .padding(bottom = contentBottomPadding)
+                            .padding(bottom = paddingValues.calculateBottomPadding())
                     )
                 }
             }
