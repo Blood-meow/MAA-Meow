@@ -19,7 +19,6 @@ import top.yukonga.miuix.kmp.basic.Icon as MiuixIcon
 import top.yukonga.miuix.kmp.basic.IconButton as MiuixIconButton
 import top.yukonga.miuix.kmp.basic.Text as MiuixText
 import top.yukonga.miuix.kmp.basic.TopAppBar as MiuixTopAppBar
-import top.yukonga.miuix.kmp.basic.ScrollBehavior as MiuixScrollBehavior
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -30,13 +29,11 @@ fun MaaUiTopAppBar(
     actionIcon: ImageVector? = null,
     actionIconDescription: String? = null,
     onActionClick: () -> Unit = {},
-    actions: @Composable (RowScope.() -> Unit)? = null,
-    scrollBehavior: MiuixScrollBehavior? = null
+    actions: @Composable (RowScope.() -> Unit)? = null
 ) {
     if (isMiuixUi) {
         MiuixTopAppBar(
             title = title,
-            scrollBehavior = scrollBehavior,
             navigationIcon = if (navigationIcon != null) {
                 @Composable {
                     MiuixIconButton(onClick = onNavigationClick) {
