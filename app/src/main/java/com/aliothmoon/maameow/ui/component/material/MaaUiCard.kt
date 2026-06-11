@@ -26,8 +26,8 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 fun MaaUiCard(
     title: String,
     modifier: Modifier = Modifier,
-    containerColor: Color = MaterialTheme.colorScheme.surface,
-    contentColor: Color = MaterialTheme.colorScheme.onSurface,
+    containerColor: Color = ThemeColors.surface,
+    contentColor: Color = ThemeColors.onSurface,
     contentPadding: PaddingValues = PaddingValues(MaaDesignTokens.Card.innerPadding),
     content: @Composable ColumnScope.() -> Unit
 ) {

@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.node.DelegatableNode
 import androidx.compose.ui.node.DrawModifierNode
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
+import androidx.compose.material3.LocalContentColor
 import com.aliothmoon.maameow.data.preferences.AppSettingsManager
 import com.aliothmoon.maameow.ui.LocalIsPureDark
 import com.aliothmoon.maameow.ui.LocalUiStyle
@@ -250,10 +251,18 @@ fun MaaMeowTheme(
                 typography = Typography,
                 shapes = MaaShapes,
             ) {
+                // In Miuix mode, bridge Miuix onSurface → Material3 LocalContentColor
+                // so bare Material3 Text() inside Miuix containers gets the correct
+                // dark-mode color (white) instead of defaulting to Color.Black.
+                // Must be INSIDE MaterialTheme to override its default.
+                val miuixOnSurface = if (uiStyle == AppSettingsManager.UiStyle.MIUIX)
+                    MiuixTheme.colorScheme.onSurface else null
                 CompositionLocalProvider(
                     LocalUiStyle provides uiStyle,
                     LocalIsPureDark provides isPureDark,
-                    LocalDensity provides scaledDensity
+                    LocalDensity provides scaledDensity,
+                    *(if (miuixOnSurface != null) arrayOf(LocalContentColor provides miuixOnSurface)
+                      else emptyArray())
                 ) {
                     content()
                 }
