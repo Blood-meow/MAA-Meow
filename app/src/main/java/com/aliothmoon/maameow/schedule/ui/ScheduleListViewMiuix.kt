@@ -86,77 +86,85 @@ fun ScheduleListViewMiuix(
                     }
                 }
             )
-        },
-        floatingActionButton = {
-            MiuixButton(onClick = { navController.navigate("schedule_edit/new") }) {
-                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.schedule_create_strategy))
-            }
         }
     ) { padding ->
-        if (state.strategies.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(
-                        imageVector = Icons.Default.DateRange,
-                        contentDescription = null,
-                        modifier = Modifier.size(64.dp),
-                        tint = MiuixTheme.colorScheme.onSurfaceVariantSummary.copy(alpha = 0.5f)
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    MiuixText(
-                        text = stringResource(R.string.schedule_empty_state),
-                        style = MiuixTheme.textStyles.body1,
-                        color = MiuixTheme.colorScheme.onSurfaceVariantSummary
-                    )
-                    MiuixText(
-                        text = stringResource(R.string.schedule_empty_hint_add),
-                        style = MiuixTheme.textStyles.body2,
-                        color = MiuixTheme.colorScheme.onSurfaceVariantSummary.copy(alpha = 0.7f)
-                    )
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+        ) {
+            if (state.strategies.isEmpty()) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(
+                            imageVector = Icons.Default.DateRange,
+                            contentDescription = null,
+                            modifier = Modifier.size(64.dp),
+                            tint = MiuixTheme.colorScheme.onSurfaceVariantSummary.copy(alpha = 0.5f)
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        MiuixText(
+                            text = stringResource(R.string.schedule_empty_state),
+                            style = MiuixTheme.textStyles.body1,
+                            color = MiuixTheme.colorScheme.onSurfaceVariantSummary
+                        )
+                        MiuixText(
+                            text = stringResource(R.string.schedule_empty_hint_add),
+                            style = MiuixTheme.textStyles.body2,
+                            color = MiuixTheme.colorScheme.onSurfaceVariantSummary.copy(alpha = 0.7f)
+                        )
+                    }
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 88.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(state.strategies, key = { it.id }) { strategy ->
+                        val profileName = state.profiles.find { it.id == strategy.profileId }?.name
+                        StrategyCardMiuix(
+                            strategy = strategy,
+                            profileName = profileName,
+                            nextTrigger = viewModel.getNextTriggerTime(strategy),
+                            onToggleEnabled = { viewModel.onToggleEnabled(strategy.id, it) },
+                            onClick = { navController.navigate("schedule_edit/${strategy.id}") },
+                            onDelete = { deleteConfirmId = strategy.id }
+                        )
+                    }
                 }
             }
-        } else {
-            LazyColumn(
+
+            // FAB placed inside content area (not scaffold's floatingActionButton)
+            // so it respects outer scaffold padding from the floating bottom bar
+            MiuixButton(
+                onClick = { navController.navigate("schedule_edit/new") },
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding),
-                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 88.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                    .align(Alignment.BottomEnd)
+                    .padding(16.dp)
             ) {
-                items(state.strategies, key = { it.id }) { strategy ->
-                    val profileName = state.profiles.find { it.id == strategy.profileId }?.name
-                    StrategyCardMiuix(
-                        strategy = strategy,
-                        profileName = profileName,
-                        nextTrigger = viewModel.getNextTriggerTime(strategy),
-                        onToggleEnabled = { viewModel.onToggleEnabled(strategy.id, it) },
-                        onClick = { navController.navigate("schedule_edit/${strategy.id}") },
-                        onDelete = { deleteConfirmId = strategy.id }
-                    )
-                }
+                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.schedule_create_strategy))
             }
-        }
 
-        if (deleteConfirmId != null) {
-            DeleteConfirmDialogMiuix(
-                onConfirm = {
-                    viewModel.onDeleteStrategy(deleteConfirmId!!)
-                    deleteConfirmId = null
-                },
-                onDismiss = { deleteConfirmId = null }
-            )
-        }
+            if (deleteConfirmId != null) {
+                DeleteConfirmDialogMiuix(
+                    onConfirm = {
+                        viewModel.onDeleteStrategy(deleteConfirmId!!)
+                        deleteConfirmId = null
+                    },
+                    onDismiss = { deleteConfirmId = null }
+                )
+            }
 
-        if (showAutoStartGuide) {
-            AutoStartGuideDialogMiuix(
-                context = context,
-                onDismiss = { showAutoStartGuide = false }
-            )
+            if (showAutoStartGuide) {
+                AutoStartGuideDialogMiuix(
+                    context = context,
+                    onDismiss = { showAutoStartGuide = false }
+                )
+            }
         }
     }
 }
