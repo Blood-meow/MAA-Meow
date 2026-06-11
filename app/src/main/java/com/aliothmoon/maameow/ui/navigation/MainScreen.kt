@@ -26,7 +26,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.aliothmoon.maameow.data.preferences.AppSettingsManager
@@ -139,24 +138,6 @@ fun MainScreen(
         val surfaceColor = MiuixTheme.colorScheme.surface
         rememberLayerBackdrop {
             drawRect(surfaceColor)
-            drawContent()
-        }
-    } else {
-        null
-    }
-
-    // For floating bar: backdrop without surface fill so gesture bar stays transparent
-    val floatingBackdrop = if (miuix) {
-        rememberLayerBackdrop {
-            drawContent()
-        }
-    } else {
-        null
-    }
-
-    // For floating bar: backdrop without surface fill so gesture bar stays transparent
-    val floatingBackdrop = if (miuix) {
-        rememberLayerBackdrop {
             drawContent()
         }
     } else {
