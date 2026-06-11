@@ -1,6 +1,7 @@
 package com.aliothmoon.maameow.ui.component.material
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -112,6 +113,7 @@ fun MaaUiIconButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    colors: androidx.compose.material3.IconButtonColors? = null,
     content: @Composable () -> Unit,
 ) {
     if (isMiuixUi) {
@@ -119,9 +121,15 @@ fun MaaUiIconButton(
             onClick = onClick, modifier = modifier, enabled = enabled, content = content,
         )
     } else {
-        androidx.compose.material3.IconButton(
-            onClick = onClick, modifier = modifier, enabled = enabled, content = content,
-        )
+        if (colors != null) {
+            androidx.compose.material3.IconButton(
+                onClick = onClick, modifier = modifier, enabled = enabled, colors = colors, content = content,
+            )
+        } else {
+            androidx.compose.material3.IconButton(
+                onClick = onClick, modifier = modifier, enabled = enabled, content = content,
+            )
+        }
     }
 }
 
@@ -178,26 +186,42 @@ fun MaaUiSurface(
     tonalElevation: Dp = 0.dp,
     shadowElevation: Dp = 0.dp,
     border: BorderStroke? = null,
+    onClick: (() -> Unit)? = null,
     content: @Composable () -> Unit,
 ) {
     if (isMiuixUi) {
+        val mod = if (onClick != null) modifier.clickable { onClick() } else modifier
         top.yukonga.miuix.kmp.basic.Surface(
-            modifier = modifier,
+            modifier = mod,
             shape = shape,
             color = color,
             contentColor = contentColor,
             content = content,
         )
     } else {
-        androidx.compose.material3.Surface(
-            modifier = modifier,
-            shape = shape,
-            color = color,
-            contentColor = contentColor,
-            tonalElevation = tonalElevation,
-            shadowElevation = shadowElevation,
-            border = border,
-            content = content,
-        )
+        if (onClick != null) {
+            androidx.compose.material3.Surface(
+                onClick = onClick,
+                modifier = modifier,
+                shape = shape,
+                color = color,
+                contentColor = contentColor,
+                tonalElevation = tonalElevation,
+                shadowElevation = shadowElevation,
+                border = border,
+                content = content,
+            )
+        } else {
+            androidx.compose.material3.Surface(
+                modifier = modifier,
+                shape = shape,
+                color = color,
+                contentColor = contentColor,
+                tonalElevation = tonalElevation,
+                shadowElevation = shadowElevation,
+                border = border,
+                content = content,
+            )
+        }
     }
 }
