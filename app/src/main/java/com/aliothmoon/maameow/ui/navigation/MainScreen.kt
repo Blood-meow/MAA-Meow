@@ -163,13 +163,11 @@ fun MainScreen(
         }
 
         MiuixScaffold(bottomBar = bottomBar) { paddingValues ->
-            // When floating bar is active: content fills the full screen behind the translucent bar,
-            // but we still need to pad the bottom so content isn't hidden by the gesture bar.
-            // When floating bar is OFF: standard NavigationBar, apply scaffold padding.
-            val navBarPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+            // Floating bar: content fills entire screen, bar overlays on top (feat-miuix-ui pattern).
+            // Non-floating: standard NavigationBar, apply scaffold padding.
             val contentModifier = if (useFloatingBar) {
-                val base = if (uiBlurEnabled && backdrop != null) Modifier.layerBackdrop(backdrop) else Modifier
-                base.padding(bottom = navBarPadding)
+                if (uiBlurEnabled && backdrop != null) Modifier.layerBackdrop(backdrop)
+                else Modifier
             } else {
                 Modifier.padding(paddingValues)
             }
