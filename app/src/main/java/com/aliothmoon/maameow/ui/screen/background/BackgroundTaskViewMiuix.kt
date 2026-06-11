@@ -174,7 +174,7 @@ fun BackgroundTaskViewMiuix(
 
     LaunchedEffect(state.current) {
         if (pagerState.currentPage != state.current.ordinal) {
-            pagerState.scrollToPage(state.current.ordinal)
+            pagerState.animateScrollToPage(state.current.ordinal)
         }
     }
     val context = LocalContext.current
@@ -321,8 +321,10 @@ fun BackgroundTaskViewMiuix(
             modifier = Modifier
                 .fillMaxSize()
                 .statusBarsPadding()
+                .navigationBarsPadding()
                 .padding(horizontal = 16.dp)
-                .padding(top = 8.dp, bottom = 8.dp)
+                // extra bottom space so the start/stop buttons sit above the floating bottom bar
+                .padding(top = 8.dp, bottom = 88.dp)
         ) {
             // --- 预览图区域：实时加载 ---
             Box(
@@ -370,7 +372,7 @@ fun BackgroundTaskViewMiuix(
                                 .fillMaxWidth()
                                 .weight(1f),
                             userScrollEnabled = true,
-                            beyondViewportPageCount = 0
+                            beyondViewportPageCount = PanelTab.entries.size - 1
                         ) { page ->
                             when (page) {
                                 0 -> {
@@ -676,7 +678,7 @@ fun BackgroundTaskViewMiuix(
             val (onDismiss, onConfirm) = activeDialogCallbacks!!
             val confirmColor = when (dialog.type) {
                 PanelDialogType.SUCCESS -> MiuixTheme.colorScheme.primary
-                PanelDialogType.WARNING -> MiuixTheme.colorScheme.tertiary
+                PanelDialogType.WARNING -> MiuixTheme.colorScheme.secondaryVariant
                 PanelDialogType.ERROR -> MiuixTheme.colorScheme.error
             }
             val dialogTitle = dialog.title.asString()
@@ -778,14 +780,14 @@ private fun BackgroundMoreActionsOverlay(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
-                .padding(start = 16.dp, end = 16.dp, bottom = 64.dp)
+                .padding(start = 16.dp, end = 16.dp, bottom = 96.dp)
                 .clickable(
                     interactionSource = cardInteractionSource,
                     indication = null,
                     onClick = {}
                 ),
-            shape = RoundedCornerShape(4.dp),,,
-            border = BorderStroke(0.5.dp, MiuixTheme.colorScheme.outlineVariant)
+            shape = RoundedCornerShape(4.dp),
+            border = BorderStroke(0.5.dp, MiuixTheme.colorScheme.outline)
         ) {
             Column(modifier = Modifier.padding(10.dp)) {
                 // 标题与快速操作组
@@ -836,14 +838,14 @@ private fun BackgroundMoreActionsOverlay(
                             stringResource(R.string.bg_action_mute_game),
                         onClick = onToggleGameSound,
                         modifier = Modifier.weight(1f),
-                        containerColor = if (isGameMuted) MiuixTheme.colorScheme.tertiary else MiuixTheme.colorScheme.secondary,
-                        contentColor = if (isGameMuted) MiuixTheme.colorScheme.tertiary else MiuixTheme.colorScheme.onSurface
+                        containerColor = if (isGameMuted) MiuixTheme.colorScheme.secondaryVariant else MiuixTheme.colorScheme.secondary,
+                        contentColor = if (isGameMuted) MiuixTheme.colorScheme.secondaryVariant else MiuixTheme.colorScheme.onSurface
                     )
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
                 HorizontalDivider(
-                    color = MiuixTheme.colorScheme.outlineVariant,
+                    color = MiuixTheme.colorScheme.outline,
                     thickness = 0.5.dp
                 )
                 Spacer(modifier = Modifier.height(12.dp))
@@ -977,7 +979,7 @@ private fun SettingSwitchRow(
             imageVector = icon,
             contentDescription = null,
             modifier = Modifier.size(16.dp),
-            tint = MiuixTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+            tint = MiuixTheme.colorScheme.onSurfaceSecondary.copy(alpha = 0.6f)
         )
         Spacer(modifier = Modifier.width(10.dp))
         MiuixText(
