@@ -14,7 +14,8 @@ fun SettingsViewMiuix(
     resourceInitService: ResourceInitService,
     logExportService: LogExportService
 ) {
-    // Complex settings page with many Material inner components (RadioButton, Switch, InfoCard, etc.).
-    // Material version already uses ThemeColors for Miuix color compatibility.
+    // MaaUiScaffold + MaaUiTopAppBar auto-switch to MiuixScaffold + MiuixTopAppBar.
+    // InfoCard/MaaUiCard use Miuix-aware colors (ThemeColors.surfaceContainer, alpha 0.72).
+    // Inner Material components (Switch, RadioButton) render correctly under MiuixTheme.
     SettingsViewMaterial(navController, onViewAnnouncement, viewModel, resourceInitService, logExportService)
 }

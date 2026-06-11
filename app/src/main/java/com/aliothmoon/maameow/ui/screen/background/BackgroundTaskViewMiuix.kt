@@ -22,7 +22,5 @@ fun BackgroundTaskViewMiuix(
     screenSaverManager: ScreenSaverOverlayManager,
     appWatchdog: AppWatchdog
 ) {
-    // Complex background task view with SurfaceView, HorizontalPager, full-screen mode, etc.
-    // Material version already uses ThemeColors for Miuix color compatibility.
     BackgroundTaskViewMaterial(onFullscreenChanged, viewModel, copilotViewModel, toolboxViewModel, compositionService, dispatcher, permissionManager, screenSaverManager, appWatchdog)
 }
