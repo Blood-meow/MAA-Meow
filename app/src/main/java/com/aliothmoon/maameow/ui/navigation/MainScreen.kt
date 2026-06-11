@@ -159,9 +159,9 @@ fun MainScreen(
             { {} }
         }
 
-        MiuixScaffold(bottomBar = bottomBar) { _ ->
+        MiuixScaffold(bottomBar = bottomBar) { paddingValues ->
             Box(
-                modifier = if (useFloatingBar && uiBlurEnabled && backdrop != null) Modifier.layerBackdrop(backdrop) else Modifier
+                modifier = if (useFloatingBar && uiBlurEnabled && backdrop != null) Modifier.layerBackdrop(backdrop).padding(paddingValues) else Modifier.padding(paddingValues)
             ) {
                 HorizontalPager(
                     state = mainPagerState.pagerState,
