@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -491,7 +492,7 @@ fun BackgroundTaskViewMiuix(
                                     shape = RoundedCornerShape(8.dp)
                                 ) {
                                     if (maaState == MaaExecutionState.STARTING) {
-                                        CircularProgressIndicator(
+                                        MiuixCircularProgressIndicator(
                                             modifier = Modifier.size(20.dp),
                                             color = MiuixTheme.colorScheme.onPrimary,
                                             strokeWidth = 2.dp
@@ -518,7 +519,7 @@ fun BackgroundTaskViewMiuix(
                                     )
                                 ) {
                                     if (maaState == MaaExecutionState.STOPPING) {
-                                        CircularProgressIndicator(
+                                        MiuixCircularProgressIndicator(
                                             modifier = Modifier.size(20.dp),
                                             color = MiuixTheme.colorScheme.error,
                                             strokeWidth = 2.dp
@@ -548,7 +549,7 @@ fun BackgroundTaskViewMiuix(
                             .weight(1f),
                         contentAlignment = Alignment.Center
                     ) {
-                        CircularProgressIndicator(
+                        MiuixCircularProgressIndicator(
                             modifier = Modifier.size(32.dp),
                             strokeWidth = 2.dp
                         )
