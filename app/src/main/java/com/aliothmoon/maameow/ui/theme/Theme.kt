@@ -220,7 +220,7 @@ fun MaaMeowTheme(
     val miuixKeyColor = when {
         !monetEnabled -> BlueLight.primary
         keyColor != 0L -> Color(keyColor.toInt())
-        else -> null
+        else -> colorScheme.primary  // Use dynamic/material primary so MiuixTheme matches
     }
     val miuixController = remember(miuixMode, miuixKeyColor) {
         ThemeController(
