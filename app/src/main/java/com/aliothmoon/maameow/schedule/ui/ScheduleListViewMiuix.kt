@@ -44,7 +44,6 @@ import com.aliothmoon.maameow.constant.Routes
 import com.aliothmoon.maameow.schedule.model.ExecutionResult
 import com.aliothmoon.maameow.schedule.service.AutoStartHelper
 import com.aliothmoon.maameow.schedule.model.ScheduleStrategy
-import org.koin.androidx.compose.koinViewModel
 import androidx.core.content.edit
 import top.yukonga.miuix.kmp.basic.Scaffold as MiuixScaffold
 import top.yukonga.miuix.kmp.basic.TopAppBar as MiuixTopAppBar

@@ -44,7 +44,6 @@ import com.aliothmoon.maameow.R
 import com.aliothmoon.maameow.schedule.model.ExecutionResult
 import com.aliothmoon.maameow.schedule.model.TriggerLogEntry
 import com.aliothmoon.maameow.schedule.service.ScheduleTriggerLogger.TriggerLogSummary
-import org.koin.androidx.compose.koinViewModel
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter

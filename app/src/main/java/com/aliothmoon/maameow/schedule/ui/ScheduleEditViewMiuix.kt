@@ -54,7 +54,6 @@ import androidx.compose.runtime.setValue
 import android.content.Intent
 import android.os.Build
 import android.provider.Settings
-import androidx.compose.foundation.layout.Box
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
