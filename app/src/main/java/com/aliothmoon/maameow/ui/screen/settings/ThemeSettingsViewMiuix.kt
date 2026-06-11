@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Brightness1
@@ -76,6 +77,7 @@ import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 import top.yukonga.miuix.kmp.basic.Scaffold as MiuixScaffold
 import top.yukonga.miuix.kmp.basic.TopAppBar as MiuixTopAppBar
+import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Surface as MiuixSurface
 import top.yukonga.miuix.kmp.basic.Text as MiuixText
 import top.yukonga.miuix.kmp.theme.MiuixTheme
@@ -103,16 +105,20 @@ fun ThemeSettingsViewMiuix(
     val appVersion = updateViewModel.currentAppVersion
     val uiState by homeViewModel.uiState.collectAsStateWithLifecycle()
 
+    val scrollBehavior = MiuixScrollBehavior()
+
     MiuixScaffold(
         topBar = {
             MiuixTopAppBar(
                 title = stringResource(R.string.settings_theme_settings_title),
+                scrollBehavior = scrollBehavior,
             )
         }
     ) { paddingValues ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
+                .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .padding(paddingValues),
             contentPadding = PaddingValues(top = 12.dp, bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -254,7 +260,8 @@ private fun ThemePreviewMiuix(
         MiuixSurface(
             modifier = Modifier
                 .fillMaxWidth(0.62f)
-                .aspectRatio(0.58f),
+                .aspectRatio(0.58f)
+                .border(1.dp, MiuixTheme.colorScheme.outline.copy(alpha = 0.12f), RoundedCornerShape(24.dp)),
             shape = RoundedCornerShape(24.dp),
             color = MiuixTheme.colorScheme.background,
         ) {
@@ -309,7 +316,8 @@ private fun ThemePreviewMiuix(
                 MiuixSurface(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 18.dp, vertical = 10.dp),
+                        .padding(horizontal = 18.dp, vertical = 10.dp)
+                        .border(1.dp, MiuixTheme.colorScheme.outline.copy(alpha = 0.12f), CircleShape),
                     shape = CircleShape,
                     color = surfaceVariant.copy(alpha = if (blurEnabled) 0.72f else 0.92f),
                 ) {
