@@ -24,11 +24,10 @@ import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.HorizontalDivider
+import top.yukonga.miuix.kmp.basic.CircularProgressIndicator
+import top.yukonga.miuix.kmp.basic.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -123,7 +122,7 @@ fun ScheduleTriggerLogViewMiuix(
                         Spacer(modifier = Modifier.height(16.dp))
                         MiuixText(
                             stringResource(R.string.schedule_log_empty_state),
-                            style = MaterialTheme.typography.bodyLarge,
+                            style = MiuixTheme.textStyles.body1,
                             color = MiuixTheme.colorScheme.onSurfaceVariantSummary
                         )
                     }
@@ -215,12 +214,12 @@ private fun SummaryCardMiuix(
                 ) {
                     MiuixText(
                         text = summary.header.strategyName,
-                        style = MaterialTheme.typography.titleSmall,
+                        style = MiuixTheme.textStyles.headline2,
                         color = MiuixTheme.colorScheme.onSurface
                     )
                     MiuixText(
                         text = resultLabel,
-                        style = MaterialTheme.typography.labelMedium,
+                        style = MiuixTheme.textStyles.body2,
                         color = resultColor
                     )
                 }
@@ -228,13 +227,13 @@ private fun SummaryCardMiuix(
                 Row {
                     MiuixText(
                         text = stringResource(R.string.schedule_log_scheduled_time, formatTime(summary.header.scheduledTimeMs)),
-                        style = MaterialTheme.typography.bodySmall,
+                        style = MiuixTheme.textStyles.body2,
                         color = MiuixTheme.colorScheme.onSurfaceVariantSummary
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     MiuixText(
                         text = stringResource(R.string.schedule_log_triggered_time, formatTime(summary.header.actualTimeMs)),
-                        style = MaterialTheme.typography.bodySmall,
+                        style = MiuixTheme.textStyles.body2,
                         color = MiuixTheme.colorScheme.onSurfaceVariantSummary
                     )
                 }
@@ -242,7 +241,7 @@ private fun SummaryCardMiuix(
                     Spacer(modifier = Modifier.height(2.dp))
                     MiuixText(
                         text = summary.footer.message,
-                        style = MaterialTheme.typography.bodySmall,
+                        style = MiuixTheme.textStyles.body2,
                         color = MiuixTheme.colorScheme.onSurfaceVariantSummary.copy(alpha = 0.8f)
                     )
                 }
@@ -290,12 +289,12 @@ private fun DetailViewMiuix(
                     is TriggerLogEntry.Header -> {
                         MiuixText(
                             text = stringResource(R.string.schedule_log_scheduled_time, formatTimeFull(entry.scheduledTimeMs)),
-                            style = MaterialTheme.typography.bodySmall,
+                            style = MiuixTheme.textStyles.body2,
                             color = MiuixTheme.colorScheme.onSurfaceVariantSummary
                         )
                         MiuixText(
                             text = stringResource(R.string.schedule_log_triggered_time, formatTimeFull(entry.actualTimeMs)),
-                            style = MaterialTheme.typography.bodySmall,
+                            style = MiuixTheme.textStyles.body2,
                             color = MiuixTheme.colorScheme.onSurfaceVariantSummary
                         )
                         HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
@@ -305,13 +304,13 @@ private fun DetailViewMiuix(
                         Row {
                             MiuixText(
                                 text = formatTimeShort(entry.time),
-                                style = MaterialTheme.typography.bodySmall,
+                                style = MiuixTheme.textStyles.body2,
                                 color = MiuixTheme.colorScheme.onSurfaceVariantSummary
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             MiuixText(
                                 text = entry.message,
-                                style = MaterialTheme.typography.bodySmall,
+                                style = MiuixTheme.textStyles.body2,
                                 color = MiuixTheme.colorScheme.onSurface
                             )
                         }
@@ -322,20 +321,20 @@ private fun DetailViewMiuix(
                         Row {
                             MiuixText(
                                 text = formatTimeShort(entry.time),
-                                style = MaterialTheme.typography.bodySmall,
+                                style = MiuixTheme.textStyles.body2,
                                 color = MiuixTheme.colorScheme.onSurfaceVariantSummary
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             MiuixText(
                                 text = stringResource(R.string.schedule_log_result, scheduleExecutionResultLabel(entry.result)),
-                                style = MaterialTheme.typography.bodySmall,
+                                style = MiuixTheme.textStyles.body2,
                                 color = resultColorMiuix(entry.result)
                             )
                             if (entry.message != null) {
                                 Spacer(modifier = Modifier.width(8.dp))
                                 MiuixText(
                                     text = entry.message,
-                                    style = MaterialTheme.typography.bodySmall,
+                                    style = MiuixTheme.textStyles.body2,
                                     color = MiuixTheme.colorScheme.onSurfaceVariantSummary
                                 )
                             }
