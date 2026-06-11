@@ -1,6 +1,7 @@
 package com.aliothmoon.maameow.ui.component.material
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -36,7 +37,7 @@ fun MaaUiCardContainer(
 ) {
     if (isMiuixUi) {
         MiuixCard(
-            modifier = modifier
+            modifier = if (border != null) modifier.border(border, shape) else modifier
         ) {
             content()
         }

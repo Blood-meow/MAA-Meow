@@ -1,6 +1,7 @@
 package com.aliothmoon.maameow.ui.component.material
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -191,8 +192,9 @@ fun MaaUiSurface(
 ) {
     if (isMiuixUi) {
         val mod = if (onClick != null) modifier.clickable { onClick() } else modifier
+        val withBorder = if (border != null) mod.border(border, shape) else mod
         top.yukonga.miuix.kmp.basic.Surface(
-            modifier = mod,
+            modifier = withBorder,
             shape = shape,
             color = color,
             contentColor = contentColor,
