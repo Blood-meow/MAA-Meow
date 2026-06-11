@@ -42,12 +42,10 @@ import androidx.compose.material.icons.rounded.Style
 import androidx.compose.material.icons.rounded.ViewAgenda
 import androidx.compose.material.icons.rounded.AspectRatio
 import androidx.compose.material.icons.rounded.WaterDrop
-import androidx.compose.material3.HorizontalDivider
+import top.yukonga.miuix.kmp.basic.HorizontalDivider
+import top.yukonga.miuix.kmp.basic.Switch
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Switch
 import top.yukonga.miuix.kmp.preference.SliderPreference
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -568,10 +566,10 @@ private fun FontSizeSectionMiuix(fontSizeScale: Int, onFontSizeChange: (Int) -> 
             Box(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp).clip(RoundedCornerShape(12.dp)).background(MiuixTheme.colorScheme.surfaceVariant).padding(horizontal = 16.dp, vertical = 14.dp)
             ) {
-                Text(
+                MiuixText(
                     text = stringResource(R.string.settings_font_size_preview),
                     color = MiuixTheme.colorScheme.onSurface,
-                    fontSize = (16f * previewScale).sp
+                    style = MiuixTheme.textStyles.body1.copy(fontSize = (16f * previewScale).sp)
                 )
             }
             SliderPreference(
