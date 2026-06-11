@@ -54,7 +54,7 @@
 
     <string name="settings_key_color">Key Color</string>    <string name="settings_theme_style_section">UI architecture</string>
     <string name="settings_theme_ui_style_title">UI style</string>
-    <string name="settings_theme_ui_style_desc">Switch between Material and Miuix styles. Miuix uses MIUI/KernelSU-like large titles, rounder cards, and denser bottom navigation.</string>
+    <string name="settings_theme_ui_style_desc">Switch between Material and Miuix styles. Miuix uses larger titles, rounder cards, and a denser bottom navigation.</string>
     <string name="settings_theme_ui_style_material">Material</string>
     <string name="settings_theme_ui_style_miuix">Miuix</string>
     <string name="settings_theme_mode_section">Theme mode</string>

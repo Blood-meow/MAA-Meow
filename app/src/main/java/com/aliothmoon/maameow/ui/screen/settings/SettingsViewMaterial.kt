@@ -65,7 +65,6 @@ import com.aliothmoon.maameow.ui.component.material.TopAppBar
 import com.aliothmoon.maameow.ui.viewmodel.SettingsViewModel
 import com.aliothmoon.maameow.ui.theme.MaaDesignTokens
 import com.aliothmoon.maameow.utils.Misc
-import com.aliothmoon.maameow.utils.i18n.LocaleBootstrap.resolveSelectedLanguage
 import com.aliothmoon.maameow.utils.i18n.resolve
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
@@ -91,7 +90,6 @@ fun SettingsViewMaterial(
     val tasksOverrideEnabled by viewModel.tasksOverrideEnabled.collectAsStateWithLifecycle()
     val updateChannel by viewModel.updateChannel.collectAsStateWithLifecycle()
     val backgroundResolution by viewModel.backgroundResolution.collectAsStateWithLifecycle()
-    val language by viewModel.language.collectAsStateWithLifecycle()
     val backupMessage by viewModel.backupMessage.collectAsStateWithLifecycle()
     val showRestartDialog by viewModel.showRestartDialog.collectAsStateWithLifecycle()
     val coroutineScope = rememberCoroutineScope()
@@ -310,12 +308,6 @@ fun SettingsViewMaterial(
                     ) {
                         navController.navigate(Routes.THEME_SETTINGS)
                     }
-                    SettingsDivider(contentColor)
-                    SettingLanguageItem(
-                        contentColor = contentColor,
-                        selectedLanguage = language,
-                        onLanguageSelected = { viewModel.setLanguage(it) }
-                    )
                     SettingsDivider(contentColor)
                     SettingClickItem(
                         title = stringResource(R.string.notification_settings_title),
@@ -697,63 +689,6 @@ private fun SettingBackgroundResolutionItem(
                 ) {
                     RadioButton(
                         selected = pref == selectedPreference,
-                        onClick = null
-                    )
-                    Spacer(modifier = Modifier.width(2.dp))
-                    Text(
-                        text = label,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = contentColor
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun SettingLanguageItem(
-    contentColor: Color,
-    selectedLanguage: AppSettingsManager.AppLanguage,
-    onLanguageSelected: (AppSettingsManager.AppLanguage) -> Unit
-) {
-    val effectiveSelectedLanguage = resolveSelectedLanguage(selectedLanguage)
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = MaaDesignTokens.Spacing.listItemVertical),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = stringResource(R.string.settings_language_title),
-                style = MaterialTheme.typography.bodyLarge,
-                color = contentColor
-            )
-        }
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            val options = listOf(
-                AppSettingsManager.AppLanguage.ZH to stringResource(R.string.settings_language_zh),
-                AppSettingsManager.AppLanguage.EN to stringResource(R.string.settings_language_en)
-            )
-            options.forEach { (lang, label) ->
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .selectable(
-                            selected = lang == effectiveSelectedLanguage,
-                            onClick = { onLanguageSelected(lang) },
-                            role = Role.RadioButton
-                        )
-                ) {
-                    RadioButton(
-                        selected = lang == effectiveSelectedLanguage,
                         onClick = null
                     )
                     Spacer(modifier = Modifier.width(2.dp))
