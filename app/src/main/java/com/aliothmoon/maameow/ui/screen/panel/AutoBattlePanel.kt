@@ -34,7 +34,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.RadioButton
+import com.aliothmoon.maameow.ui.component.material.MaaUiRadioButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -512,7 +512,7 @@ fun AutoBattlePanel(
                                                 )
                                             }
                                         ) {
-                                            RadioButton(
+                                            MaaUiRadioButton(
                                                 selected = state.config.formationIndex == index,
                                                 onClick = {
                                                     viewModel.onConfigChanged(
@@ -562,7 +562,7 @@ fun AutoBattlePanel(
                                                 )
                                             }
                                         ) {
-                                            RadioButton(
+                                            MaaUiRadioButton(
                                                 selected = state.config.supportUnitUsage == value,
                                                 onClick = {
                                                     viewModel.onConfigChanged(

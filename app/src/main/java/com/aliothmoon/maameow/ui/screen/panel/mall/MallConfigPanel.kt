@@ -36,7 +36,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
+import com.aliothmoon.maameow.ui.component.material.MaaUiRadioButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -301,7 +301,7 @@ private fun FormationSelector(selectedFormation: Int, onFormationChange: (Int) -
                         .padding(horizontal = 4.dp, vertical = 4.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    RadioButton(
+                    MaaUiRadioButton(
                         selected = selectedFormation == value,
                         onClick = { onFormationChange(value) },
                         modifier = Modifier.size(20.dp)

@@ -28,7 +28,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Checkbox
+import com.aliothmoon.maameow.ui.component.material.MaaUiCheckbox
 import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -233,7 +233,7 @@ private fun TaskNodeRow(
             // 在编辑模式下也可以保留勾选框，或者隐藏以展示纯粹的排序视图
             // 这里根据用户反馈“保持清爽”，我们依然显示勾选框以便快速切换状态，但调整间距
             CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides Dp.Unspecified) {
-                Checkbox(
+                MaaUiCheckbox(
                     checked = node.enabled,
                     onCheckedChange = onEnabledChange,
                     modifier = Modifier.size(20.dp)

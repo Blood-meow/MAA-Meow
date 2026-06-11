@@ -24,7 +24,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
+import com.aliothmoon.maameow.ui.component.material.MaaUiRadioButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -406,7 +406,7 @@ private fun SeriesSection(
                         .width(72.dp)
                         .clickable { onConfigChange(config.copy(series = value)) }
                 ) {
-                    RadioButton(
+                    MaaUiRadioButton(
                         selected = config.series == value,
                         onClick = { onConfigChange(config.copy(series = value)) },
                         modifier = Modifier.size(20.dp)
@@ -459,7 +459,7 @@ private fun StageResetModeSection(
                         .width(100.dp)
                         .clickable { onConfigChange(config.copy(stageResetMode = mode)) }
                 ) {
-                    RadioButton(
+                    MaaUiRadioButton(
                         selected = config.stageResetMode == mode,
                         onClick = { onConfigChange(config.copy(stageResetMode = mode)) },
                         modifier = Modifier.size(20.dp)
@@ -772,7 +772,7 @@ private fun CustomAnnihilationSection(
                             modifier = Modifier
                                 .clickable { onConfigChange(config.copy(annihilationStage = value)) }
                         ) {
-                            RadioButton(
+                            MaaUiRadioButton(
                                 selected = config.annihilationStage == value,
                                 onClick = { onConfigChange(config.copy(annihilationStage = value)) },
                                 modifier = Modifier.size(20.dp)

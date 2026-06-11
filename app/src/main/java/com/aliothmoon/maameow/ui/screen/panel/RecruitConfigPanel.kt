@@ -21,13 +21,13 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material3.Checkbox
+import com.aliothmoon.maameow.ui.component.material.MaaUiCheckbox
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
+import com.aliothmoon.maameow.ui.component.material.MaaUiRadioButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -194,7 +194,7 @@ private fun UseExpeditedSection(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Checkbox(
+            MaaUiCheckbox(
                 checked = config.useExpedited,
                 onCheckedChange = { onConfigChange(config.copy(useExpedited = it)) },
                 modifier = Modifier.size(20.dp)
@@ -284,7 +284,7 @@ private fun SelectExtraTagsSection(
                         .fillMaxWidth()
                         .clickable { onConfigChange(config.copy(selectExtraTags = value)) }
                 ) {
-                    RadioButton(
+                    MaaUiRadioButton(
                         selected = config.selectExtraTags == value,
                         onClick = { onConfigChange(config.copy(selectExtraTags = value)) },
                         modifier = Modifier.size(20.dp)
@@ -420,7 +420,7 @@ private fun RefreshLevel3Section(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Checkbox(
+        MaaUiCheckbox(
             checked = config.refreshLevel3,
             onCheckedChange = { onConfigChange(config.copy(refreshLevel3 = it)) },
             modifier = Modifier.size(20.dp)
@@ -448,7 +448,7 @@ private fun ForceRefreshSection(
             .alpha(if (config.refreshLevel3) 1f else 0.5f),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Checkbox(
+        MaaUiCheckbox(
             checked = config.forceRefresh,
             onCheckedChange = { if (config.refreshLevel3) onConfigChange(config.copy(forceRefresh = it)) },
             enabled = config.refreshLevel3,
@@ -492,7 +492,7 @@ private fun PreserveTagSection(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Checkbox(
+            MaaUiCheckbox(
                 checked = config.preserveTagEnabled,
                 onCheckedChange = { onConfigChange(config.copy(preserveTagEnabled = it)) },
                 modifier = Modifier.size(20.dp)
@@ -599,7 +599,7 @@ private fun ChooseLevel3Section(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Checkbox(
+            MaaUiCheckbox(
                 checked = config.chooseLevel3,
                 onCheckedChange = { onConfigChange(config.copy(chooseLevel3 = it)) },
                 modifier = Modifier.size(20.dp)
@@ -639,7 +639,7 @@ private fun ChooseLevel4Section(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Checkbox(
+            MaaUiCheckbox(
                 checked = config.chooseLevel4,
                 onCheckedChange = { onConfigChange(config.copy(chooseLevel4 = it)) },
                 modifier = Modifier.size(20.dp)
@@ -678,7 +678,7 @@ private fun ChooseLevel5Section(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Checkbox(
+            MaaUiCheckbox(
                 checked = config.chooseLevel5,
                 onCheckedChange = { onConfigChange(config.copy(chooseLevel5 = it)) },
                 modifier = Modifier.size(20.dp)

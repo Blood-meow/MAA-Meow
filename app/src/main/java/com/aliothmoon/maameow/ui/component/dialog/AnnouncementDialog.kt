@@ -29,7 +29,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Campaign
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material3.Button
-import androidx.compose.material3.Checkbox
+import com.aliothmoon.maameow.ui.component.material.MaaUiCheckbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -191,7 +191,7 @@ fun AnnouncementDialog(
                                 ),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            Checkbox(
+                            MaaUiCheckbox(
                                 checked = dontShowAgain,
                                 onCheckedChange = null,
                             )
@@ -296,7 +296,7 @@ fun AnnouncementDialog(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
-                        Checkbox(
+                        MaaUiCheckbox(
                             checked = dontShowAgain,
                             onCheckedChange = null,
                         )

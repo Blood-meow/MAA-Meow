@@ -35,7 +35,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.RadioButton
+import com.aliothmoon.maameow.ui.component.material.MaaUiRadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -216,7 +216,7 @@ private fun ProfileCard(
                     .padding(horizontal = 4.dp, vertical = 4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                RadioButton(
+                MaaUiRadioButton(
                     selected = isActive,
                     onClick = onSwitch,
                     modifier = Modifier.size(32.dp)

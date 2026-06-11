@@ -26,12 +26,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Checkbox
+import com.aliothmoon.maameow.ui.component.material.MaaUiCheckbox
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Slider
+import com.aliothmoon.maameow.ui.component.material.MaaUiRadioButton
+import com.aliothmoon.maameow.ui.component.material.MaaUiSlider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -252,7 +252,7 @@ private fun InfrastModeSection(
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             InfrastMode.values.forEach {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    RadioButton(
+                    MaaUiRadioButton(
                         selected = config.mode == it,
                         onClick = { onConfigChange(config.copy(mode = it)) },
                         modifier = Modifier.size(20.dp)
@@ -513,7 +513,7 @@ private fun PresetButtonGroup(
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.clickable { onPresetSelected(key) }) {
-                RadioButton(
+                MaaUiRadioButton(
                     selected = selectedPreset == key,
                     onClick = { onPresetSelected(key) },
                     modifier = Modifier.size(20.dp)
@@ -586,7 +586,7 @@ private fun PlanSelectButtonGroup(
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.clickable { onPlanSelected(-1) }) {
-                RadioButton(
+                MaaUiRadioButton(
                     selected = selectedPlanIndex == -1,
                     onClick = { onPlanSelected(-1) },
                     modifier = Modifier.size(20.dp)
@@ -617,7 +617,7 @@ private fun PlanSelectButtonGroup(
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.clickable { onPlanSelected(index) }) {
-                RadioButton(
+                MaaUiRadioButton(
                     selected = selectedPlanIndex == index,
                     onClick = { onPlanSelected(index) },
                     modifier = Modifier.size(20.dp)
@@ -732,7 +732,7 @@ private fun UsesOfDronesSection(
                     modifier = Modifier
                         .widthIn(min = 80.dp)
                         .clickable { onConfigChange(config.copy(usesOfDrones = value)) }) {
-                    RadioButton(
+                    MaaUiRadioButton(
                         selected = config.usesOfDrones == value,
                         onClick = { onConfigChange(config.copy(usesOfDrones = value)) },
                         modifier = Modifier.size(20.dp)
@@ -786,7 +786,7 @@ private fun DormThresholdSection(
             tipText = stringResource(R.string.panel_infrast_dorm_threshold_tip)
         )
 
-        Slider(
+        MaaUiSlider(
             value = config.dormThreshold.toFloat(),
             onValueChange = { onConfigChange(config.copy(dormThreshold = it.toInt())) },
             valueRange = 0f..100f,
@@ -899,7 +899,7 @@ private fun FacilityList(
                             }
                             .padding(vertical = 4.dp),
                         verticalAlignment = Alignment.CenterVertically) {
-                        Checkbox(
+                        MaaUiCheckbox(
                             checked = enabled, onCheckedChange = { checked ->
                                 val newList = facilities.map {
                                     if (it.first == facility) it.first to checked else it
@@ -929,7 +929,7 @@ private fun DormTrustEnabledSection(
     Row(
         modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically
     ) {
-        Checkbox(
+        MaaUiCheckbox(
             checked = config.dormTrustEnabled,
             onCheckedChange = { onConfigChange(config.copy(dormTrustEnabled = it)) },
             modifier = Modifier.size(20.dp)
@@ -958,7 +958,7 @@ private fun DormFilterNotStationedSection(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Checkbox(
+            MaaUiCheckbox(
                 checked = config.dormFilterNotStationedEnabled,
                 onCheckedChange = { onConfigChange(config.copy(dormFilterNotStationedEnabled = it)) },
                 modifier = Modifier.size(20.dp)
@@ -987,7 +987,7 @@ private fun OriginiumShardAutoReplenishmentSection(
     Row(
         modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top
     ) {
-        Checkbox(
+        MaaUiCheckbox(
             checked = config.originiumShardAutoReplenishment,
             onCheckedChange = { onConfigChange(config.copy(originiumShardAutoReplenishment = it)) },
             modifier = Modifier.size(20.dp)
@@ -1011,7 +1011,7 @@ private fun ReceptionMessageBoardReceiveSection(
     Row(
         modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top
     ) {
-        Checkbox(
+        MaaUiCheckbox(
             checked = config.receptionMessageBoard,
             onCheckedChange = { onConfigChange(config.copy(receptionMessageBoard = it)) },
             modifier = Modifier.size(20.dp)
@@ -1035,7 +1035,7 @@ private fun ReceptionClueExchangeSection(
     Row(
         modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top
     ) {
-        Checkbox(
+        MaaUiCheckbox(
             checked = config.receptionClueExchange,
             onCheckedChange = { onConfigChange(config.copy(receptionClueExchange = it)) },
             modifier = Modifier.size(20.dp)
@@ -1059,7 +1059,7 @@ private fun ReceptionSendClueSection(
     Row(
         modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top
     ) {
-        Checkbox(
+        MaaUiCheckbox(
             checked = config.receptionSendClue,
             onCheckedChange = { onConfigChange(config.copy(receptionSendClue = it)) },
             modifier = Modifier.size(20.dp)
@@ -1083,7 +1083,7 @@ private fun ContinueTrainingSection(
     Row(
         modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top
     ) {
-        Checkbox(
+        MaaUiCheckbox(
             checked = config.continueTraining,
             onCheckedChange = { onConfigChange(config.copy(continueTraining = it)) },
             modifier = Modifier.size(20.dp)
