@@ -60,6 +60,8 @@ import com.aliothmoon.maameow.ui.component.tip.ExpandableTipIcon
 import com.aliothmoon.maameow.ui.theme.MaaThemeAlphas
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
+import com.aliothmoon.maameow.ui.theme.ThemeColors
+import com.aliothmoon.maameow.ui.theme.ThemeTypography
 
 
 private val MEDICINE_EXPIRE_DAY_OPTIONS = listOf(
@@ -111,8 +113,8 @@ fun FightConfigPanel(
         ) {
             Text(
                 text = stringResource(R.string.common_tab_general),
-                style = MaterialTheme.typography.bodyMedium,
-                color = if (pagerState.currentPage == 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                style = ThemeTypography.bodyMedium,
+                color = if (pagerState.currentPage == 0) ThemeColors.primary else ThemeColors.onSurfaceVariant,
                 fontWeight = if (pagerState.currentPage == 0) FontWeight.Bold else FontWeight.Normal,
                 modifier = Modifier.clickable {
                     coroutineScope.launch {
@@ -122,8 +124,8 @@ fun FightConfigPanel(
             )
             Text(
                 text = stringResource(R.string.common_tab_advanced),
-                style = MaterialTheme.typography.bodyMedium,
-                color = if (pagerState.currentPage == 1) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                style = ThemeTypography.bodyMedium,
+                color = if (pagerState.currentPage == 1) ThemeColors.primary else ThemeColors.onSurfaceVariant,
                 fontWeight = if (pagerState.currentPage == 1) FontWeight.Bold else FontWeight.Normal,
                 modifier = Modifier.clickable {
                     coroutineScope.launch {
@@ -170,7 +172,7 @@ fun FightConfigPanel(
                             MedicineAndStoneSection(config, onConfigChange)
                         }
                         item {
-                            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
+                            HorizontalDivider(color = ThemeColors.outlineVariant, thickness = 0.5.dp)
                         }
                         item {
                             // 指定材料掉落
@@ -180,7 +182,7 @@ fun FightConfigPanel(
                             )
                         }
                         item {
-                            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
+                            HorizontalDivider(color = ThemeColors.outlineVariant, thickness = 0.5.dp)
                         }
                         // 代理倍率（HideSeries=false 时显示）
                         if (!config.hideSeries) {
@@ -188,7 +190,7 @@ fun FightConfigPanel(
                                 SeriesSection(config, onConfigChange)
                             }
                             item {
-                                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
+                                HorizontalDivider(color = ThemeColors.outlineVariant, thickness = 0.5.dp)
                             }
                         }
                         item {
@@ -286,16 +288,16 @@ fun FightConfigPanel(
                                                 val dayText = if (s.daysLeft > 0) "${s.daysLeft}+" else lessThanOneDay
                                                 Text(
                                                     text = "｢${s.name}｣ $daysLeftLabel$dayText",
-                                                    style = MaterialTheme.typography.labelSmall,
-                                                    color = if (s.isExpiringSoon) MaterialTheme.colorScheme.error
-                                                    else MaterialTheme.colorScheme.tertiary
+                                                    style = ThemeTypography.labelSmall,
+                                                    color = if (s.isExpiringSoon) ThemeColors.error
+                                                    else ThemeColors.tertiary
                                                 )
                                             }
                                         } else {
                                             Text(
                                                 text = stringResource(R.string.panel_fight_no_activity),
-                                                style = MaterialTheme.typography.labelSmall,
-                                                color = MaterialTheme.colorScheme.outline
+                                                style = ThemeTypography.labelSmall,
+                                                color = ThemeColors.outline
                                             )
                                         }
                                     }
@@ -375,7 +377,7 @@ private fun SeriesSection(
         ) {
             Text(
                 text = stringResource(R.string.panel_fight_series_title),
-                style = MaterialTheme.typography.bodyMedium,
+                style = ThemeTypography.bodyMedium,
                 fontWeight = FontWeight.Medium
             )
             ExpandableTipIcon(
@@ -413,7 +415,7 @@ private fun SeriesSection(
                     )
                     Text(
                         text = displayLabel,
-                        style = MaterialTheme.typography.bodyMedium,
+                        style = ThemeTypography.bodyMedium,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.weight(1f)
                     )
@@ -443,7 +445,7 @@ private fun StageResetModeSection(
     ) {
         Text(
             text = stringResource(R.string.panel_fight_stage_reset_title),
-            style = MaterialTheme.typography.bodyMedium,
+            style = ThemeTypography.bodyMedium,
             fontWeight = FontWeight.Medium
         )
 
@@ -466,7 +468,7 @@ private fun StageResetModeSection(
                     )
                     Text(
                         text = label,
-                        style = MaterialTheme.typography.bodyMedium,
+                        style = ThemeTypography.bodyMedium,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.weight(1f)
                     )
@@ -539,7 +541,7 @@ private fun GroupedStageSelectionSection(
             ) {
                 Text(
                     text = stringResource(R.string.panel_fight_stage_selection_title),
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = ThemeTypography.bodyMedium,
                     fontWeight = FontWeight.Medium
                 )
                 ExpandableTipIcon(
@@ -582,7 +584,7 @@ private fun GroupedStageSelectionSection(
         if (!stage1Open && config.stage1.isNotBlank()) {
             Surface(
                 modifier = Modifier.fillMaxWidth(),
-                color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.7f),
+                color = ThemeColors.errorContainer.copy(alpha = 0.7f),
                 shape = RoundedCornerShape(4.dp)
             ) {
                 Text(
@@ -594,8 +596,8 @@ private fun GroupedStageSelectionSection(
                     } else {
                         stringResource(R.string.panel_fight_primary_stage_closed, config.stage1)
                     },
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onErrorContainer,
+                    style = ThemeTypography.bodySmall,
+                    color = ThemeColors.onErrorContainer,
                     modifier = Modifier.padding(8.dp)
                 )
             }
@@ -669,8 +671,8 @@ private fun GroupedStageButtonGroup(
     ) {
         Text(
             text = label,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            style = ThemeTypography.bodySmall,
+            color = ThemeColors.onSurfaceVariant
         )
 
         // 显示每个分组
@@ -684,7 +686,7 @@ private fun GroupedStageButtonGroup(
             // 分组标题
             Text(
                 text = displayTitle,
-                style = MaterialTheme.typography.labelSmall,
+                style = ThemeTypography.labelSmall,
                 fontWeight = FontWeight.Medium,
                 // TODO: i18n — 用 group.isPermanent 替代硬编码字符串比较
                 color = if (group.isPermanent) Color(0xFF388E3C) else Color(0xFFE65100),
@@ -705,9 +707,9 @@ private fun GroupedStageButtonGroup(
                             .clip(RoundedCornerShape(16.dp))
                             .clickable { onItemSelected(stage.code) },
                         color = when {
-                            isSelected -> MaterialTheme.colorScheme.primary
-                            !isOpen -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.38f)
-                            else -> MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
+                            isSelected -> ThemeColors.primary
+                            !isOpen -> ThemeColors.surfaceVariant.copy(alpha = 0.38f)
+                            else -> ThemeColors.outline.copy(alpha = 0.3f)
                         },
                         shape = RoundedCornerShape(16.dp)
                     ) {
@@ -717,11 +719,11 @@ private fun GroupedStageButtonGroup(
                             } else {
                                 stage.displayName
                             },
-                            style = MaterialTheme.typography.bodySmall,
+                            style = ThemeTypography.bodySmall,
                             color = when {
-                                isSelected -> MaterialTheme.colorScheme.onPrimary
-                                !isOpen -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.25f)
-                                else -> MaterialTheme.colorScheme.onSurface
+                                isSelected -> ThemeColors.onPrimary
+                                !isOpen -> ThemeColors.onSurface.copy(alpha = 0.25f)
+                                else -> ThemeColors.onSurface
                             },
                             modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
                         )
@@ -758,7 +760,7 @@ private fun CustomAnnihilationSection(
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(
                     text = stringResource(R.string.panel_fight_annihilation_title),
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = ThemeTypography.bodyMedium,
                     fontWeight = FontWeight.Medium
                 )
                 FlowRow(
@@ -780,7 +782,7 @@ private fun CustomAnnihilationSection(
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
                                 text = displayName,
-                                style = MaterialTheme.typography.bodyMedium
+                                style = ThemeTypography.bodyMedium
                             )
                         }
                     }
@@ -838,7 +840,7 @@ private fun StageInputField(
             placeholder = placeholder,
             singleLine = true,
             supportingText = if (showConvertedHint) {
-                { Text(stringResource(R.string.panel_fight_converted_prefix, convertedCode), color = MaterialTheme.colorScheme.primary) }
+                { Text(stringResource(R.string.panel_fight_converted_prefix, convertedCode), color = ThemeColors.primary) }
             } else null
         )
     }
@@ -896,24 +898,24 @@ private fun WeeklyScheduleSection(
                         },
                         shape = RoundedCornerShape(6.dp),
                         color = if (selected)
-                            MaterialTheme.colorScheme.primaryContainer
+                            ThemeColors.primaryContainer
                         else
-                            MaterialTheme.colorScheme.surface,
+                            ThemeColors.surface,
                         border = BorderStroke(
                             width = 1.dp,
                             color = if (selected)
-                                MaterialTheme.colorScheme.primary
+                                ThemeColors.primary
                             else
-                                MaterialTheme.colorScheme.outlineVariant
+                                ThemeColors.outlineVariant
                         )
                     ) {
                         Text(
                             text = display,
-                            style = MaterialTheme.typography.bodySmall,
+                            style = ThemeTypography.bodySmall,
                             color = if (selected)
-                                MaterialTheme.colorScheme.onPrimaryContainer
+                                ThemeColors.onPrimaryContainer
                             else
-                                MaterialTheme.colorScheme.onSurface,
+                                ThemeColors.onSurface,
                             fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
                             modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
                         )

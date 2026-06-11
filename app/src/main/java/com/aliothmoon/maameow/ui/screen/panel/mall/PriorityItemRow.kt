@@ -27,6 +27,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.aliothmoon.maameow.R
+import com.aliothmoon.maameow.ui.theme.ThemeColors
+import com.aliothmoon.maameow.ui.theme.ThemeTypography
+import androidx.compose.foundation.shape.RoundedCornerShape
 
 @Composable
 fun PriorityItemRow(
@@ -41,22 +44,22 @@ fun PriorityItemRow(
         modifier = modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
             containerColor = when {
-                isDragging -> MaterialTheme.colorScheme.surfaceVariant
-                isReorderMode -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.1f)
-                enabled -> MaterialTheme.colorScheme.surface
-                else -> MaterialTheme.colorScheme.surfaceVariant
+                isDragging -> ThemeColors.surfaceVariant
+                isReorderMode -> ThemeColors.primaryContainer.copy(alpha = 0.1f)
+                enabled -> ThemeColors.surface
+                else -> ThemeColors.surfaceVariant
             }
         ),
         border = BorderStroke(
             width = 1.dp,
             color = when {
-                isDragging -> MaterialTheme.colorScheme.primary
-                isReorderMode -> MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
-                else -> MaterialTheme.colorScheme.outlineVariant
+                isDragging -> ThemeColors.primary
+                isReorderMode -> ThemeColors.primary.copy(alpha = 0.5f)
+                else -> ThemeColors.outlineVariant
             }
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = if (isDragging) 8.dp else 0.dp),
-        shape = MaterialTheme.shapes.extraSmall
+        shape = RoundedCornerShape(4.dp)
     ) {
         Row(
             modifier = Modifier
@@ -76,7 +79,7 @@ fun PriorityItemRow(
                         modifier = Modifier
                             .size(28.dp)
                             .padding(5.dp),
-                        tint = MaterialTheme.colorScheme.primary
+                        tint = ThemeColors.primary
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                 }
@@ -84,8 +87,8 @@ fun PriorityItemRow(
 
             Text(
                 item,
-                style = MaterialTheme.typography.bodyMedium,
-                color = if (enabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
+                style = ThemeTypography.bodyMedium,
+                color = if (enabled) ThemeColors.onSurface else ThemeColors.onSurfaceVariant,
                 modifier = Modifier.weight(1f)
             )
 
@@ -99,7 +102,7 @@ fun PriorityItemRow(
                         Icons.Default.Close,
                         contentDescription = stringResource(R.string.common_delete),
                         modifier = Modifier.size(16.dp),
-                        tint = if (enabled) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.outlineVariant
+                        tint = if (enabled) ThemeColors.error else ThemeColors.outlineVariant
                     )
                 }
             }

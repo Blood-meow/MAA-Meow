@@ -23,6 +23,8 @@ import com.aliothmoon.maameow.R
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.aliothmoon.maameow.domain.state.ResourceInitState
+import com.aliothmoon.maameow.ui.theme.ThemeColors
+import com.aliothmoon.maameow.ui.theme.ThemeTypography
 
 /**
  * 资源初始化弹窗
@@ -47,7 +49,7 @@ fun ResourceInitDialog(
             ) {
                 Surface(
                     shape = RoundedCornerShape(8.dp),
-                    color = MaterialTheme.colorScheme.surface,
+                    color = ThemeColors.surface,
                     tonalElevation = 6.dp
                 ) {
                     Column(
@@ -58,7 +60,7 @@ fun ResourceInitDialog(
                     ) {
                         Text(
                             text = stringResource(R.string.resource_init_in_progress_title),
-                            style = MaterialTheme.typography.titleMedium
+                            style = ThemeTypography.titleMedium
                         )
 
                         Spacer(modifier = Modifier.height(24.dp))
@@ -74,16 +76,16 @@ fun ResourceInitDialog(
                         // 进度文本
                         Text(
                             text = "${state.extractedCount} / ${state.totalCount} (${state.progress}%)",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            style = ThemeTypography.bodyMedium,
+                            color = ThemeColors.onSurfaceVariant
                         )
 
                         if (state.currentFile.isNotEmpty()) {
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
                                 text = state.currentFile,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                                style = ThemeTypography.bodySmall,
+                                color = ThemeColors.onSurfaceVariant.copy(alpha = 0.7f),
                                 maxLines = 1
                             )
                         }
@@ -92,8 +94,8 @@ fun ResourceInitDialog(
 
                         Text(
                             text = stringResource(R.string.resource_init_in_progress_message),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            style = ThemeTypography.bodySmall,
+                            color = ThemeColors.onSurfaceVariant,
                             textAlign = TextAlign.Center
                         )
                     }
@@ -112,7 +114,7 @@ fun ResourceInitDialog(
                 confirmText = stringResource(R.string.resource_init_retry),
                 dismissText = stringResource(R.string.common_cancel),
                 icon = Icons.Rounded.Warning,
-                confirmColor = MaterialTheme.colorScheme.error
+                confirmColor = ThemeColors.error
             )
         }
 
@@ -139,6 +141,6 @@ fun ReInitializeConfirmDialog(
         confirmText = stringResource(R.string.resource_init_reinitialize_confirm),
         dismissText = stringResource(R.string.common_cancel),
         icon = Icons.Rounded.Refresh,
-        confirmColor = MaterialTheme.colorScheme.error
+        confirmColor = ThemeColors.error
     )
 }

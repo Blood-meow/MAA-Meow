@@ -77,6 +77,8 @@ import com.aliothmoon.maameow.data.model.update.UpdateSource
 import com.aliothmoon.maameow.ui.viewmodel.UpdateViewModel
 import com.aliothmoon.maameow.utils.Misc
 import dev.jeziellago.compose.markdowntext.MarkdownText
+import com.aliothmoon.maameow.ui.theme.ThemeColors
+import com.aliothmoon.maameow.ui.theme.ThemeTypography
 
 /**
  * 更新管理卡片
@@ -263,9 +265,9 @@ fun UpdateCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        shape = MaterialTheme.shapes.medium,
+        shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = ThemeColors.surface
         )
     ) {
         Column(
@@ -276,9 +278,9 @@ fun UpdateCard(
         ) {
             Text(
                 text = stringResource(R.string.update_card_title),
-                style = MaterialTheme.typography.titleMedium,
+                style = ThemeTypography.titleMedium,
                 fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSurface
+                color = ThemeColors.onSurface
             )
 
             // ========== 更新项列表 ==========
@@ -295,8 +297,8 @@ fun UpdateCard(
                 ) {
                     Text(
                         text = stringResource(R.string.update_card_app),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurface,
+                        style = ThemeTypography.bodyMedium,
+                        color = ThemeColors.onSurface,
                         modifier = Modifier.weight(1f)
                     )
 
@@ -338,8 +340,8 @@ fun UpdateCard(
                 ) {
                     Text(
                         text = stringResource(R.string.update_card_resource),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onTertiaryContainer,
+                        style = ThemeTypography.bodyMedium,
+                        color = ThemeColors.onTertiaryContainer,
                         modifier = Modifier.weight(1f)
                     )
 
@@ -384,8 +386,8 @@ fun UpdateCard(
                 ) {
                     Text(
                         text = stringResource(R.string.update_card_source_label),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onTertiaryContainer
+                        style = ThemeTypography.bodyMedium,
+                        color = ThemeColors.onTertiaryContainer
                     )
 
                     UpdateSourceButtonGroup(
@@ -425,14 +427,14 @@ fun UpdateCard(
                                 when (source) {
                                     UpdateSource.GITHUB -> Text(
                                         text = stringResource(R.string.update_card_github_desc),
-                                        style = MaterialTheme.typography.bodyMedium,
+                                        style = ThemeTypography.bodyMedium,
                                         textAlign = TextAlign.Center
                                     )
 
                                     UpdateSource.MIRROR_CHYAN -> {
                                         val mirrorBrand = stringResource(R.string.update_card_mirror_brand)
                                         val mirrorDesc = stringResource(R.string.update_card_mirror_desc)
-                                        val primary = MaterialTheme.colorScheme.primary
+                                        val primary = ThemeColors.primary
                                         Text(
                                             text = buildAnnotatedString {
                                                 withStyle(
@@ -446,7 +448,7 @@ fun UpdateCard(
                                                 append(" ")
                                                 append(mirrorDesc)
                                             },
-                                            style = MaterialTheme.typography.bodyMedium,
+                                            style = ThemeTypography.bodyMedium,
                                             textAlign = TextAlign.Center
                                         )
                                     }
@@ -536,7 +538,7 @@ private fun CdkInputField(
         ) {
             Text(
                 text = stringResource(R.string.update_cdk_subscribe),
-                style = MaterialTheme.typography.bodySmall
+                style = ThemeTypography.bodySmall
             )
         }
     }
@@ -554,19 +556,19 @@ private fun AppUpdateProgress(appUpdateState: UpdateProcessState) {
                 ) {
                     Text(
                         text = stringResource(R.string.update_progress_app_downloading, appUpdateState.progress.toString()),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onTertiaryContainer
+                        style = ThemeTypography.bodySmall,
+                        color = ThemeColors.onTertiaryContainer
                     )
                     Text(
                         text = appUpdateState.speed,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.7f)
+                        style = ThemeTypography.bodySmall,
+                        color = ThemeColors.onTertiaryContainer.copy(alpha = 0.7f)
                     )
                 }
                 LinearProgressIndicator(
                     progress = { appUpdateState.progress / 100f },
                     modifier = Modifier.fillMaxWidth(),
-                    color = MaterialTheme.colorScheme.primary
+                    color = ThemeColors.primary
                 )
             }
         }
@@ -583,8 +585,8 @@ private fun AppUpdateProgress(appUpdateState: UpdateProcessState) {
                 )
                 Text(
                     text = stringResource(R.string.update_progress_app_installing),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onTertiaryContainer
+                    style = ThemeTypography.bodySmall,
+                    color = ThemeColors.onTertiaryContainer
                 )
             }
         }
@@ -607,19 +609,19 @@ private fun ResourceUpdateProgress(resourceUpdateState: UpdateProcessState) {
                 ) {
                     Text(
                         text = stringResource(R.string.update_progress_resource_downloading, resourceUpdateState.progress.toString()),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onTertiaryContainer
+                        style = ThemeTypography.bodySmall,
+                        color = ThemeColors.onTertiaryContainer
                     )
                     Text(
                         text = resourceUpdateState.speed,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.7f)
+                        style = ThemeTypography.bodySmall,
+                        color = ThemeColors.onTertiaryContainer.copy(alpha = 0.7f)
                     )
                 }
                 LinearProgressIndicator(
                     progress = { resourceUpdateState.progress / 100f },
                     modifier = Modifier.fillMaxWidth(),
-                    color = MaterialTheme.colorScheme.primary
+                    color = ThemeColors.primary
                 )
             }
         }
@@ -632,19 +634,19 @@ private fun ResourceUpdateProgress(resourceUpdateState: UpdateProcessState) {
                 ) {
                     Text(
                         text = stringResource(R.string.update_progress_resource_extracting, resourceUpdateState.progress.toString()),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onTertiaryContainer
+                        style = ThemeTypography.bodySmall,
+                        color = ThemeColors.onTertiaryContainer
                     )
                     Text(
                         text = "${resourceUpdateState.current}/${resourceUpdateState.total}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.7f)
+                        style = ThemeTypography.bodySmall,
+                        color = ThemeColors.onTertiaryContainer.copy(alpha = 0.7f)
                     )
                 }
                 LinearProgressIndicator(
                     progress = { resourceUpdateState.progress / 100f },
                     modifier = Modifier.fillMaxWidth(),
-                    color = MaterialTheme.colorScheme.secondary
+                    color = ThemeColors.secondary
                 )
             }
         }
@@ -687,8 +689,8 @@ private fun UpdateSourceButtonGroup(
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
                     text = sourceName,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface
+                    style = ThemeTypography.bodyMedium,
+                    color = ThemeColors.onSurface
                 )
                 Icon(
                     imageVector = Icons.Outlined.Info,
@@ -697,7 +699,7 @@ private fun UpdateSourceButtonGroup(
                         .padding(start = 2.dp)
                         .size(16.dp)
                         .clickable { onInfoClick(source) },
-                    tint = MaterialTheme.colorScheme.primary
+                    tint = ThemeColors.primary
                 )
             }
         }
@@ -728,7 +730,7 @@ private fun AppUpdateConfirmDialog(
             Column {
                 Text(
                     text = "$currentVersion → ${updateInfo.version}",
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = ThemeTypography.bodyMedium,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.Center
@@ -738,7 +740,7 @@ private fun AppUpdateConfirmDialog(
                     MarkdownText(
                         markdown = updateInfo.releaseNote,
                         modifier = Modifier.fillMaxWidth(),
-                        style = MaterialTheme.typography.bodyMedium
+                        style = ThemeTypography.bodyMedium
                     )
                 }
             }
@@ -763,6 +765,6 @@ private fun ErrorDialog(
         confirmText = stringResource(R.string.common_confirm),
         dismissText = null,
         icon = Icons.Rounded.Warning,
-        confirmColor = MaterialTheme.colorScheme.error
+        confirmColor = ThemeColors.error
     )
 }

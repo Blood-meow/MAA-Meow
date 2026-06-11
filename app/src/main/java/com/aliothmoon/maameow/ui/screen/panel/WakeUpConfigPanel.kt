@@ -28,6 +28,8 @@ import com.aliothmoon.maameow.ui.component.ITextField
 import com.aliothmoon.maameow.ui.component.material.SelectableChipGroup
 import com.aliothmoon.maameow.utils.i18n.wakeUpClientTypeDisplayName
 import org.koin.compose.koinInject
+import com.aliothmoon.maameow.ui.theme.ThemeColors
+import com.aliothmoon.maameow.ui.theme.ThemeTypography
 
 /**
  * 开始唤醒配置面板
@@ -76,17 +78,17 @@ fun WakeUpConfigPanel(
 
                 Text(
                     text = stringResource(R.string.panel_wakeup_account_hint),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurface,
+                    style = ThemeTypography.bodySmall,
+                    color = ThemeColors.onSurface,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(8.dp))
+                        .background(ThemeColors.surfaceVariant, RoundedCornerShape(8.dp))
                         .padding(horizontal = 10.dp, vertical = 8.dp)
                 )
             }
         }
 
-        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
+        HorizontalDivider(color = ThemeColors.outlineVariant, thickness = 0.5.dp)
 
         // 启动游戏开关
         CheckBoxWithLabel(

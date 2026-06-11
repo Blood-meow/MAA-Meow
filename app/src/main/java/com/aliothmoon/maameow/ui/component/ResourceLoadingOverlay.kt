@@ -29,6 +29,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.aliothmoon.maameow.domain.service.MaaResourceLoader
 import com.aliothmoon.maameow.utils.i18n.resourceLoaderMessage
 import org.koin.compose.koinInject
+import com.aliothmoon.maameow.ui.theme.ThemeColors
+import com.aliothmoon.maameow.ui.theme.ThemeTypography
 
 /**
  * 资源加载 Loading 遮罩
@@ -53,7 +55,7 @@ fun ResourceLoadingOverlay(
         Box(
             modifier = modifier
                 .fillMaxSize()
-                .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.5f))
+                .background(ThemeColors.scrim.copy(alpha = 0.5f))
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null,
@@ -63,7 +65,7 @@ fun ResourceLoadingOverlay(
         ) {
             MaaUiCardContainer(
                 colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surface
+                    containerColor = ThemeColors.surface
                 ),
                 elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
             ) {
@@ -75,12 +77,12 @@ fun ResourceLoadingOverlay(
                     CircularProgressIndicator(
                         modifier = Modifier.size(48.dp),
                         strokeWidth = 4.dp,
-                        color = MaterialTheme.colorScheme.primary
+                        color = ThemeColors.primary
                     )
                     Text(
                         text = context.resourceLoaderMessage(state),
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurface
+                        style = ThemeTypography.titleMedium,
+                        color = ThemeColors.onSurface
                     )
                 }
             }

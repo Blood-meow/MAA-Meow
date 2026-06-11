@@ -19,6 +19,8 @@ import com.aliothmoon.maameow.domain.enums.RoguelikeMode
 import com.aliothmoon.maameow.ui.component.CheckBoxWithLabel
 import com.aliothmoon.maameow.ui.component.ITextField
 import com.aliothmoon.maameow.domain.enums.UiUsageConstants.Roguelike as RoguelikeUi
+import com.aliothmoon.maameow.ui.theme.ThemeColors
+import com.aliothmoon.maameow.ui.theme.ThemeTypography
 
 @Composable
 fun ThemeSpecificSettings(
@@ -28,13 +30,13 @@ fun ThemeSpecificSettings(
     when (config.theme) {
         "Mizuki" -> {
             HorizontalDivider(
-                color = MaterialTheme.colorScheme.outlineVariant,
+                color = ThemeColors.outlineVariant,
                 thickness = 0.5.dp,
                 modifier = Modifier.padding(vertical = 4.dp)
             )
             Text(
                 stringResource(R.string.panel_roguelike_mizuki_settings),
-                style = MaterialTheme.typography.bodyMedium,
+                style = ThemeTypography.bodyMedium,
                 fontWeight = FontWeight.Medium
             )
             CheckBoxWithLabel(
@@ -54,13 +56,13 @@ fun ThemeSpecificSettings(
 
             if (squadIsFoldartal || isCollectibleAvailable) {
                 HorizontalDivider(
-                    color = MaterialTheme.colorScheme.outlineVariant,
+                    color = ThemeColors.outlineVariant,
                     thickness = 0.5.dp,
                     modifier = Modifier.padding(vertical = 4.dp)
                 )
                 Text(
                     stringResource(R.string.panel_roguelike_sami_settings),
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = ThemeTypography.bodyMedium,
                     fontWeight = FontWeight.Medium
                 )
             }
@@ -106,7 +108,7 @@ fun ThemeSpecificSettings(
 
         "JieGarden" -> {
             HorizontalDivider(
-                color = MaterialTheme.colorScheme.outlineVariant,
+                color = ThemeColors.outlineVariant,
                 thickness = 0.5.dp,
                 modifier = Modifier.padding(vertical = 4.dp)
             )

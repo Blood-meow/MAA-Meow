@@ -30,6 +30,8 @@ import com.aliothmoon.maameow.R
 import com.aliothmoon.maameow.ui.component.tip.ExpandableTipContent
 import com.aliothmoon.maameow.ui.component.tip.ExpandableTipIcon
 import com.aliothmoon.maameow.ui.theme.MaaThemeAlphas
+import com.aliothmoon.maameow.ui.theme.ThemeColors
+import com.aliothmoon.maameow.ui.theme.ThemeTypography
 
 /**
  * 带可展开提示的复选框
@@ -113,15 +115,15 @@ fun CheckBoxWithLabel(
         Column {
             Text(
                 text = label,
-                style = MaterialTheme.typography.bodyMedium,
-                color = if (enabled) MaterialTheme.colorScheme.onSurface 
-                        else MaterialTheme.colorScheme.onSurface.copy(alpha = MaaThemeAlphas.Disabled)
+                style = ThemeTypography.bodyMedium,
+                color = if (enabled) ThemeColors.onSurface 
+                        else ThemeColors.onSurface.copy(alpha = MaaThemeAlphas.Disabled)
             )
             if (subtitle != null) {
                 Text(
                     text = subtitle,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    style = ThemeTypography.bodySmall,
+                    color = ThemeColors.onSurfaceVariant
                 )
             }
         }
@@ -141,8 +143,8 @@ fun EmptyConfigHint() {
     ) {
         Text(
             text = stringResource(R.string.panel_empty_config_hint),
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            style = ThemeTypography.bodyLarge,
+            color = ThemeColors.onSurfaceVariant
         )
     }
 }
@@ -160,7 +162,7 @@ fun PlaceholderContent(
         modifier = modifier
             .fillMaxSize()
             .background(
-                MaterialTheme.colorScheme.surfaceVariant, 
+                ThemeColors.surfaceVariant, 
                 RoundedCornerShape(8.dp)
             ),
         contentAlignment = Alignment.Center
@@ -171,15 +173,15 @@ fun PlaceholderContent(
         ) {
             Text(
                 text = title,
-                style = MaterialTheme.typography.titleLarge,
+                style = ThemeTypography.titleLarge,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = ThemeColors.onSurfaceVariant
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = description,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                style = ThemeTypography.bodyMedium,
+                color = ThemeColors.onSurfaceVariant
             )
         }
     }

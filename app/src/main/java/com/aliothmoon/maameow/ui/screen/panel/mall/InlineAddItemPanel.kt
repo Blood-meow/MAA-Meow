@@ -25,6 +25,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import com.aliothmoon.maameow.R
 import com.aliothmoon.maameow.ui.component.ITextField
+import com.aliothmoon.maameow.ui.theme.ThemeColors
+import com.aliothmoon.maameow.ui.theme.ThemeTypography
 
 @Composable
 fun InlineAddItemPanel(
@@ -35,7 +37,7 @@ fun InlineAddItemPanel(
 
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        color = MaterialTheme.colorScheme.secondaryContainer,
+        color = ThemeColors.secondaryContainer,
         shape = RoundedCornerShape(8.dp)
     ) {
         Column(
@@ -44,7 +46,7 @@ fun InlineAddItemPanel(
         ) {
             Text(
                 stringResource(R.string.panel_mall_add_item_title),
-                style = MaterialTheme.typography.bodyMedium,
+                style = ThemeTypography.bodyMedium,
                 fontWeight = FontWeight.Medium
             )
             ITextField(

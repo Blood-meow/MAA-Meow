@@ -26,6 +26,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import com.aliothmoon.maameow.R
 import com.aliothmoon.maameow.ui.component.ITextField
+import com.aliothmoon.maameow.ui.theme.ThemeColors
+import com.aliothmoon.maameow.ui.theme.ThemeTypography
 
 /**
  * 添加黑名单面板 - 输入框形式
@@ -39,7 +41,7 @@ fun InlineBlacklistAddPanel(
 
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        color = MaterialTheme.colorScheme.errorContainer,
+        color = ThemeColors.errorContainer,
         shape = RoundedCornerShape(8.dp)
     ) {
         Column(
@@ -48,7 +50,7 @@ fun InlineBlacklistAddPanel(
         ) {
             Text(
                 stringResource(R.string.panel_mall_add_blacklist_title),
-                style = MaterialTheme.typography.bodyMedium,
+                style = ThemeTypography.bodyMedium,
                 fontWeight = FontWeight.Medium
             )
             ITextField(
@@ -73,7 +75,7 @@ fun InlineBlacklistAddPanel(
                 MaaUiButton(
                     onClick = { onItemAdded(inputText) },
                     enabled = inputText.isNotBlank(),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                    colors = ButtonDefaults.buttonColors(containerColor = ThemeColors.error)
                 ) { Text(stringResource(R.string.common_add)) }
             }
         }

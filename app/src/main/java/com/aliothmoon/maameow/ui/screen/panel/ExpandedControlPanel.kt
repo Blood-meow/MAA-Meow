@@ -46,6 +46,7 @@ import com.aliothmoon.maameow.ui.viewmodel.ExpandedControlPanelViewModel
 import com.aliothmoon.maameow.ui.viewmodel.ToolboxViewModel
 import com.aliothmoon.maameow.utils.i18n.asString
 import org.koin.compose.koinInject
+import com.aliothmoon.maameow.ui.theme.ThemeColors
 
 
 @Composable
@@ -101,7 +102,7 @@ fun ExpandedControlPanel(
                 ),
             shape = RoundedCornerShape(4.dp),
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surface
+                containerColor = ThemeColors.surface
             )
         ) {
             Column(
@@ -202,7 +203,7 @@ fun ExpandedControlPanel(
                     HorizontalDivider(
                         modifier = Modifier.padding(vertical = 6.dp),
                         thickness = 1.dp,
-                        color = MaterialTheme.colorScheme.outlineVariant
+                        color = ThemeColors.outlineVariant
                     )
                     BottomButtons(
                         onClose = { onClose() },
@@ -230,9 +231,9 @@ fun ExpandedControlPanel(
         val dialogConfirmText = dialog?.confirmText.asString()
         val dialogDismissText = dialog?.dismissText.asString()
         val confirmColor = when (dialog?.type) {
-            SUCCESS -> MaterialTheme.colorScheme.primary
-            ERROR -> MaterialTheme.colorScheme.error
-            else -> MaterialTheme.colorScheme.tertiary
+            SUCCESS -> ThemeColors.primary
+            ERROR -> ThemeColors.error
+            else -> ThemeColors.tertiary
         }
         AdaptiveTaskPromptDialog(
             visible = dialog != null,

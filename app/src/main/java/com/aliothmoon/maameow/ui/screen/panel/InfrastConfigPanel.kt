@@ -75,6 +75,8 @@ import sh.calvin.reorderable.ReorderableColumn
 import java.io.File
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
+import com.aliothmoon.maameow.ui.theme.ThemeColors
+import com.aliothmoon.maameow.ui.theme.ThemeTypography
 
 /**
  * 基建换班配置面板
@@ -101,8 +103,8 @@ fun InfrastConfigPanel(
         ) {
             Text(
                 text = stringResource(R.string.common_tab_general),
-                style = MaterialTheme.typography.bodyMedium,
-                color = if (pagerState.currentPage == 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                style = ThemeTypography.bodyMedium,
+                color = if (pagerState.currentPage == 0) ThemeColors.primary else ThemeColors.onSurfaceVariant,
                 fontWeight = if (pagerState.currentPage == 0) FontWeight.Bold else FontWeight.Normal,
                 modifier = Modifier.clickable {
                     coroutineScope.launch {
@@ -111,8 +113,8 @@ fun InfrastConfigPanel(
                 })
             Text(
                 text = stringResource(R.string.common_tab_advanced),
-                style = MaterialTheme.typography.bodyMedium,
-                color = if (pagerState.currentPage == 1) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                style = ThemeTypography.bodyMedium,
+                color = if (pagerState.currentPage == 1) ThemeColors.primary else ThemeColors.onSurfaceVariant,
                 fontWeight = if (pagerState.currentPage == 1) FontWeight.Bold else FontWeight.Normal,
                 modifier = Modifier.clickable {
                     coroutineScope.launch {
@@ -245,7 +247,7 @@ private fun InfrastModeSection(
         ) {
             Text(
                 text = stringResource(R.string.panel_infrast_mode_title),
-                style = MaterialTheme.typography.bodyMedium,
+                style = ThemeTypography.bodyMedium,
                 fontWeight = FontWeight.Medium
             )
         }
@@ -261,7 +263,7 @@ private fun InfrastModeSection(
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
                         text = infrastModeLabel(it),
-                        style = MaterialTheme.typography.bodyMedium
+                        style = ThemeTypography.bodyMedium
                     )
                 }
             }
@@ -275,13 +277,13 @@ private fun InfrastModeSection(
         ) {
             Surface(
                 modifier = Modifier.fillMaxWidth(),
-                color = MaterialTheme.colorScheme.surfaceVariant,
+                color = ThemeColors.surfaceVariant,
                 shape = RoundedCornerShape(4.dp)
             ) {
                 Text(
                     text = stringResource(R.string.panel_infrast_mode_rotation_tip),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = ThemeTypography.bodySmall,
+                    color = ThemeColors.onSurfaceVariant,
                     modifier = Modifier.padding(12.dp)
                 )
             }
@@ -393,7 +395,7 @@ private fun CustomInfrastSection(
                 var descExpanded by remember { mutableStateOf(false) }
                 MaaUiCardContainer(
                     colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                        containerColor = ThemeColors.surfaceVariant.copy(alpha = 0.5f)
                     ), modifier = Modifier.clickable(
                         enabled = !custom.description.isNullOrBlank()
                     ) { descExpanded = !descExpanded }) {
@@ -408,7 +410,7 @@ private fun CustomInfrastSection(
                             ) {
                                 Text(
                                     text = custom.title.replace("\\n", "\n"),
-                                    style = MaterialTheme.typography.bodyMedium,
+                                    style = ThemeTypography.bodyMedium,
                                     fontWeight = FontWeight.Medium,
                                     modifier = Modifier.weight(1f)
                                 )
@@ -426,8 +428,8 @@ private fun CustomInfrastSection(
                         ) {
                             Text(
                                 text = custom.description?.replace("\\n", "\n") ?: "",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                style = ThemeTypography.bodySmall,
+                                color = ThemeColors.onSurfaceVariant
                             )
                         }
                     }
@@ -439,9 +441,9 @@ private fun CustomInfrastSection(
         val context = LocalContext.current
         Text(
             text = stringResource(R.string.panel_infrast_scheduler_builder),
-            style = MaterialTheme.typography.bodySmall.copy(
+            style = ThemeTypography.bodySmall.copy(
                 textDecoration = TextDecoration.Underline
-            ), color = MaterialTheme.colorScheme.primary, modifier = Modifier.clickable {
+            ), color = ThemeColors.primary, modifier = Modifier.clickable {
                 Misc.openUriSafely(context, MaaApi.BASE_SCHEDULING_SCHEMA)
             })
 
@@ -489,8 +491,8 @@ private fun CustomInfrastSection(
         if (error != null) {
             Text(
                 text = error,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.error
+                style = ThemeTypography.bodySmall,
+                color = ThemeColors.error
             )
         }
     }
@@ -506,7 +508,7 @@ private fun PresetButtonGroup(
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(
             text = stringResource(R.string.panel_infrast_presets_title),
-            style = MaterialTheme.typography.bodyMedium,
+            style = ThemeTypography.bodyMedium,
             fontWeight = FontWeight.Medium
         )
 
@@ -522,7 +524,7 @@ private fun PresetButtonGroup(
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
                     text = infrastPresetLabel(key),
-                    style = MaterialTheme.typography.bodyMedium
+                    style = ThemeTypography.bodyMedium
                 )
             }
         }
@@ -569,7 +571,7 @@ private fun PlanSelectButtonGroup(
         ) {
             Text(
                 text = stringResource(R.string.panel_infrast_plan_title),
-                style = MaterialTheme.typography.bodyMedium,
+                style = ThemeTypography.bodyMedium,
                 fontWeight = FontWeight.Medium
             )
             ExpandableTipIcon(
@@ -598,7 +600,7 @@ private fun PlanSelectButtonGroup(
                             R.string.panel_infrast_plan_auto_switch,
                             currentPlanDisplayName
                         ),
-                        style = MaterialTheme.typography.bodyMedium
+                        style = ThemeTypography.bodyMedium
                     )
             }
         }
@@ -625,7 +627,7 @@ private fun PlanSelectButtonGroup(
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
-                    text = label, style = MaterialTheme.typography.bodyMedium
+                    text = label, style = ThemeTypography.bodyMedium
                 )
             }
         }
@@ -636,8 +638,8 @@ private fun PlanSelectButtonGroup(
             if (!desc.isNullOrBlank()) {
                 Text(
                     text = desc,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    style = ThemeTypography.bodySmall,
+                    color = ThemeColors.onSurfaceVariant
                 )
             }
         }
@@ -646,8 +648,8 @@ private fun PlanSelectButtonGroup(
         if (hasPeriodicPlan && hasNonPeriodicPlan) {
             Text(
                 text = stringResource(R.string.panel_infrast_plan_missing_period_warning),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.error
+                style = ThemeTypography.bodySmall,
+                color = ThemeColors.error
             )
         }
     }
@@ -718,7 +720,7 @@ private fun UsesOfDronesSection(
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(
                 text = stringResource(R.string.panel_infrast_drones_title),
-                style = MaterialTheme.typography.bodyMedium,
+                style = ThemeTypography.bodyMedium,
             fontWeight = FontWeight.Medium
         )
 
@@ -740,7 +742,7 @@ private fun UsesOfDronesSection(
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = label, style = MaterialTheme.typography.bodyMedium
+                        text = label, style = ThemeTypography.bodyMedium
                     )
                 }
             }
@@ -768,7 +770,7 @@ private fun DormThresholdSection(
             ) {
                 Text(
                     text = stringResource(R.string.panel_infrast_dorm_threshold_title),
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = ThemeTypography.bodyMedium,
                     fontWeight = FontWeight.Medium
                 )
                 ExpandableTipIcon(
@@ -776,9 +778,9 @@ private fun DormThresholdSection(
             }
             Text(
                 text = "${config.dormThreshold}%",
-                style = MaterialTheme.typography.bodyMedium,
+                style = ThemeTypography.bodyMedium,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
+                color = ThemeColors.primary
             )
         }
 
@@ -813,7 +815,7 @@ private fun FacilitiesSection(
         ) {
             Text(
                 text = stringResource(R.string.panel_infrast_facilities_title),
-                style = MaterialTheme.typography.bodyMedium,
+                style = ThemeTypography.bodyMedium,
                 fontWeight = FontWeight.Medium
             )
             ExpandableTipIcon(
@@ -874,8 +876,8 @@ private fun FacilityList(
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(4.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+        color = ThemeColors.surfaceVariant,
+        border = BorderStroke(1.dp, ThemeColors.outlineVariant)
     ) {
         ReorderableColumn(
             list = facilities, onSettle = { fromIndex, toIndex ->
@@ -911,7 +913,7 @@ private fun FacilityList(
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = infrastRoomTypeLabel(facility),
-                            style = MaterialTheme.typography.bodyMedium
+                            style = ThemeTypography.bodyMedium
                         )
                     }
                 }
@@ -938,7 +940,7 @@ private fun DormTrustEnabledSection(
         Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = stringResource(R.string.panel_infrast_dorm_trust),
-            style = MaterialTheme.typography.bodyMedium
+            style = ThemeTypography.bodyMedium
         )
     }
 }
@@ -966,7 +968,7 @@ private fun DormFilterNotStationedSection(
             )
             Text(
                 text = stringResource(R.string.panel_infrast_dorm_filter_not_stationed),
-                style = MaterialTheme.typography.bodyMedium
+                style = ThemeTypography.bodyMedium
             )
             ExpandableTipIcon(
                 expanded = tipExpanded, onExpandedChange = { tipExpanded = it })
@@ -996,8 +998,8 @@ private fun OriginiumShardAutoReplenishmentSection(
         Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = stringResource(R.string.panel_infrast_originium_shard_auto_replenishment),
-            style = MaterialTheme.typography.bodyMedium,
-            lineHeight = MaterialTheme.typography.bodyMedium.lineHeight
+            style = ThemeTypography.bodyMedium,
+            lineHeight = ThemeTypography.bodyMedium.lineHeight
         )
     }
 }
@@ -1020,8 +1022,8 @@ private fun ReceptionMessageBoardReceiveSection(
         Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = stringResource(R.string.panel_infrast_reception_message_board),
-            style = MaterialTheme.typography.bodyMedium,
-            lineHeight = MaterialTheme.typography.bodyMedium.lineHeight
+            style = ThemeTypography.bodyMedium,
+            lineHeight = ThemeTypography.bodyMedium.lineHeight
         )
     }
 }
@@ -1044,8 +1046,8 @@ private fun ReceptionClueExchangeSection(
         Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = stringResource(R.string.panel_infrast_reception_clue_exchange),
-            style = MaterialTheme.typography.bodyMedium,
-            lineHeight = MaterialTheme.typography.bodyMedium.lineHeight
+            style = ThemeTypography.bodyMedium,
+            lineHeight = ThemeTypography.bodyMedium.lineHeight
         )
     }
 }
@@ -1068,8 +1070,8 @@ private fun ReceptionSendClueSection(
         Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = stringResource(R.string.panel_infrast_reception_send_clue),
-            style = MaterialTheme.typography.bodyMedium,
-            lineHeight = MaterialTheme.typography.bodyMedium.lineHeight
+            style = ThemeTypography.bodyMedium,
+            lineHeight = ThemeTypography.bodyMedium.lineHeight
         )
     }
 }
@@ -1092,8 +1094,8 @@ private fun ContinueTrainingSection(
         Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = stringResource(R.string.panel_infrast_continue_training),
-            style = MaterialTheme.typography.bodyMedium,
-            lineHeight = MaterialTheme.typography.bodyMedium.lineHeight
+            style = ThemeTypography.bodyMedium,
+            lineHeight = ThemeTypography.bodyMedium.lineHeight
         )
     }
 }

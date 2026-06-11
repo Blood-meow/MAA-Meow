@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.aliothmoon.maameow.ui.LocalFloatingWindowContext
+import com.aliothmoon.maameow.ui.theme.ThemeColors
 
 
 /**
@@ -87,7 +88,7 @@ fun ITextField(
             singleLine = singleLine,
             enabled = enabled,
             shape = shape,
-            outlineColor = outlineColor ?: MaterialTheme.colorScheme.outline,
+            outlineColor = outlineColor ?: ThemeColors.outline,
             onImeAction = onImeAction,
             inputType = if (singleLine) InputType.TYPE_CLASS_TEXT else
                 InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE

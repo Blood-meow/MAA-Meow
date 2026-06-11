@@ -6,6 +6,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.aliothmoon.maameow.R
+import com.aliothmoon.maameow.ui.theme.ThemeColors
 
 @Composable
 fun ShizukuPermissionDialog(
@@ -28,6 +29,6 @@ fun ShizukuPermissionDialog(
         },
         dismissText = null,
         icon = Icons.Rounded.Build,
-        confirmColor = MaterialTheme.colorScheme.primary
+        confirmColor = ThemeColors.primary
     )
 }

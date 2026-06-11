@@ -21,6 +21,9 @@ import androidx.compose.ui.unit.dp
 import com.aliothmoon.maameow.R
 import sh.calvin.reorderable.ReorderableColumn
 import sh.calvin.reorderable.ReorderableItem
+import com.aliothmoon.maameow.ui.theme.ThemeColors
+import com.aliothmoon.maameow.ui.theme.ThemeTypography
+import androidx.compose.foundation.shape.RoundedCornerShape
 
 @Composable
 fun ReorderablePriorityList(
@@ -33,7 +36,7 @@ fun ReorderablePriorityList(
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.extraSmall,
+        shape = RoundedCornerShape(4.dp),
         color = Color.Transparent
     ) {
         if (items.isEmpty()) {
@@ -42,20 +45,20 @@ fun ReorderablePriorityList(
                     .fillMaxWidth()
                     .height(120.dp)
                     .background(
-                        color = MaterialTheme.colorScheme.surface,
-                        shape = MaterialTheme.shapes.extraSmall
+                        color = ThemeColors.surface,
+                        shape = RoundedCornerShape(4.dp)
                     )
                     .border(
                         width = 1.dp,
-                        color = MaterialTheme.colorScheme.outlineVariant,
-                        shape = MaterialTheme.shapes.extraSmall
+                        color = ThemeColors.outlineVariant,
+                        shape = RoundedCornerShape(4.dp)
                     ),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     stringResource(R.string.panel_mall_priority_empty),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = ThemeTypography.bodySmall,
+                    color = ThemeColors.onSurfaceVariant,
                     textAlign = TextAlign.Center
                 )
             }

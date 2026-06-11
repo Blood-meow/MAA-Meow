@@ -17,6 +17,7 @@ import com.aliothmoon.maameow.domain.enums.RoguelikeMode
 import com.aliothmoon.maameow.ui.component.CheckBoxWithLabel
 import com.aliothmoon.maameow.ui.component.ITextField
 import com.aliothmoon.maameow.domain.enums.UiUsageConstants.Roguelike as RoguelikeUi
+import com.aliothmoon.maameow.ui.theme.ThemeTypography
 
 @Composable
 fun ModeSpecificSettings(
@@ -27,7 +28,7 @@ fun ModeSpecificSettings(
         RoguelikeMode.Exp -> {
             Text(
                 stringResource(R.string.panel_roguelike_exp_settings),
-                style = MaterialTheme.typography.bodyMedium,
+                style = ThemeTypography.bodyMedium,
                 fontWeight = FontWeight.Medium
             )
             // WPF: Visibility="RoguelikeTheme != Phantom" (line 335)
@@ -52,7 +53,7 @@ fun ModeSpecificSettings(
         RoguelikeMode.Collectible -> {
             Text(
                 stringResource(R.string.panel_roguelike_collectible_settings),
-                style = MaterialTheme.typography.bodyMedium,
+                style = ThemeTypography.bodyMedium,
                 fontWeight = FontWeight.Medium
             )
 
@@ -111,7 +112,7 @@ fun ModeSpecificSettings(
                 val awardOptions = localizedRoguelikeCollectibleAwardOptions(config.theme)
                 Text(
                     stringResource(R.string.panel_roguelike_collectible_rewards),
-                    style = MaterialTheme.typography.bodySmall,
+                    style = ThemeTypography.bodySmall,
                     fontWeight = FontWeight.Medium
                 )
                 awardOptions.forEach { (key, displayName) ->
@@ -135,7 +136,7 @@ fun ModeSpecificSettings(
         RoguelikeMode.Squad -> {
             Text(
                 stringResource(R.string.panel_roguelike_monthly_squad_settings),
-                style = MaterialTheme.typography.bodyMedium,
+                style = ThemeTypography.bodyMedium,
                 fontWeight = FontWeight.Medium
             )
             CheckBoxWithLabel(
@@ -156,7 +157,7 @@ fun ModeSpecificSettings(
         RoguelikeMode.Exploration -> {
             Text(
                 stringResource(R.string.panel_roguelike_exploration_settings),
-                style = MaterialTheme.typography.bodyMedium,
+                style = ThemeTypography.bodyMedium,
                 fontWeight = FontWeight.Medium
             )
             CheckBoxWithLabel(
@@ -169,7 +170,7 @@ fun ModeSpecificSettings(
         RoguelikeMode.CLP_PDS -> {
             Text(
                 stringResource(R.string.panel_roguelike_collapse_settings),
-                style = MaterialTheme.typography.bodyMedium,
+                style = ThemeTypography.bodyMedium,
                 fontWeight = FontWeight.Medium
             )
             ITextField(
@@ -185,7 +186,7 @@ fun ModeSpecificSettings(
             if (config.theme == "JieGarden") {
                 Text(
                     stringResource(R.string.panel_roguelike_playtime_settings),
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = ThemeTypography.bodyMedium,
                     fontWeight = FontWeight.Medium
                 )
                 RoguelikeButtonGroup(

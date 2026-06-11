@@ -53,6 +53,8 @@ import com.aliothmoon.maameow.ui.component.tip.ExpandableTipContent
 import com.aliothmoon.maameow.ui.component.tip.ExpandableTipIcon
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
+import com.aliothmoon.maameow.ui.theme.ThemeColors
+import com.aliothmoon.maameow.ui.theme.ThemeTypography
 
 /**
  * 自动公招配置面板
@@ -87,8 +89,8 @@ fun RecruitConfigPanel(
         ) {
             Text(
                 text = stringResource(R.string.common_tab_general),
-                style = MaterialTheme.typography.bodyMedium,
-                color = if (pagerState.currentPage == 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                style = ThemeTypography.bodyMedium,
+                color = if (pagerState.currentPage == 0) ThemeColors.primary else ThemeColors.onSurfaceVariant,
                 fontWeight = if (pagerState.currentPage == 0) FontWeight.Bold else FontWeight.Normal,
                 modifier = Modifier.clickable {
                     coroutineScope.launch {
@@ -98,8 +100,8 @@ fun RecruitConfigPanel(
             )
             Text(
                 text = stringResource(R.string.common_tab_advanced),
-                style = MaterialTheme.typography.bodyMedium,
-                color = if (pagerState.currentPage == 1) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                style = ThemeTypography.bodyMedium,
+                color = if (pagerState.currentPage == 1) ThemeColors.primary else ThemeColors.onSurfaceVariant,
                 fontWeight = if (pagerState.currentPage == 1) FontWeight.Bold else FontWeight.Normal,
                 modifier = Modifier.clickable {
                     coroutineScope.launch {
@@ -158,7 +160,7 @@ fun RecruitConfigPanel(
                                 // 保留指定词条
                                 PreserveTagSection(config, onConfigChange)
 
-                                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 1.dp)
+                                HorizontalDivider(color = ThemeColors.outlineVariant, thickness = 1.dp)
 
                                 // 自动选择三星
                                 ChooseLevel3Section(config, onConfigChange)
@@ -202,7 +204,7 @@ private fun UseExpeditedSection(
 
             Text(
                 text = stringResource(R.string.panel_recruit_use_expedited),
-                style = MaterialTheme.typography.bodyMedium
+                style = ThemeTypography.bodyMedium
             )
 
             ExpandableTipIcon(
@@ -226,7 +228,7 @@ private fun RecruitMaxTimesSection(
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(
             text = stringResource(R.string.panel_recruit_max_times_title),
-            style = MaterialTheme.typography.bodyMedium,
+            style = ThemeTypography.bodyMedium,
             fontWeight = FontWeight.Medium
         )
 
@@ -241,8 +243,8 @@ private fun RecruitMaxTimesSection(
 
         Text(
             text = stringResource(R.string.panel_recruit_max_times_desc),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            style = ThemeTypography.bodySmall,
+            color = ThemeColors.onSurfaceVariant
         )
     }
 }
@@ -269,7 +271,7 @@ private fun SelectExtraTagsSection(
         Text(
             modifier = Modifier.padding(vertical = 2.dp),
             text = stringResource(R.string.panel_recruit_extra_tags_strategy),
-            style = MaterialTheme.typography.bodyMedium,
+            style = ThemeTypography.bodyMedium,
             fontWeight = FontWeight.Medium
         )
 
@@ -292,7 +294,7 @@ private fun SelectExtraTagsSection(
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = label,
-                        style = MaterialTheme.typography.bodyMedium
+                        style = ThemeTypography.bodyMedium
                     )
                 }
             }
@@ -320,7 +322,7 @@ private fun AutoRecruitFirstListSection(
         ) {
             Text(
                 text = stringResource(R.string.panel_recruit_level3_preference),
-                style = MaterialTheme.typography.bodyMedium,
+                style = ThemeTypography.bodyMedium,
                 fontWeight = FontWeight.Medium
             )
 
@@ -339,8 +341,8 @@ private fun AutoRecruitFirstListSection(
         Surface(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(6.dp),
-            color = MaterialTheme.colorScheme.surfaceVariant,
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+            color = ThemeColors.surfaceVariant,
+            border = BorderStroke(1.dp, ThemeColors.outlineVariant)
         ) {
             Column(
                 modifier = Modifier.padding(8.dp),
@@ -368,7 +370,7 @@ private fun AutoRecruitFirstListSection(
                             label = {
                                 Text(
                                     text = display,
-                                    style = MaterialTheme.typography.labelSmall,
+                                    style = ThemeTypography.labelSmall,
                                     maxLines = 1
                                 )
                             },
@@ -382,11 +384,11 @@ private fun AutoRecruitFirstListSection(
                                 }
                             } else null,
                             colors = FilterChipDefaults.filterChipColors(
-                                containerColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
-                                labelColor = MaterialTheme.colorScheme.onSurface,
-                                selectedContainerColor = MaterialTheme.colorScheme.primary,
-                                selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
-                                selectedLeadingIconColor = MaterialTheme.colorScheme.onPrimary
+                                containerColor = ThemeColors.outline.copy(alpha = 0.3f),
+                                labelColor = ThemeColors.onSurface,
+                                selectedContainerColor = ThemeColors.primary,
+                                selectedLabelColor = ThemeColors.onPrimary,
+                                selectedLeadingIconColor = ThemeColors.onPrimary
                             ),
                             border = null,
                             modifier = Modifier.height(28.dp)
@@ -398,8 +400,8 @@ private fun AutoRecruitFirstListSection(
                 if (config.autoRecruitFirstList.isNotEmpty()) {
                     Text(
                         text = stringResource(R.string.panel_recruit_selected_count, config.autoRecruitFirstList.size),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.primary
+                        style = ThemeTypography.labelSmall,
+                        color = ThemeColors.primary
                     )
                 }
             }
@@ -428,7 +430,7 @@ private fun RefreshLevel3Section(
         Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = stringResource(R.string.panel_recruit_refresh_level3),
-            style = MaterialTheme.typography.bodyMedium
+            style = ThemeTypography.bodyMedium
         )
     }
 }
@@ -457,7 +459,7 @@ private fun ForceRefreshSection(
         Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = stringResource(R.string.panel_recruit_force_refresh),
-            style = MaterialTheme.typography.bodyMedium
+            style = ThemeTypography.bodyMedium
         )
     }
 }
@@ -499,7 +501,7 @@ private fun PreserveTagSection(
             )
             Text(
                 text = stringResource(R.string.panel_recruit_preserve_tag_enabled),
-                style = MaterialTheme.typography.bodyMedium
+                style = ThemeTypography.bodyMedium
             )
             ExpandableTipIcon(
                 expanded = tipExpanded,
@@ -516,8 +518,8 @@ private fun PreserveTagSection(
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(6.dp),
-                color = MaterialTheme.colorScheme.surfaceVariant,
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+                color = ThemeColors.surfaceVariant,
+                border = BorderStroke(1.dp, ThemeColors.outlineVariant)
             ) {
                 Column(
                     modifier = Modifier.padding(8.dp),
@@ -545,7 +547,7 @@ private fun PreserveTagSection(
                                 label = {
                                     Text(
                                         text = display,
-                                        style = MaterialTheme.typography.labelSmall,
+                                        style = ThemeTypography.labelSmall,
                                         maxLines = 1
                                     )
                                 },
@@ -559,11 +561,11 @@ private fun PreserveTagSection(
                                     }
                                 } else null,
                                 colors = FilterChipDefaults.filterChipColors(
-                                    containerColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
-                                    labelColor = MaterialTheme.colorScheme.onSurface,
-                                    selectedContainerColor = MaterialTheme.colorScheme.primary,
-                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
-                                    selectedLeadingIconColor = MaterialTheme.colorScheme.onPrimary
+                                    containerColor = ThemeColors.outline.copy(alpha = 0.3f),
+                                    labelColor = ThemeColors.onSurface,
+                                    selectedContainerColor = ThemeColors.primary,
+                                    selectedLabelColor = ThemeColors.onPrimary,
+                                    selectedLeadingIconColor = ThemeColors.onPrimary
                                 ),
                                 border = null,
                                 modifier = Modifier.height(28.dp)
@@ -574,8 +576,8 @@ private fun PreserveTagSection(
                     if (config.preserveTagList.isNotEmpty()) {
                         Text(
                             text = stringResource(R.string.panel_recruit_selected_count, config.preserveTagList.size),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.primary
+                            style = ThemeTypography.labelSmall,
+                            color = ThemeColors.primary
                         )
                     }
                 }
@@ -607,7 +609,7 @@ private fun ChooseLevel3Section(
             Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = stringResource(R.string.panel_recruit_choose_level3),
-                style = MaterialTheme.typography.bodyMedium
+                style = ThemeTypography.bodyMedium
             )
         }
 
@@ -647,7 +649,7 @@ private fun ChooseLevel4Section(
             Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = stringResource(R.string.panel_recruit_choose_level4),
-                style = MaterialTheme.typography.bodyMedium
+                style = ThemeTypography.bodyMedium
             )
         }
 
@@ -686,7 +688,7 @@ private fun ChooseLevel5Section(
             Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = stringResource(R.string.panel_recruit_choose_level5),
-                style = MaterialTheme.typography.bodyMedium
+                style = ThemeTypography.bodyMedium
             )
         }
 

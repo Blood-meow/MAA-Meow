@@ -32,6 +32,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.aliothmoon.maameow.R
 import com.aliothmoon.maameow.data.resource.StageGroup
+import com.aliothmoon.maameow.ui.theme.ThemeColors
+import com.aliothmoon.maameow.ui.theme.ThemeTypography
 
 /**
  * 今日开放关卡提示
@@ -62,7 +64,7 @@ fun TodayStagesHint(
 
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        color = MaterialTheme.colorScheme.secondaryContainer,
+        color = ThemeColors.secondaryContainer,
         shape = RoundedCornerShape(4.dp)
     ) {
         Column(modifier = Modifier.padding(8.dp)) {
@@ -82,12 +84,12 @@ fun TodayStagesHint(
                 Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     activityTips.forEach { tip ->
                         val color = when {
-                            tip.startsWith("｢") -> MaterialTheme.colorScheme.tertiary // 活动提示用橙色
-                            else -> MaterialTheme.colorScheme.onTertiaryContainer // 活动关卡掉落用深橙色
+                            tip.startsWith("｢") -> ThemeColors.tertiary // 活动提示用橙色
+                            else -> ThemeColors.onTertiaryContainer // 活动关卡掉落用深橙色
                         }
                         Text(
                             text = "· $tip",
-                            style = MaterialTheme.typography.labelSmall,
+                            style = ThemeTypography.labelSmall,
                             color = color
                         )
                     }
@@ -95,8 +97,8 @@ fun TodayStagesHint(
                     if (isResourceCollectionOpen && activityTips.none { it.contains("资源收集") }) {
                         Text(
                             text = stringResource(R.string.panel_fight_resource_collection_open_tip),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.primary
+                            style = ThemeTypography.labelSmall,
+                            color = ThemeColors.primary
                         )
                     }
                 }
@@ -116,14 +118,14 @@ fun TodayStagesHint(
                 ) {
                     Text(
                         text = title,
-                        style = MaterialTheme.typography.bodySmall,
+                        style = ThemeTypography.bodySmall,
                         fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                        color = ThemeColors.onSecondaryContainer
                     )
                     Icon(
                         imageVector = Icons.Default.ArrowDropDown,
                         contentDescription = if (expanded) stringResource(R.string.common_collapse) else stringResource(R.string.common_expand),
-                        tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                        tint = ThemeColors.onSecondaryContainer,
                         modifier = Modifier.size(20.dp)
                     )
                 }
@@ -139,12 +141,12 @@ fun TodayStagesHint(
                     ) {
                         regularTips.forEach { tip ->
                             val color = when {
-                                tip.trimStart().startsWith("(") -> MaterialTheme.colorScheme.onSurfaceVariant // 仓库信息用灰色
-                                else -> MaterialTheme.colorScheme.onSecondaryContainer // 资源提示用绿色
+                                tip.trimStart().startsWith("(") -> ThemeColors.onSurfaceVariant // 仓库信息用灰色
+                                else -> ThemeColors.onSecondaryContainer // 资源提示用绿色
                             }
                             Text(
                                 text = "· $tip",
-                                style = MaterialTheme.typography.labelSmall,
+                                style = ThemeTypography.labelSmall,
                                 color = color
                             )
                         }
@@ -154,9 +156,9 @@ fun TodayStagesHint(
                 // 无活动也无常驻提示时显示标题行
                 Text(
                     text = title,
-                    style = MaterialTheme.typography.bodySmall,
+                    style = ThemeTypography.bodySmall,
                     fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                    color = ThemeColors.onSecondaryContainer
                 )
             }
         }

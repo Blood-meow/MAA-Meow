@@ -68,6 +68,8 @@ import com.aliothmoon.maameow.ui.component.ITextField
 import com.aliothmoon.maameow.ui.screen.panel.fight.FightConfigPanel
 import com.aliothmoon.maameow.ui.screen.panel.mall.MallConfigPanel
 import com.aliothmoon.maameow.ui.screen.panel.roguelike.RoguelikeConfigPanel
+import com.aliothmoon.maameow.ui.theme.ThemeColors
+import com.aliothmoon.maameow.ui.theme.ThemeTypography
 
 @Composable
 fun TaskConfigPanel(
@@ -205,8 +207,8 @@ private fun EmptyStateHint(
 
         Text(
             text = title,
-            style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onSurface,
+            style = ThemeTypography.titleLarge,
+            color = ThemeColors.onSurface,
             fontWeight = FontWeight.ExtraBold
         )
 
@@ -235,13 +237,13 @@ private fun HintItem(icon: androidx.compose.ui.graphics.vector.ImageVector, text
             modifier = Modifier
                 .size(18.dp)
                 .padding(top = 2.dp),
-            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
+            tint = ThemeColors.primary.copy(alpha = 0.6f)
         )
         Spacer(modifier = Modifier.width(12.dp))
         Text(
             text = text,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = ThemeTypography.bodyMedium,
+            color = ThemeColors.onSurfaceVariant,
             lineHeight = 22.sp
         )
     }
@@ -256,8 +258,8 @@ private fun TaskGalleryView(onAddNode: (TaskTypeInfo) -> Unit) {
     ) {
         Text(
             stringResource(R.string.panel_config_select_type),
-            style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.primary,
+            style = ThemeTypography.titleSmall,
+            color = ThemeColors.primary,
             modifier = Modifier.padding(bottom = 12.dp)
         )
 
@@ -270,8 +272,8 @@ private fun TaskGalleryView(onAddNode: (TaskTypeInfo) -> Unit) {
             items(TaskTypeInfo.entries) { typeInfo ->
                 Surface(
                     shape = RoundedCornerShape(8.dp),
-                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+                    color = ThemeColors.surfaceVariant.copy(alpha = 0.5f),
+                    border = BorderStroke(1.dp, ThemeColors.outlineVariant),
                     modifier = Modifier.clickable { onAddNode(typeInfo) }
                 ) {
                     Box(
@@ -280,10 +282,10 @@ private fun TaskGalleryView(onAddNode: (TaskTypeInfo) -> Unit) {
                     ) {
                         Text(
                             text = taskTypeLabel(typeInfo),
-                            style = MaterialTheme.typography.bodyMedium,
+                            style = ThemeTypography.bodyMedium,
                             fontWeight = FontWeight.Medium,
                             textAlign = TextAlign.Center,
-                            color = MaterialTheme.colorScheme.onSurface
+                            color = ThemeColors.onSurface
                         )
                     }
                 }
@@ -315,22 +317,22 @@ private fun TaskManagementView(
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Surface(
-                color = MaterialTheme.colorScheme.secondaryContainer,
+                color = ThemeColors.secondaryContainer,
                 shape = RoundedCornerShape(4.dp)
             ) {
                 Text(
                     text = stringResource(R.string.panel_config_editing_badge),
                     modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    style = ThemeTypography.labelLarge,
+                    color = ThemeColors.onSecondaryContainer,
                     fontWeight = FontWeight.Bold
                 )
             }
             Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = typeDisplayName,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface,
+                style = ThemeTypography.bodyMedium,
+                color = ThemeColors.onSurface,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -357,14 +359,14 @@ private fun TaskManagementView(
                     Text(stringResource(R.string.panel_config_name_too_long))
                 }
             },
-            outlineColor = if (isError || isTooLong) MaterialTheme.colorScheme.error else null
+            outlineColor = if (isError || isTooLong) ThemeColors.error else null
         )
 
         // 字数统计在 ITextField 下方展示，因为 ITextField 内部目前可能不支持 trailingIcon（取决于具体实现）
         Text(
             text = "${text.length}/20",
-            style = MaterialTheme.typography.labelSmall,
-            color = if (isTooLong) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.outline,
+            style = ThemeTypography.labelSmall,
+            color = if (isTooLong) ThemeColors.error else ThemeColors.outline,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 4.dp),
@@ -389,9 +391,9 @@ private fun TaskManagementView(
             onClick = onRemove,
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.outlinedButtonColors(
-                contentColor = MaterialTheme.colorScheme.error
+                contentColor = ThemeColors.error
             ),
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.6f)),
+            border = BorderStroke(1.dp, ThemeColors.error.copy(alpha = 0.6f)),
             shape = RoundedCornerShape(4.dp)
         ) {
             Icon(Icons.Default.Delete, contentDescription = null, modifier = Modifier.size(18.dp))

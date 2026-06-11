@@ -54,6 +54,8 @@ import androidx.compose.ui.unit.sp
 import com.aliothmoon.maameow.R
 import com.aliothmoon.maameow.data.model.LogItem
 import com.aliothmoon.maameow.ui.component.dialog.AdaptiveTaskPromptDialog
+import com.aliothmoon.maameow.ui.theme.ThemeColors
+import com.aliothmoon.maameow.ui.theme.ThemeTypography
 
 /**
  * 日志面板
@@ -97,12 +99,12 @@ fun LogPanel(
                 Icon(
                     imageVector = Icons.AutoMirrored.Rounded.List,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary
+                    tint = ThemeColors.primary
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = stringResource(R.string.panel_log_title),
-                    style = MaterialTheme.typography.titleMedium,
+                    style = ThemeTypography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -112,14 +114,14 @@ fun LogPanel(
                     Icon(
                         imageVector = Icons.Rounded.Delete,
                         contentDescription = stringResource(R.string.common_clear),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        tint = ThemeColors.onSurfaceVariant
                     )
                 }
                 IconButton(onClick = onClose) {
                     Icon(
                         imageVector = Icons.Rounded.Close,
                         contentDescription = stringResource(R.string.common_close),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        tint = ThemeColors.onSurfaceVariant
                     )
                 }
             }
@@ -153,14 +155,14 @@ fun LogPanel(
                         .padding(16.dp)
                         .size(40.dp)
                         .background(
-                            MaterialTheme.colorScheme.primaryContainer,
+                            ThemeColors.primaryContainer,
                             CircleShape
                         )
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Info,
                         contentDescription = stringResource(R.string.panel_log_resume_auto_scroll),
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                        tint = ThemeColors.onPrimaryContainer,
                         modifier = Modifier.size(20.dp)
                     )
                 }
@@ -199,11 +201,11 @@ private fun LogLine(
             // 时间戳
             Text(
                 text = logItem.formattedTime,
-                style = MaterialTheme.typography.labelSmall.copy(
+                style = ThemeTypography.labelSmall.copy(
                     fontFamily = FontFamily.Monospace,
                     fontSize = 10.sp
                 ),
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                color = ThemeColors.onSurfaceVariant.copy(alpha = 0.6f),
                 modifier = Modifier.width(55.dp)
             )
 
@@ -214,7 +216,7 @@ private fun LogLine(
             ) {
                 Text(
                     text = logItem.level.displayName,
-                    style = MaterialTheme.typography.labelSmall.copy(
+                    style = ThemeTypography.labelSmall.copy(
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Medium
                     ),
@@ -228,7 +230,7 @@ private fun LogLine(
             // 日志内容
             Text(
                 text = logItem.content,
-                style = MaterialTheme.typography.bodySmall.copy(
+                style = ThemeTypography.bodySmall.copy(
                     fontSize = 12.sp
                 ),
                 color = logItem.color,
@@ -244,7 +246,7 @@ private fun LogLine(
                     imageVector = Icons.Outlined.Info,
                     contentDescription = stringResource(R.string.panel_log_view_details),
                     modifier = Modifier.size(14.dp),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    tint = ThemeColors.onSurfaceVariant
                 )
             }
         }
@@ -283,22 +285,22 @@ private fun LogDetailDialog(
                     ) {
                         Text(
                             text = logItem.level.displayName,
-                            style = MaterialTheme.typography.labelMedium,
+                            style = ThemeTypography.labelMedium,
                             color = logItem.color,
                             modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                         )
                     }
                     Text(
                         text = logItem.formattedTime,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        style = ThemeTypography.bodySmall,
+                        color = ThemeColors.onSurfaceVariant
                     )
                 }
 
                 // 日志内容
                 Text(
                     text = logItem.content,
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = ThemeTypography.bodyMedium,
                     color = logItem.color
                 )
 
@@ -309,17 +311,17 @@ private fun LogDetailDialog(
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Text(
                             text = stringResource(R.string.panel_log_details_section),
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            style = ThemeTypography.labelMedium,
+                            color = ThemeColors.onSurfaceVariant
                         )
                         Surface(
                             shape = RoundedCornerShape(4.dp),
-                            color = MaterialTheme.colorScheme.surfaceVariant
+                            color = ThemeColors.surfaceVariant
                         ) {
                             if (richTooltip != null) {
                                 Text(
                                     text = richTooltip,
-                                    style = MaterialTheme.typography.bodySmall,
+                                    style = ThemeTypography.bodySmall,
                                     modifier = Modifier
                                         .padding(8.dp)
                                         .fillMaxWidth()
@@ -329,10 +331,10 @@ private fun LogDetailDialog(
                             } else {
                                 Text(
                                     text = plainTooltip!!,
-                                    style = MaterialTheme.typography.bodySmall.copy(
+                                    style = ThemeTypography.bodySmall.copy(
                                         fontFamily = FontFamily.Monospace
                                     ),
-                                    color = MaterialTheme.colorScheme.onSurface,
+                                    color = ThemeColors.onSurface,
                                     modifier = Modifier
                                         .padding(8.dp)
                                         .fillMaxWidth()
@@ -349,13 +351,13 @@ private fun LogDetailDialog(
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Text(
                             text = stringResource(R.string.panel_log_screenshot_section),
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            style = ThemeTypography.labelMedium,
+                            color = ThemeColors.onSurfaceVariant
                         )
                         Text(
                             text = path,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.primary,
+                            style = ThemeTypography.bodySmall,
+                            color = ThemeColors.primary,
                             modifier = Modifier.clickable { /* TODO: 打开图片 */ }
                         )
                     }

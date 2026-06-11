@@ -22,6 +22,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.aliothmoon.maameow.R
 import com.aliothmoon.maameow.ui.theme.MaaThemeAlphas
+import com.aliothmoon.maameow.ui.theme.ThemeColors
 
 /**
  * 底部按钮
@@ -43,8 +44,8 @@ fun BottomButtons(
             contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
             enabled = !isStarting,
             colors = ButtonDefaults.outlinedButtonColors(
-                contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = MaaThemeAlphas.Disabled)
+                contentColor = ThemeColors.onSurfaceVariant,
+                disabledContentColor = ThemeColors.onSurfaceVariant.copy(alpha = MaaThemeAlphas.Disabled)
             )
         ) {
             Text(stringResource(R.string.panel_bottom_hide))
@@ -59,8 +60,8 @@ fun BottomButtons(
             contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
             enabled = !isStarting,
             colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primary,
-                disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = MaaThemeAlphas.Disabled)
+                containerColor = ThemeColors.primary,
+                disabledContainerColor = ThemeColors.primary.copy(alpha = MaaThemeAlphas.Disabled)
             )
         ) {
             if (isStarting) {
@@ -70,7 +71,7 @@ fun BottomButtons(
                 ) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(16.dp),
-                        color = MaterialTheme.colorScheme.onPrimary,
+                        color = ThemeColors.onPrimary,
                         strokeWidth = 2.dp
                     )
                     Spacer(modifier = Modifier.width(8.dp))

@@ -32,6 +32,8 @@ import com.aliothmoon.maameow.R
 import com.aliothmoon.maameow.data.resource.ResourceDataManager
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import com.aliothmoon.maameow.ui.theme.ThemeColors
+import com.aliothmoon.maameow.ui.theme.ThemeTypography
 
 @Composable
 fun CoreCharSelector(
@@ -140,7 +142,7 @@ fun CoreCharSelector(
         ) {
             Text(
                 text = stringResource(R.string.core_char_selector_title),
-                style = MaterialTheme.typography.bodySmall,
+                style = ThemeTypography.bodySmall,
                 fontWeight = FontWeight.Medium
             )
             if (recommendedChars.isNotEmpty()) {
@@ -150,8 +152,8 @@ fun CoreCharSelector(
                     } else {
                         stringResource(R.string.core_char_selector_recommended)
                     },
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.primary,
+                    style = ThemeTypography.bodySmall,
+                    color = ThemeColors.primary,
                     modifier = Modifier.clickable {
                         showSuggestions = !showSuggestions
                         if (showSuggestions) {
@@ -170,7 +172,7 @@ fun CoreCharSelector(
                     handleInputChange(newValue)
                 },
                 placeholder = stringResource(R.string.core_char_selector_placeholder),
-                outlineColor = if (!isValid && !isValidating) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.outline,
+                outlineColor = if (!isValid && !isValidating) ThemeColors.error else ThemeColors.outline,
                 modifier = Modifier.fillMaxWidth()
             )
         }
@@ -178,14 +180,14 @@ fun CoreCharSelector(
         // 错误提示 - 只有校验完成且失败时显示
         if (!isValid && !isValidating && inputText.isNotBlank()) {
             Surface(
-                color = MaterialTheme.colorScheme.errorContainer,
+                color = ThemeColors.errorContainer,
                 shape = RoundedCornerShape(4.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
                     text = stringResource(R.string.core_char_selector_not_found),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onErrorContainer,
+                    style = ThemeTypography.bodySmall,
+                    color = ThemeColors.onErrorContainer,
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                 )
             }
@@ -200,10 +202,10 @@ fun CoreCharSelector(
                     .clip(RoundedCornerShape(8.dp))
                     .border(
                         width = 1.dp,
-                        color = MaterialTheme.colorScheme.outlineVariant,
+                        color = ThemeColors.outlineVariant,
                         shape = RoundedCornerShape(8.dp)
                     ),
-                color = MaterialTheme.colorScheme.surface
+                color = ThemeColors.surface
             ) {
                 LazyColumn {
                     items(filteredSuggestions) { charName ->
@@ -224,11 +226,11 @@ fun CoreCharSelector(
                         ) {
                             Text(
                                 text = charName,
-                                style = MaterialTheme.typography.bodySmall,
+                                style = ThemeTypography.bodySmall,
                                 color = if (charName in recommendedChars) {
-                                    MaterialTheme.colorScheme.primary
+                                    ThemeColors.primary
                                 } else {
-                                    MaterialTheme.colorScheme.onSurface
+                                    ThemeColors.onSurface
                                 }
                             )
                         }

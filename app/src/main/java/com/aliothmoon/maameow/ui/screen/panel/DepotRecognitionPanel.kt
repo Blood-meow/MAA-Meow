@@ -48,6 +48,8 @@ import com.aliothmoon.maameow.ui.viewmodel.ToolboxViewModel
 import com.aliothmoon.maameow.utils.i18n.asString
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
+import com.aliothmoon.maameow.ui.theme.ThemeColors
+import com.aliothmoon.maameow.ui.theme.ThemeTypography
 
 @Composable
 fun DepotRecognitionPanel(
@@ -84,8 +86,8 @@ fun DepotRecognitionPanel(
             Column(modifier = Modifier.fillMaxWidth()) {
                 Text(
                     text = stringResource(R.string.panel_depot_item_count, items.size),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    style = ThemeTypography.bodySmall,
+                    color = ThemeColors.onSurfaceVariant
                 )
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -104,7 +106,7 @@ fun DepotRecognitionPanel(
                     ) {
                         Text(
                             stringResource(R.string.panel_depot_export_penguin),
-                            style = MaterialTheme.typography.bodySmall,
+                            style = ThemeTypography.bodySmall,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
@@ -122,7 +124,7 @@ fun DepotRecognitionPanel(
                     ) {
                         Text(
                             stringResource(R.string.panel_depot_export_toolbox),
-                            style = MaterialTheme.typography.bodySmall,
+                            style = ThemeTypography.bodySmall,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
@@ -149,8 +151,8 @@ private fun DepotEmptyState(modifier: Modifier, statusMessage: String) {
         Spacer(Modifier.height(48.dp))
         Text(
             text = stringResource(R.string.maa_depot),
-            style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onSurface,
+            style = ThemeTypography.titleLarge,
+            color = ThemeColors.onSurface,
             fontWeight = FontWeight.ExtraBold
         )
         Spacer(Modifier.height(16.dp))
@@ -161,8 +163,8 @@ private fun DepotEmptyState(modifier: Modifier, statusMessage: String) {
             Spacer(Modifier.height(16.dp))
             Text(
                 text = statusMessage,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.primary
+                style = ThemeTypography.bodySmall,
+                color = ThemeColors.primary
             )
         }
     }
@@ -180,13 +182,13 @@ private fun HintRow(text: String) {
             modifier = Modifier
                 .size(18.dp)
                 .padding(top = 2.dp),
-            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
+            tint = ThemeColors.primary.copy(alpha = 0.6f)
         )
         Spacer(Modifier.width(12.dp))
         Text(
             text = text,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = ThemeTypography.bodyMedium,
+            color = ThemeColors.onSurfaceVariant,
         )
     }
 }
@@ -195,7 +197,7 @@ private fun HintRow(text: String) {
 private fun DepotItemCell(item: DepotItem, name: String?) {
     Surface(
         shape = RoundedCornerShape(6.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        color = ThemeColors.surfaceVariant.copy(alpha = 0.5f),
         modifier = Modifier.widthIn(min = 72.dp)
     ) {
         Column(
@@ -205,17 +207,17 @@ private fun DepotItemCell(item: DepotItem, name: String?) {
         ) {
             Text(
                 text = name ?: item.id,
-                style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = ThemeTypography.bodySmall.copy(fontSize = 11.sp),
+                color = ThemeColors.onSurfaceVariant,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 textAlign = TextAlign.Center
             )
             Text(
                 text = "x${item.count}",
-                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.sp),
+                style = ThemeTypography.bodyMedium.copy(fontSize = 13.sp),
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface,
+                color = ThemeColors.onSurface,
                 textAlign = TextAlign.Center
             )
         }

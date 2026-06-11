@@ -45,6 +45,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.aliothmoon.maameow.R
+import com.aliothmoon.maameow.ui.theme.ThemeColors
+import com.aliothmoon.maameow.ui.theme.ThemeTypography
 
 /**
  * 悬浮窗专用对话框组件
@@ -59,8 +61,8 @@ fun OverlayDialog(
     dismissText: String? = null,
     onConfirm: () -> Unit,
     icon: ImageVector? = null,
-    iconTint: Color = MaterialTheme.colorScheme.error,
-    confirmColor: Color = MaterialTheme.colorScheme.primary,
+    iconTint: Color = ThemeColors.error,
+    confirmColor: Color = ThemeColors.primary,
 ) {
     val resolvedConfirmText = confirmText ?: stringResource(R.string.common_confirm)
     val resolvedDismissText = dismissText ?: stringResource(R.string.common_cancel)
@@ -74,7 +76,7 @@ fun OverlayDialog(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.45f))
+                .background(ThemeColors.scrim.copy(alpha = 0.45f))
                 .clickable(
                     indication = null,
                     interactionSource = remember { MutableInteractionSource() }
@@ -98,7 +100,7 @@ fun OverlayDialog(
                         ) { /* 消费点击事件，防止穿透到遮罩层 */ },
                     shape = RoundedCornerShape(8.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surface
+                        containerColor = ThemeColors.surface
                     )
                 ) {
                     Column(
@@ -129,10 +131,10 @@ fun OverlayDialog(
                         // 标题
                         Text(
                             text = title,
-                            style = MaterialTheme.typography.titleMedium,
+                            style = ThemeTypography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             textAlign = TextAlign.Center,
-                            color = MaterialTheme.colorScheme.onSurface
+                            color = ThemeColors.onSurface
                         )
 
                         Spacer(modifier = Modifier.height(8.dp))
@@ -140,8 +142,8 @@ fun OverlayDialog(
                         // 消息内容
                         Text(
                             text = message,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            style = ThemeTypography.bodyMedium,
+                            color = ThemeColors.onSurfaceVariant,
                             textAlign = TextAlign.Center
                         )
 
@@ -160,7 +162,7 @@ fun OverlayDialog(
                                     .height(36.dp),
                                 contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
                                 colors = ButtonDefaults.outlinedButtonColors(
-                                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                                    contentColor = ThemeColors.onSurfaceVariant
                                 )
                             ) {
                                 Text(text = resolvedDismissText)
@@ -175,7 +177,7 @@ fun OverlayDialog(
                                 contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = confirmColor,
-                                    contentColor = MaterialTheme.colorScheme.onPrimary
+                                    contentColor = ThemeColors.onPrimary
                                 )
                             ) {
                                 Text(text = resolvedConfirmText)

@@ -13,6 +13,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.aliothmoon.maameow.R
 import dev.jeziellago.compose.markdowntext.MarkdownText
+import com.aliothmoon.maameow.ui.theme.ThemeTypography
 
 @Composable
 fun ChangelogDialog(
@@ -34,7 +35,7 @@ fun ChangelogDialog(
                 MarkdownText(
                     markdown = content,
                     modifier = Modifier.fillMaxWidth(),
-                    style = MaterialTheme.typography.bodyMedium
+                    style = ThemeTypography.bodyMedium
                 )
             }
         }

@@ -56,6 +56,8 @@ import com.aliothmoon.maameow.ui.component.dialog.AdaptiveTaskPromptDialog
 import com.aliothmoon.maameow.ui.component.ITextField
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
+import com.aliothmoon.maameow.ui.theme.ThemeColors
+import com.aliothmoon.maameow.ui.theme.ThemeTypography
 
 /**
  * 右侧 Profile 管理面板
@@ -89,17 +91,17 @@ fun ProfileManagementPanel(
         ) {
             Text(
                 text = stringResource(R.string.panel_profile_title),
-                style = MaterialTheme.typography.titleMedium,
+                style = ThemeTypography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
+                color = ThemeColors.onSurface
             )
             MaaUiOutlinedButton(
                 onClick = onCreate,
                 enabled = profiles.size < 10,
                 shape = RoundedCornerShape(4.dp),
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
+                border = BorderStroke(1.dp, ThemeColors.primary)
             ) {
-                Text(stringResource(R.string.panel_new_profile), color = MaterialTheme.colorScheme.primary)
+                Text(stringResource(R.string.panel_new_profile), color = ThemeColors.primary)
             }
         }
 
@@ -159,7 +161,7 @@ fun ProfileManagementPanel(
         title = stringResource(R.string.panel_profile_delete_title),
         message = stringResource(R.string.panel_profile_delete_message, deleteProfileName),
         icon = Icons.Default.Warning,
-        confirmColor = MaterialTheme.colorScheme.error,
+        confirmColor = ThemeColors.error,
         confirmText = stringResource(R.string.common_delete),
         dismissText = stringResource(R.string.common_cancel),
         onConfirm = {
@@ -195,15 +197,15 @@ private fun ProfileCard(
         shape = RoundedCornerShape(4.dp),
         colors = CardDefaults.cardColors(
             containerColor = if (isActive) {
-                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+                ThemeColors.primaryContainer.copy(alpha = 0.3f)
             } else {
-                MaterialTheme.colorScheme.surface
+                ThemeColors.surface
             }
         ),
         border = if (isActive) {
-            BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f))
+            BorderStroke(1.dp, ThemeColors.primary.copy(alpha = 0.5f))
         } else {
-            BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+            BorderStroke(1.dp, ThemeColors.outlineVariant)
         },
         elevation = CardDefaults.cardElevation(
             defaultElevation = if (isDragging) 4.dp else 0.dp
@@ -227,12 +229,12 @@ private fun ProfileCard(
 
                 Text(
                     text = profile.name,
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = ThemeTypography.bodyMedium,
                     fontWeight = if (isActive) FontWeight.Medium else FontWeight.Normal,
                     color = if (isActive) {
-                        MaterialTheme.colorScheme.onPrimaryContainer
+                        ThemeColors.onPrimaryContainer
                     } else {
-                        MaterialTheme.colorScheme.onSurface
+                        ThemeColors.onSurface
                     },
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -248,7 +250,7 @@ private fun ProfileCard(
                         Icons.Default.Edit,
                         contentDescription = stringResource(R.string.common_rename),
                         modifier = Modifier.size(16.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        tint = ThemeColors.onSurfaceVariant
                     )
                 }
                 IconButton(
@@ -259,7 +261,7 @@ private fun ProfileCard(
                         Icons.Default.ContentCopy,
                         contentDescription = stringResource(R.string.common_copy),
                         modifier = Modifier.size(16.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        tint = ThemeColors.onSurfaceVariant
                     )
                 }
                 IconButton(
@@ -272,9 +274,9 @@ private fun ProfileCard(
                         contentDescription = stringResource(R.string.common_delete),
                         modifier = Modifier.size(16.dp),
                         tint = if (canDelete) {
-                            MaterialTheme.colorScheme.error.copy(alpha = 0.7f)
+                            ThemeColors.error.copy(alpha = 0.7f)
                         } else {
-                            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
+                            ThemeColors.onSurfaceVariant.copy(alpha = 0.3f)
                         }
                     )
                 }
@@ -306,14 +308,14 @@ private fun ProfileCard(
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         MaaUiTextButton(onClick = onRenameConfirm) {
-                            Text(stringResource(R.string.common_confirm), style = MaterialTheme.typography.labelMedium)
+                            Text(stringResource(R.string.common_confirm), style = ThemeTypography.labelMedium)
                         }
                     }
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
                             text = "ID: ${profile.id}",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                            style = ThemeTypography.labelSmall,
+                            color = ThemeColors.onSurfaceVariant.copy(alpha = 0.6f),
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                             modifier = Modifier.weight(1f)
@@ -329,7 +331,7 @@ private fun ProfileCard(
                                 Icons.Default.ContentCopy,
                                 contentDescription = stringResource(R.string.panel_profile_copy_id),
                                 modifier = Modifier.size(14.dp),
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                tint = ThemeColors.onSurfaceVariant
                             )
                         }
                     }

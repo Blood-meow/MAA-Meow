@@ -35,6 +35,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.aliothmoon.maameow.R
 import com.aliothmoon.maameow.data.resource.MiniGameTextRegistry
 import com.aliothmoon.maameow.ui.viewmodel.MiniGameDelegate
+import com.aliothmoon.maameow.ui.theme.ThemeColors
+import com.aliothmoon.maameow.ui.theme.ThemeTypography
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -50,7 +52,7 @@ fun MiniGamePanel(
     val isUnsupported = currentGame?.isUnsupported == true
     val currentGameDisplay = currentGame?.display ?: ""
 
-    val tabTitleTextStyle = MaterialTheme.typography.bodySmall.copy(
+    val tabTitleTextStyle = ThemeTypography.bodySmall.copy(
         fontSize = 13.sp,
         lineHeight = 16.sp
     )
@@ -64,7 +66,7 @@ fun MiniGamePanel(
         item {
             Text(
                 text = stringResource(R.string.panel_mini_game_title),
-                style = MaterialTheme.typography.titleSmall,
+                style = ThemeTypography.titleSmall,
                 fontWeight = FontWeight.SemiBold
             )
         }
@@ -74,8 +76,8 @@ fun MiniGamePanel(
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(
                     text = stringResource(R.string.panel_mini_game_name),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    style = ThemeTypography.bodySmall,
+                    color = ThemeColors.onSurfaceVariant
                 )
                 miniGames.chunked(3).forEach { rowGames ->
                     Row(
@@ -87,20 +89,20 @@ fun MiniGamePanel(
                             Surface(
                                 shape = RoundedCornerShape(6.dp),
                                 color = if (game.isUnsupported) {
-                                    MaterialTheme.colorScheme.errorContainer
+                                    ThemeColors.errorContainer
                                 } else if (selected) {
-                                    MaterialTheme.colorScheme.primaryContainer
+                                    ThemeColors.primaryContainer
                                 } else {
-                                    MaterialTheme.colorScheme.surface
+                                    ThemeColors.surface
                                 },
                                 border = BorderStroke(
                                     width = 1.dp,
                                     color = if (game.isUnsupported && selected) {
-                                        MaterialTheme.colorScheme.error
+                                        ThemeColors.error
                                     } else if (selected) {
-                                        MaterialTheme.colorScheme.primary
+                                        ThemeColors.primary
                                     } else {
-                                        MaterialTheme.colorScheme.outlineVariant
+                                        ThemeColors.outlineVariant
                                     }
                                 ),
                                 modifier = Modifier
@@ -119,11 +121,11 @@ fun MiniGamePanel(
                                         text = game.display,
                                         style = tabTitleTextStyle,
                                         color = if (game.isUnsupported) {
-                                            MaterialTheme.colorScheme.onErrorContainer
+                                            ThemeColors.onErrorContainer
                                         } else if (selected) {
-                                            MaterialTheme.colorScheme.onPrimaryContainer
+                                            ThemeColors.onPrimaryContainer
                                         } else {
-                                            MaterialTheme.colorScheme.onSurface
+                                            ThemeColors.onSurface
                                         },
                                         fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
                                         textAlign = TextAlign.Center,
@@ -148,12 +150,12 @@ fun MiniGamePanel(
                 Surface(
                     shape = RoundedCornerShape(8.dp),
                     color = if (isUnsupported) {
-                        MaterialTheme.colorScheme.errorContainer
+                        ThemeColors.errorContainer
                     } else {
-                        MaterialTheme.colorScheme.surfaceVariant
+                        ThemeColors.surfaceVariant
                     },
                     border = if (isUnsupported) {
-                        BorderStroke(1.dp, MaterialTheme.colorScheme.error)
+                        BorderStroke(1.dp, ThemeColors.error)
                     } else {
                         null
                     },
@@ -163,23 +165,23 @@ fun MiniGamePanel(
                         if (currentGameDisplay.isNotBlank()) {
                             Text(
                                 text = currentGameDisplay,
-                                style = MaterialTheme.typography.bodySmall,
+                                style = ThemeTypography.bodySmall,
                                 fontWeight = FontWeight.Bold,
                                 color = if (isUnsupported) {
-                                    MaterialTheme.colorScheme.onErrorContainer
+                                    ThemeColors.onErrorContainer
                                 } else {
-                                    MaterialTheme.colorScheme.onSurfaceVariant
+                                    ThemeColors.onSurfaceVariant
                                 },
                                 modifier = Modifier.padding(bottom = 4.dp)
                             )
                         }
                         Text(
                             text = tip,
-                            style = MaterialTheme.typography.bodySmall,
+                            style = ThemeTypography.bodySmall,
                             color = if (isUnsupported) {
-                                MaterialTheme.colorScheme.onErrorContainer
+                                ThemeColors.onErrorContainer
                             } else {
-                                MaterialTheme.colorScheme.onSurfaceVariant
+                                ThemeColors.onSurfaceVariant
                             },
                         )
                     }
@@ -198,8 +200,8 @@ fun MiniGamePanel(
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     Text(
                         text = stringResource(R.string.panel_mini_game_ending),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        style = ThemeTypography.bodySmall,
+                        color = ThemeColors.onSurfaceVariant
                     )
                     FlowRow(
                         horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -212,12 +214,12 @@ fun MiniGamePanel(
                                 label = {
                                     Text(
                                         text = ending,
-                                        style = MaterialTheme.typography.bodySmall
+                                        style = ThemeTypography.bodySmall
                                     )
                                 },
                                 colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    selectedContainerColor = ThemeColors.primaryContainer,
+                                    selectedLabelColor = ThemeColors.onPrimaryContainer,
                                 ),
                                 shape = RoundedCornerShape(8.dp),
                             )
@@ -231,8 +233,8 @@ fun MiniGamePanel(
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     Text(
                         text = stringResource(R.string.panel_mini_game_preferred_events),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        style = ThemeTypography.bodySmall,
+                        color = ThemeColors.onSurfaceVariant
                     )
                     FlowRow(
                         horizontalArrangement = Arrangement.spacedBy(5.dp),
@@ -243,16 +245,16 @@ fun MiniGamePanel(
                             Surface(
                                 shape = RoundedCornerShape(6.dp),
                                 color = if (selected) {
-                                    MaterialTheme.colorScheme.primaryContainer
+                                    ThemeColors.primaryContainer
                                 } else {
-                                    MaterialTheme.colorScheme.surface
+                                    ThemeColors.surface
                                 },
                                 border = BorderStroke(
                                     width = 1.dp,
                                     color = if (selected) {
-                                        MaterialTheme.colorScheme.primary
+                                        ThemeColors.primary
                                     } else {
-                                        MaterialTheme.colorScheme.outlineVariant
+                                        ThemeColors.outlineVariant
                                     }
                                 ),
                                 modifier = Modifier
@@ -262,9 +264,9 @@ fun MiniGamePanel(
                                     text = display,
                                     style = tabTitleTextStyle,
                                     color = if (selected) {
-                                        MaterialTheme.colorScheme.onPrimaryContainer
+                                        ThemeColors.onPrimaryContainer
                                     } else {
-                                        MaterialTheme.colorScheme.onSurface
+                                        ThemeColors.onSurface
                                     },
                                     fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
                                     textAlign = TextAlign.Center,

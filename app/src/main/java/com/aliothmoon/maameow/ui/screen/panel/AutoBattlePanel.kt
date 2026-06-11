@@ -74,6 +74,8 @@ import com.aliothmoon.maameow.utils.i18n.asString
 import org.koin.compose.koinInject
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
+import com.aliothmoon.maameow.ui.theme.ThemeColors
+import com.aliothmoon.maameow.ui.theme.ThemeTypography
 
 private data class CopilotTabUiSpec(
     val index: Int,
@@ -124,11 +126,11 @@ fun AutoBattlePanel(
             }
         }
     } else null
-    val tabTitleTextStyle = MaterialTheme.typography.bodySmall.copy(
+    val tabTitleTextStyle = ThemeTypography.bodySmall.copy(
         fontSize = 13.sp,
         lineHeight = 16.sp
     )
-    val tabSubtitleTextStyle = MaterialTheme.typography.labelSmall.copy(
+    val tabSubtitleTextStyle = ThemeTypography.labelSmall.copy(
         fontSize = 10.5.sp,
         lineHeight = 12.sp
     )
@@ -189,16 +191,16 @@ fun AutoBattlePanel(
                                 Surface(
                                     shape = RoundedCornerShape(8.dp),
                                     color = if (selected) {
-                                        MaterialTheme.colorScheme.primaryContainer
+                                        ThemeColors.primaryContainer
                                     } else {
-                                        MaterialTheme.colorScheme.surface
+                                        ThemeColors.surface
                                     },
                                     border = BorderStroke(
                                         width = 1.dp,
                                         color = if (selected) {
-                                            MaterialTheme.colorScheme.primary
+                                            ThemeColors.primary
                                         } else {
-                                            MaterialTheme.colorScheme.outlineVariant
+                                            ThemeColors.outlineVariant
                                         }
                                     ),
                                     modifier = Modifier
@@ -217,9 +219,9 @@ fun AutoBattlePanel(
                                             text = stringResource(spec.titleRes),
                                             style = tabTitleTextStyle,
                                             color = if (selected) {
-                                                MaterialTheme.colorScheme.onPrimaryContainer
+                                                ThemeColors.onPrimaryContainer
                                             } else {
-                                                MaterialTheme.colorScheme.onSurface
+                                                ThemeColors.onSurface
                                             },
                                             fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
                                             textAlign = TextAlign.Center,
@@ -233,11 +235,11 @@ fun AutoBattlePanel(
                                                 text = stringResource(subtitleRes),
                                                 style = tabSubtitleTextStyle,
                                                 color = if (selected) {
-                                                    MaterialTheme.colorScheme.onPrimaryContainer.copy(
+                                                    ThemeColors.onPrimaryContainer.copy(
                                                         alpha = 0.8f
                                                     )
                                                 } else {
-                                                    MaterialTheme.colorScheme.onSurfaceVariant
+                                                    ThemeColors.onSurfaceVariant
                                                 },
                                                 textAlign = TextAlign.Center,
                                                 maxLines = 1,
@@ -270,7 +272,7 @@ fun AutoBattlePanel(
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(6.dp),
-                    color = MaterialTheme.colorScheme.surfaceVariant
+                    color = ThemeColors.surfaceVariant
                 ) {
                     Row(
                         modifier = Modifier.padding(10.dp),
@@ -287,7 +289,7 @@ fun AutoBattlePanel(
                             text = statusMessage.ifBlank {
                                 stringResource(R.string.panel_autobattle_waiting)
                             },
-                            style = MaterialTheme.typography.bodySmall,
+                            style = ThemeTypography.bodySmall,
                             modifier = Modifier.weight(1f)
                         )
                     }
@@ -356,7 +358,7 @@ fun AutoBattlePanel(
                         Surface(
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(6.dp),
-                            color = MaterialTheme.colorScheme.secondaryContainer
+                            color = ThemeColors.secondaryContainer
                         ) {
                             Column(
                                 modifier = Modifier
@@ -369,16 +371,16 @@ fun AutoBattlePanel(
                                         if (doc.title.isNotBlank()) {
                                             Text(
                                                 text = doc.title,
-                                                style = MaterialTheme.typography.bodyMedium,
+                                                style = ThemeTypography.bodyMedium,
                                                 fontWeight = FontWeight.Medium,
-                                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                                                color = ThemeColors.onSecondaryContainer
                                             )
                                         }
                                         if (doc.details.isNotBlank()) {
                                             Text(
                                                 text = doc.details,
-                                                style = MaterialTheme.typography.bodySmall,
-                                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                                                style = ThemeTypography.bodySmall,
+                                                color = ThemeColors.onSecondaryContainer
                                             )
                                         }
                                     }
@@ -387,13 +389,13 @@ fun AutoBattlePanel(
                                 if (summary != null && !summary.isEmpty) {
                                     if (doc.title.isNotBlank() || doc.details.isNotBlank()) {
                                         HorizontalDivider(
-                                            color = MaterialTheme.colorScheme.onSecondaryContainer.copy(
+                                            color = ThemeColors.onSecondaryContainer.copy(
                                                 alpha = 0.2f
                                             )
                                         )
                                     }
                                     val textMeasurer = rememberTextMeasurer()
-                                    val labelStyle = MaterialTheme.typography.labelSmall
+                                    val labelStyle = ThemeTypography.labelSmall
                                     val density = LocalDensity.current
                                     val nameColumnWidth = remember(summary) {
                                         val allNames = summary.operators.map { it.name } +
@@ -412,9 +414,9 @@ fun AutoBattlePanel(
                                             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                                                 Text(
                                                     text = stringResource(R.string.panel_autobattle_operator_header),
-                                                    style = MaterialTheme.typography.labelSmall,
+                                                    style = ThemeTypography.labelSmall,
                                                     fontWeight = FontWeight.Bold,
-                                                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                                                    color = ThemeColors.onSecondaryContainer
                                                 )
                                                 summary.operators.forEach { oper ->
                                                     OperatorRow(oper, nameWidth = nameWidth)
@@ -429,9 +431,9 @@ fun AutoBattlePanel(
                                                         R.string.panel_autobattle_group_header,
                                                         groupName
                                                     ),
-                                                    style = MaterialTheme.typography.labelSmall,
+                                                    style = ThemeTypography.labelSmall,
                                                     fontWeight = FontWeight.Bold,
-                                                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                                                    color = ThemeColors.onSecondaryContainer
                                                 )
                                                 opers.forEach { oper ->
                                                     OperatorRow(oper, nameWidth = nameWidth)
@@ -444,8 +446,8 @@ fun AutoBattlePanel(
                                                 R.string.panel_autobattle_summary_count,
                                                 summary.totalCount
                                             ),
-                                            style = MaterialTheme.typography.labelSmall,
-                                            color = MaterialTheme.colorScheme.onSecondaryContainer.copy(
+                                            style = ThemeTypography.labelSmall,
+                                            color = ThemeColors.onSecondaryContainer.copy(
                                                 alpha = 0.6f
                                             )
                                         )
@@ -454,8 +456,8 @@ fun AutoBattlePanel(
                                 if (hasVideo) {
                                     Text(
                                         text = stringResource(R.string.common_video),
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.primary,
+                                        style = ThemeTypography.bodySmall,
+                                        color = ThemeColors.primary,
                                         fontWeight = FontWeight.Medium,
                                         modifier = Modifier.clickable {
                                             Misc.openUriSafely(
@@ -654,7 +656,7 @@ fun AutoBattlePanel(
                     ) {
                         Text(
                             stringResource(R.string.panel_autobattle_battle_list),
-                            style = MaterialTheme.typography.bodyMedium,
+                            style = ThemeTypography.bodyMedium,
                             fontWeight = FontWeight.Medium
                         )
                         var sequenceTipExpanded by remember { mutableStateOf(false) }
@@ -669,7 +671,7 @@ fun AutoBattlePanel(
                     Spacer(modifier = Modifier.height(4.dp))
                     Surface(
                         shape = RoundedCornerShape(6.dp),
-                        color = MaterialTheme.colorScheme.surfaceVariant,
+                        color = ThemeColors.surfaceVariant,
                         modifier = Modifier
                             .fillMaxWidth()
                             .heightIn(max = 300.dp)
@@ -677,8 +679,8 @@ fun AutoBattlePanel(
                         if (state.taskList.isEmpty()) {
                             Text(
                                 stringResource(R.string.panel_autobattle_empty_entries),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                style = ThemeTypography.bodySmall,
+                                color = ThemeColors.onSurfaceVariant,
                                 modifier = Modifier.padding(8.dp)
                             )
                         } else {
@@ -706,7 +708,7 @@ fun AutoBattlePanel(
                                         Surface(
                                             tonalElevation = if (isDragging) 4.dp else 0.dp,
                                             shape = RoundedCornerShape(6.dp),
-                                            color = MaterialTheme.colorScheme.surface,
+                                            color = ThemeColors.surface,
                                             modifier = Modifier
                                                 .longPressDraggableHandle()
                                                 .fillMaxWidth()
@@ -749,7 +751,7 @@ fun AutoBattlePanel(
                                                     Icon(
                                                         Icons.Default.Delete,
                                                         contentDescription = stringResource(R.string.common_delete),
-                                                        tint = MaterialTheme.colorScheme.error,
+                                                        tint = ThemeColors.error,
                                                         modifier = Modifier.size(18.dp)
                                                     )
                                                 }
@@ -789,8 +791,8 @@ fun AutoBattlePanel(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
                             stringResource(R.string.panel_autobattle_tips_title),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            style = ThemeTypography.bodySmall,
+                            color = ThemeColors.onSurfaceVariant
                         )
                         ExpandableTipIcon(expanded = expanded, onExpandedChange = { expanded = it })
                     }
@@ -818,13 +820,13 @@ private fun OperatorRow(
     ) {
         Surface(
             shape = RoundedCornerShape(4.dp),
-            color = MaterialTheme.colorScheme.primaryContainer
+            color = ThemeColors.primaryContainer
         ) {
             Text(
                 text = item.name,
-                style = MaterialTheme.typography.labelSmall,
+                style = ThemeTypography.labelSmall,
                 fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                color = ThemeColors.onPrimaryContainer,
                 modifier = Modifier
                     .width(nameWidth)
                     .padding(horizontal = 4.dp, vertical = 1.dp),
@@ -839,12 +841,12 @@ private fun OperatorRow(
             item.tags.forEach { tag ->
                 Surface(
                     shape = RoundedCornerShape(4.dp),
-                    color = MaterialTheme.colorScheme.surfaceVariant
+                    color = ThemeColors.surfaceVariant
                 ) {
                     Text(
                         text = tag,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = ThemeTypography.labelSmall,
+                        color = ThemeColors.onSurfaceVariant,
                         modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
                     )
                 }

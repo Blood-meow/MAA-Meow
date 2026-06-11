@@ -50,6 +50,8 @@ import com.aliothmoon.maameow.ui.viewmodel.ToolboxViewModel
 import com.aliothmoon.maameow.utils.i18n.asString
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
+import com.aliothmoon.maameow.ui.theme.ThemeColors
+import com.aliothmoon.maameow.ui.theme.ThemeTypography
 
 @Composable
 fun OperBoxPanel(
@@ -97,11 +99,11 @@ fun OperBoxPanel(
                     tabs.forEachIndexed { index, label ->
                         Text(
                             text = label,
-                            style = MaterialTheme.typography.bodySmall,
+                            style = ThemeTypography.bodySmall,
                             color = if (selectedTab == index)
-                                MaterialTheme.colorScheme.primary
+                                ThemeColors.primary
                             else
-                                MaterialTheme.colorScheme.onSurfaceVariant,
+                                ThemeColors.onSurfaceVariant,
                             fontWeight = if (selectedTab == index) FontWeight.Bold else FontWeight.Normal,
                             modifier = Modifier
                                 .clickable(
@@ -124,7 +126,7 @@ fun OperBoxPanel(
                         Toast.LENGTH_SHORT
                     ).show()
                 }) {
-                    Text(stringResource(R.string.common_export), style = MaterialTheme.typography.bodySmall)
+                    Text(stringResource(R.string.common_export), style = ThemeTypography.bodySmall)
                 }
             }
         }
@@ -146,8 +148,8 @@ private fun OperBoxEmptyState(modifier: Modifier, statusMessage: String) {
         Spacer(Modifier.height(48.dp))
         Text(
             text = stringResource(R.string.panel_operbox_title),
-            style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onSurface,
+            style = ThemeTypography.titleLarge,
+            color = ThemeColors.onSurface,
             fontWeight = FontWeight.ExtraBold
         )
         Spacer(Modifier.height(16.dp))
@@ -158,8 +160,8 @@ private fun OperBoxEmptyState(modifier: Modifier, statusMessage: String) {
             Spacer(Modifier.height(16.dp))
             Text(
                 text = statusMessage,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.primary
+                style = ThemeTypography.bodySmall,
+                color = ThemeColors.primary
             )
         }
     }
@@ -177,13 +179,13 @@ private fun OperBoxHintRow(text: String) {
             modifier = Modifier
                 .size(18.dp)
                 .padding(top = 2.dp),
-            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
+            tint = ThemeColors.primary.copy(alpha = 0.6f)
         )
         Spacer(Modifier.width(12.dp))
         Text(
             text = text,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = ThemeTypography.bodyMedium,
+            color = ThemeColors.onSurfaceVariant,
         )
     }
 }
@@ -196,12 +198,12 @@ private fun OperatorRow(oper: OperBoxOperator) {
         4 -> Color(0xFF9C7CFF)
         3 -> Color(0xFF4FC3F7)
         2 -> Color(0xFFA5D6A7)
-        else -> MaterialTheme.colorScheme.onSurfaceVariant
+        else -> ThemeColors.onSurfaceVariant
     }
 
     Surface(
         shape = RoundedCornerShape(6.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+        color = ThemeColors.surfaceVariant.copy(alpha = 0.3f),
         modifier = Modifier.fillMaxWidth()
     ) {
         Row(
@@ -217,14 +219,14 @@ private fun OperatorRow(oper: OperBoxOperator) {
             ) {
                 Text(
                     text = "${oper.rarity}★",
-                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
+                    style = ThemeTypography.bodySmall.copy(fontSize = 12.sp),
                     fontWeight = FontWeight.Bold,
                     color = rarityColor
                 )
                 Text(
                     text = oper.name,
-                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.sp),
-                    color = MaterialTheme.colorScheme.onSurface
+                    style = ThemeTypography.bodyMedium.copy(fontSize = 13.sp),
+                    color = ThemeColors.onSurface
                 )
             }
             if (oper.own) {
@@ -235,8 +237,8 @@ private fun OperatorRow(oper: OperBoxOperator) {
                         oper.level,
                         oper.potential
                     ),
-                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    style = ThemeTypography.bodySmall.copy(fontSize = 11.sp),
+                    color = ThemeColors.onSurfaceVariant
                 )
             }
         }

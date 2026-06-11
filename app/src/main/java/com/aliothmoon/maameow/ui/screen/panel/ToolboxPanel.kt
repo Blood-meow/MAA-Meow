@@ -25,6 +25,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.aliothmoon.maameow.ui.viewmodel.ToolboxTab
 import com.aliothmoon.maameow.ui.viewmodel.ToolboxViewModel
 import org.koin.compose.koinInject
+import com.aliothmoon.maameow.ui.theme.ThemeColors
+import com.aliothmoon.maameow.ui.theme.ThemeTypography
 
 @Composable
 fun ToolboxPanel(
@@ -47,25 +49,25 @@ fun ToolboxPanel(
                 Surface(
                     shape = RoundedCornerShape(6.dp),
                     color = if (selected)
-                        MaterialTheme.colorScheme.primaryContainer
+                        ThemeColors.primaryContainer
                     else
-                        MaterialTheme.colorScheme.surface,
+                        ThemeColors.surface,
                     border = BorderStroke(
                         width = 1.dp,
                         color = if (selected)
-                            MaterialTheme.colorScheme.primary
+                            ThemeColors.primary
                         else
-                            MaterialTheme.colorScheme.outlineVariant
+                            ThemeColors.outlineVariant
                     ),
                     modifier = Modifier.clickable { viewModel.onTabChange(tab) }
                 ) {
                     Text(
                         text = stringResource(tab.labelRes),
-                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
+                        style = ThemeTypography.bodySmall.copy(fontSize = 12.sp),
                         color = if (selected)
-                            MaterialTheme.colorScheme.onPrimaryContainer
+                            ThemeColors.onPrimaryContainer
                         else
-                            MaterialTheme.colorScheme.onSurface,
+                            ThemeColors.onSurface,
                         fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)

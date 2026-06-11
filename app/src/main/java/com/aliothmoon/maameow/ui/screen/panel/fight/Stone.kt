@@ -34,6 +34,8 @@ import com.aliothmoon.maameow.data.model.FightConfig
 import com.aliothmoon.maameow.ui.component.CheckBoxWithLabel
 import com.aliothmoon.maameow.ui.component.tip.ExpandableTipContent
 import com.aliothmoon.maameow.ui.component.tip.ExpandableTipIcon
+import com.aliothmoon.maameow.ui.theme.ThemeColors
+import com.aliothmoon.maameow.ui.theme.ThemeTypography
 
 
 /**
@@ -69,9 +71,9 @@ private fun AllowUseStoneSaveSection(
         ) {
             Surface(
                 modifier = Modifier.fillMaxWidth(),
-                color = MaterialTheme.colorScheme.errorContainer,
+                color = ThemeColors.errorContainer,
                 shape = RoundedCornerShape(8.dp),
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.error)
+                border = BorderStroke(1.dp, ThemeColors.error)
             ) {
                 Column(
                     modifier = Modifier.padding(12.dp),
@@ -79,14 +81,14 @@ private fun AllowUseStoneSaveSection(
                 ) {
                     Text(
                         text = stringResource(R.string.common_warning),
-                        style = MaterialTheme.typography.titleSmall,
+                        style = ThemeTypography.titleSmall,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onErrorContainer
+                        color = ThemeColors.onErrorContainer
                     )
                     Text(
                         text = stringResource(R.string.panel_stone_warning_message),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onErrorContainer
+                        style = ThemeTypography.bodySmall,
+                        color = ThemeColors.onErrorContainer
                     )
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -97,7 +99,7 @@ private fun AllowUseStoneSaveSection(
                             modifier = Modifier.height(32.dp),
                             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp)
                         ) {
-                            Text(stringResource(R.string.common_cancel), style = MaterialTheme.typography.bodySmall)
+                            Text(stringResource(R.string.common_cancel), style = ThemeTypography.bodySmall)
                         }
                         MaaUiButton(
                             onClick = {
@@ -107,10 +109,10 @@ private fun AllowUseStoneSaveSection(
                             modifier = Modifier.height(32.dp),
                             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.error
+                                containerColor = ThemeColors.error
                             )
                         ) {
-                            Text(stringResource(R.string.panel_stone_enable_confirm), style = MaterialTheme.typography.bodySmall)
+                            Text(stringResource(R.string.panel_stone_enable_confirm), style = ThemeTypography.bodySmall)
                         }
                     }
                 }

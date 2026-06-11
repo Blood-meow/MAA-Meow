@@ -15,6 +15,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.aliothmoon.maameow.ui.theme.ThemeColors
+import com.aliothmoon.maameow.ui.theme.ThemeTypography
 
 /**
  * 通用可选芯片按钮组
@@ -43,9 +45,9 @@ fun <T> SelectableChipGroup(
     ) {
         Text(
             text = label,
-            style = MaterialTheme.typography.bodySmall,
+            style = ThemeTypography.bodySmall,
             fontWeight = labelFontWeight,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = ThemeColors.onSurfaceVariant
         )
         FlowRow(
             horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -56,15 +58,15 @@ fun <T> SelectableChipGroup(
                 val isSelected = value == selectedValue
                 val itemEnabled = enabled && isItemEnabled(value)
                 val chipColor = when {
-                    isSelected && !enabled -> MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
-                    isSelected -> MaterialTheme.colorScheme.primary
-                    !itemEnabled -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.38f)
-                    else -> MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
+                    isSelected && !enabled -> ThemeColors.primary.copy(alpha = 0.5f)
+                    isSelected -> ThemeColors.primary
+                    !itemEnabled -> ThemeColors.surfaceVariant.copy(alpha = 0.38f)
+                    else -> ThemeColors.outline.copy(alpha = 0.3f)
                 }
                 val textColor = when {
-                    isSelected -> MaterialTheme.colorScheme.onPrimary
-                    !itemEnabled -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.25f)
-                    else -> MaterialTheme.colorScheme.onSurface
+                    isSelected -> ThemeColors.onPrimary
+                    !itemEnabled -> ThemeColors.onSurface.copy(alpha = 0.25f)
+                    else -> ThemeColors.onSurface
                 }
                 Surface(
                     modifier = Modifier
@@ -78,7 +80,7 @@ fun <T> SelectableChipGroup(
                 ) {
                     Text(
                         text = displayName,
-                        style = MaterialTheme.typography.bodySmall,
+                        style = ThemeTypography.bodySmall,
                         color = textColor,
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
                     )

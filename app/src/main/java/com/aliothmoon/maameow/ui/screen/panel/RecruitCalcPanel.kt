@@ -50,6 +50,8 @@ import com.aliothmoon.maameow.ui.component.RecruitTimeSelector
 import com.aliothmoon.maameow.ui.viewmodel.ToolboxViewModel
 import com.aliothmoon.maameow.utils.i18n.asString
 import org.koin.compose.koinInject
+import com.aliothmoon.maameow.ui.theme.ThemeColors
+import com.aliothmoon.maameow.ui.theme.ThemeTypography
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -80,7 +82,7 @@ fun RecruitCalcPanel(
             ) {
                 Text(
                     text = stringResource(R.string.panel_recruit_calc_auto_time),
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = ThemeTypography.bodyMedium,
                     fontWeight = FontWeight.Medium
                 )
                 MaaUiSwitch(
@@ -131,7 +133,7 @@ fun RecruitCalcPanel(
                 )
                 Text(
                     text = stringResource(R.string.panel_recruit_calc_auto_select_tags, level),
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = ThemeTypography.bodyMedium,
                     modifier = Modifier.weight(1f)
                 )
 
@@ -162,8 +164,8 @@ fun RecruitCalcPanel(
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(
                         text = stringResource(R.string.panel_recruit_calc_detected_tags),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        style = ThemeTypography.labelSmall,
+                        color = ThemeColors.onSurfaceVariant
                     )
                     FlowRow(
                         horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -172,12 +174,12 @@ fun RecruitCalcPanel(
                         tags.forEach { tag ->
                             Surface(
                                 shape = RoundedCornerShape(6.dp),
-                                color = MaterialTheme.colorScheme.secondaryContainer,
+                                color = ThemeColors.secondaryContainer,
                             ) {
                                 Text(
                                     text = tag,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                    style = ThemeTypography.bodySmall,
+                                    color = ThemeColors.onSecondaryContainer,
                                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
                                 )
                             }
@@ -193,7 +195,7 @@ fun RecruitCalcPanel(
                 HorizontalDivider(
                     modifier = Modifier.padding(vertical = 4.dp),
                     thickness = 0.5.dp,
-                    color = MaterialTheme.colorScheme.outlineVariant
+                    color = ThemeColors.outlineVariant
                 )
             }
         }
@@ -213,8 +215,8 @@ fun RecruitCalcPanel(
                     text = resolvedStatusMessage.ifBlank {
                         stringResource(R.string.panel_recruit_calc_empty_hint)
                     },
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = ThemeTypography.bodySmall,
+                    color = ThemeColors.onSurfaceVariant,
                     textAlign = TextAlign.Center,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -232,12 +234,12 @@ private fun RecruitResultItem(result: RecruitCalcResult) {
         result.level >= 6 -> Color(0xFFFF6B35)
         result.level >= 5 -> Color(0xFFFFD700)
         result.level >= 4 -> Color(0xFF9C7CFF)
-        else -> MaterialTheme.colorScheme.onSurfaceVariant
+        else -> ThemeColors.onSurfaceVariant
     }
     val bgColor = when {
         result.level >= 6 -> Color(0xFFFF6B35).copy(alpha = 0.08f)
         result.level >= 5 -> Color(0xFFFFD700).copy(alpha = 0.08f)
-        else -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
+        else -> ThemeColors.surfaceVariant.copy(alpha = 0.4f)
     }
 
     Surface(
@@ -258,7 +260,7 @@ private fun RecruitResultItem(result: RecruitCalcResult) {
             ) {
                 Text(
                     text = "${result.level}★",
-                    style = MaterialTheme.typography.labelMedium,
+                    style = ThemeTypography.labelMedium,
                     fontWeight = FontWeight.Bold,
                     color = levelColor,
                     modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
@@ -277,12 +279,12 @@ private fun RecruitResultItem(result: RecruitCalcResult) {
                     result.tags.forEach { tag ->
                         Surface(
                             shape = RoundedCornerShape(4.dp),
-                            color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f),
+                            color = ThemeColors.primaryContainer.copy(alpha = 0.6f),
                         ) {
                             Text(
                                 text = tag,
-                                style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp),
-                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                style = ThemeTypography.labelSmall.copy(fontSize = 11.sp),
+                                color = ThemeColors.onPrimaryContainer,
                                 modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                             )
                         }
@@ -292,11 +294,11 @@ private fun RecruitResultItem(result: RecruitCalcResult) {
                 if (result.operators.isNotEmpty()) {
                     Text(
                         text = result.operators.joinToString("  ") { it.name },
-                        style = MaterialTheme.typography.bodySmall.copy(
+                        style = ThemeTypography.bodySmall.copy(
                             fontSize = 12.sp,
                             lineHeight = 16.sp
                         ),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = ThemeColors.onSurfaceVariant,
                     )
                 }
             }

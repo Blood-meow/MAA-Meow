@@ -58,6 +58,8 @@ import com.aliothmoon.maameow.R
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.aliothmoon.maameow.ui.LocalFloatingWindowContext
+import com.aliothmoon.maameow.ui.theme.ThemeColors
+import com.aliothmoon.maameow.ui.theme.ThemeTypography
 
 /** 普通提示弹窗的最大宽度上限（手机按比例、平板/宽屏封顶） */
 private val DialogMaxWidth = 400.dp
@@ -101,7 +103,7 @@ fun AdaptiveTaskPromptDialog(
 ) {
     if (!visible) return
 
-    val resolvedConfirmColor = confirmColor ?: MaterialTheme.colorScheme.primary
+    val resolvedConfirmColor = confirmColor ?: ThemeColors.primary
     val resolvedIconTint = iconTint ?: resolvedConfirmColor
     val resolvedConfirmText = confirmText ?: stringResource(R.string.common_confirm)
     val resolvedDismissText = dismissText ?: stringResource(R.string.common_cancel)
@@ -174,7 +176,7 @@ private fun FloatingTaskPromptDialog(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.45f))
+                .background(ThemeColors.scrim.copy(alpha = 0.45f))
                 .clickable(
                     indication = null,
                     interactionSource = overlayInteractionSource,
@@ -306,8 +308,8 @@ private fun TaskPromptCard(
     Surface(
         modifier = modifier.fillMaxWidth().wrapContentHeight().heightIn(max = screenHeight * 0.85f),
         shape = RoundedCornerShape(8.dp),
-        color = MaterialTheme.colorScheme.surface,
-        contentColor = MaterialTheme.colorScheme.onSurface,
+        color = ThemeColors.surface,
+        contentColor = ThemeColors.onSurface,
         tonalElevation = 6.dp,
         shadowElevation = 8.dp
     ) {
@@ -341,7 +343,7 @@ private fun TaskPromptCard(
 
                 Text(
                     text = title,
-                    style = MaterialTheme.typography.titleLarge,
+                    style = ThemeTypography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Start,
                     modifier = Modifier.weight(1f)
@@ -354,21 +356,21 @@ private fun TaskPromptCard(
                                 onClick = onNeutralClick,
                                 contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
                             ) {
-                                Text(it, maxLines = 1, style = MaterialTheme.typography.bodySmall)
+                                Text(it, maxLines = 1, style = ThemeTypography.bodySmall)
                             }
                         }
                         MaaUiTextButton(
                             onClick = onConfirm,
                             contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
                         ) {
-                            Text(confirmText, maxLines = 1, style = MaterialTheme.typography.bodySmall)
+                            Text(confirmText, maxLines = 1, style = ThemeTypography.bodySmall)
                         }
                         dismissText?.let {
                             MaaUiTextButton(
                                 onClick = onDismissRequest,
                                 contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
                             ) {
-                                Text(it, maxLines = 1, style = MaterialTheme.typography.bodySmall)
+                                Text(it, maxLines = 1, style = ThemeTypography.bodySmall)
                             }
                         }
                     }
@@ -390,8 +392,8 @@ private fun TaskPromptCard(
                             is AnnotatedString -> {
                                 Text(
                                     text = message,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    style = ThemeTypography.bodyMedium,
+                                    color = ThemeColors.onSurfaceVariant,
                                     textAlign = TextAlign.Start,
                                 )
                             }
@@ -399,8 +401,8 @@ private fun TaskPromptCard(
                             else -> {
                                 Text(
                                     text = message.toString(),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    style = ThemeTypography.bodyMedium,
+                                    color = ThemeColors.onSurfaceVariant,
                                     textAlign = TextAlign.Start,
                                 )
                             }
@@ -446,10 +448,10 @@ private fun TaskPromptButtons(
         MaaUiButton(
             onClick = onConfirm,
             modifier = Modifier.fillMaxWidth(),
-            shape = MaterialTheme.shapes.large,
+            shape = RoundedCornerShape(16.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = confirmColor,
-                contentColor = MaterialTheme.colorScheme.onPrimary,
+                contentColor = ThemeColors.onPrimary,
             ),
         ) {
             Text(confirmText)
@@ -460,7 +462,7 @@ private fun TaskPromptButtons(
             MaaUiOutlinedButton(
                 onClick = onNeutralClick,
                 modifier = Modifier.fillMaxWidth(),
-                shape = MaterialTheme.shapes.large
+                shape = RoundedCornerShape(16.dp)
             ) {
                 Text(it)
             }
@@ -470,9 +472,9 @@ private fun TaskPromptButtons(
         dismissText?.let {
             MaaUiTextButton(
                 onClick = onDismissRequest,
-                shape = MaterialTheme.shapes.large
+                shape = RoundedCornerShape(16.dp)
             ) {
-                Text(it, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(it, color = ThemeColors.onSurfaceVariant)
             }
         }
     }

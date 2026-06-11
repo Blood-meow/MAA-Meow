@@ -34,6 +34,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.widget.doAfterTextChanged
+import com.aliothmoon.maameow.ui.theme.ThemeColors
+import com.aliothmoon.maameow.ui.theme.ThemeTypography
 
 
 @Suppress("COMPOSE_APPLIER_CALL_MISMATCH")
@@ -49,12 +51,12 @@ fun FloatWindowEditText(
     enabled: Boolean = true,
     minHeight: Dp = 44.dp,
     shape: RoundedCornerShape = RoundedCornerShape(8.dp),
-    textColor: Color = MaterialTheme.colorScheme.onSurface,
-    hintColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
-    labelColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
-    backgroundColor: Color = MaterialTheme.colorScheme.surface,
-    outlineColor: Color = MaterialTheme.colorScheme.outline,
-    focusedOutlineColor: Color = MaterialTheme.colorScheme.primary,
+    textColor: Color = ThemeColors.onSurface,
+    hintColor: Color = ThemeColors.onSurfaceVariant,
+    labelColor: Color = ThemeColors.onSurfaceVariant,
+    backgroundColor: Color = ThemeColors.surface,
+    outlineColor: Color = ThemeColors.outline,
+    focusedOutlineColor: Color = ThemeColors.primary,
     onImeAction: (() -> Unit)? = null,
     onFocusChange: ((Boolean) -> Unit)? = null
 ) {
@@ -88,7 +90,7 @@ fun FloatWindowEditText(
         if (label != null) {
             Text(
                 text = label,
-                style = MaterialTheme.typography.labelMedium,
+                style = ThemeTypography.labelMedium,
                 color = labelColor,
                 modifier = Modifier.padding(bottom = 4.dp)
             )

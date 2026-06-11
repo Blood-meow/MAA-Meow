@@ -23,6 +23,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.aliothmoon.maameow.R
+import com.aliothmoon.maameow.ui.theme.ThemeColors
+import com.aliothmoon.maameow.ui.theme.ThemeTypography
 
 /**
  * 面板标题栏
@@ -47,11 +49,11 @@ fun PanelHeader(
             PanelTab.entries.forEach { tab ->
                 Text(
                     text = stringResource(tab.labelRes),
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = ThemeTypography.bodyMedium,
                     color = if (selectedTab == tab)
-                        MaterialTheme.colorScheme.primary
+                        ThemeColors.primary
                     else
-                        MaterialTheme.colorScheme.onSurfaceVariant,
+                        ThemeColors.onSurfaceVariant,
                     fontWeight = if (selectedTab == tab) FontWeight.Bold else FontWeight.Normal,
                     modifier = Modifier
                         .padding(vertical = 4.dp)
@@ -79,7 +81,7 @@ fun PanelHeader(
                     Icon(
                         imageVector = Icons.Filled.Home,
                         contentDescription = stringResource(R.string.panel_cd_go_home),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        tint = ThemeColors.onSurfaceVariant,
                         modifier = Modifier.size(20.dp)
                     )
                 }
@@ -92,9 +94,9 @@ fun PanelHeader(
                         imageVector = if (isLocked) Icons.Filled.Lock else Icons.Outlined.Lock,
                         contentDescription = null,
                         tint = if (isLocked)
-                            MaterialTheme.colorScheme.primary
+                            ThemeColors.primary
                         else
-                            MaterialTheme.colorScheme.onSurfaceVariant,
+                            ThemeColors.onSurfaceVariant,
                         modifier = Modifier.size(20.dp)
                     )
                 }

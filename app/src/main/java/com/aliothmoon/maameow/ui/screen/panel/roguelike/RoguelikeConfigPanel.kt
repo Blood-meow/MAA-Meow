@@ -33,6 +33,8 @@ import com.aliothmoon.maameow.ui.component.CoreCharSelector
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import com.aliothmoon.maameow.domain.enums.UiUsageConstants.Roguelike as RoguelikeUi
+import com.aliothmoon.maameow.ui.theme.ThemeColors
+import com.aliothmoon.maameow.ui.theme.ThemeTypography
 
 /**
  * 自动肉鸽配置面板 - 迁移自 WPF RoguelikeSettingsUserControl.xaml
@@ -63,8 +65,8 @@ fun RoguelikeConfigPanel(
         ) {
             Text(
                 text = stringResource(R.string.common_tab_general),
-                style = MaterialTheme.typography.bodyMedium,
-                color = if (pagerState.currentPage == 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                style = ThemeTypography.bodyMedium,
+                color = if (pagerState.currentPage == 0) ThemeColors.primary else ThemeColors.onSurfaceVariant,
                 fontWeight = if (pagerState.currentPage == 0) FontWeight.Bold else FontWeight.Normal,
                 modifier = Modifier.clickable {
                     coroutineScope.launch { pagerState.animateScrollToPage(0) }
@@ -72,8 +74,8 @@ fun RoguelikeConfigPanel(
             )
             Text(
                 text = stringResource(R.string.common_tab_advanced),
-                style = MaterialTheme.typography.bodyMedium,
-                color = if (pagerState.currentPage == 1) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                style = ThemeTypography.bodyMedium,
+                color = if (pagerState.currentPage == 1) ThemeColors.primary else ThemeColors.onSurfaceVariant,
                 fontWeight = if (pagerState.currentPage == 1) FontWeight.Bold else FontWeight.Normal,
                 modifier = Modifier.clickable {
                     coroutineScope.launch { pagerState.animateScrollToPage(1) }
@@ -217,7 +219,7 @@ private fun BasicRoguelikeSettings(
                 ) {
                     Text(
                         modeDescription,
-                        style = MaterialTheme.typography.bodySmall,
+                        style = ThemeTypography.bodySmall,
                         color = Color(0xFF1976D2),
                         modifier = Modifier.padding(8.dp)
                     )

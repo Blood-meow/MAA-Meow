@@ -8,13 +8,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.aliothmoon.maameow.ui.component.material.MaaUiCard
 import com.aliothmoon.maameow.ui.theme.MaaDesignTokens
+import com.aliothmoon.maameow.ui.theme.ThemeColors
 
 @Composable
 fun InfoCard(
     title: String,
     modifier: Modifier = Modifier,
-    containerColor: Color = MaterialTheme.colorScheme.surface,
-    contentColor: Color = MaterialTheme.colorScheme.onSurface,
+    containerColor: Color = ThemeColors.surface,
+    contentColor: Color = ThemeColors.onSurface,
     contentPadding: PaddingValues = PaddingValues(MaaDesignTokens.Card.innerPadding),
     content: @Composable ColumnScope.() -> Unit
 ) {

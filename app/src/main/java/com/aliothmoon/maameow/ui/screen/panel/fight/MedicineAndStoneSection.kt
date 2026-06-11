@@ -17,6 +17,8 @@ import com.aliothmoon.maameow.R
 import com.aliothmoon.maameow.data.model.FightConfig
 import com.aliothmoon.maameow.ui.component.CheckBoxWithLabel
 import com.aliothmoon.maameow.ui.component.INumericField
+import com.aliothmoon.maameow.ui.theme.ThemeColors
+import com.aliothmoon.maameow.ui.theme.ThemeTypography
 
 /**
  * 理智药/源石/次数区域
@@ -83,13 +85,13 @@ fun MedicineAndStoneSection(
                 if (showSeriesWarning) {
                     Surface(
                         modifier = Modifier.fillMaxWidth(),
-                        color = MaterialTheme.colorScheme.tertiaryContainer,
+                        color = ThemeColors.tertiaryContainer,
                         shape = RoundedCornerShape(4.dp)
                     ) {
                         Text(
                             text = stringResource(R.string.panel_fight_series_warning, config.maxTimes, config.series),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onTertiaryContainer,
+                            style = ThemeTypography.bodySmall,
+                            color = ThemeColors.onTertiaryContainer,
                             modifier = Modifier.padding(8.dp)
                         )
                     }

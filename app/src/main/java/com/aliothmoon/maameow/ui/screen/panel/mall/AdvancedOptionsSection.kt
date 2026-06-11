@@ -24,6 +24,7 @@ import com.aliothmoon.maameow.data.model.MallConfig
 import com.aliothmoon.maameow.ui.component.CheckBoxWithLabel
 import com.aliothmoon.maameow.ui.component.tip.ExpandableTipContent
 import com.aliothmoon.maameow.ui.component.tip.ExpandableTipIcon
+import com.aliothmoon.maameow.ui.theme.ThemeTypography
 
 @Composable
 fun AdvancedOptionsSection(config: MallConfig, onConfigChange: (MallConfig) -> Unit) {
@@ -32,7 +33,7 @@ fun AdvancedOptionsSection(config: MallConfig, onConfigChange: (MallConfig) -> U
 
         Text(
             stringResource(R.string.panel_mall_advanced_options),
-            style = MaterialTheme.typography.bodyMedium,
+            style = ThemeTypography.bodyMedium,
             fontWeight = FontWeight.Medium
         )
 

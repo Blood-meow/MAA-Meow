@@ -61,6 +61,8 @@ import com.aliothmoon.maameow.ui.component.tip.ExpandableTipContent
 import com.aliothmoon.maameow.ui.component.tip.ExpandableTipIcon
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
+import com.aliothmoon.maameow.ui.theme.ThemeColors
+import com.aliothmoon.maameow.ui.theme.ThemeTypography
 
 @Composable
 fun MallConfigPanel(config: MallConfig, onConfigChange: (MallConfig) -> Unit) {
@@ -86,8 +88,8 @@ fun MallConfigPanel(config: MallConfig, onConfigChange: (MallConfig) -> Unit) {
         ) {
             Text(
                 text = stringResource(R.string.common_tab_general),
-                style = MaterialTheme.typography.bodyMedium,
-                color = if (pagerState.currentPage == 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                style = ThemeTypography.bodyMedium,
+                color = if (pagerState.currentPage == 0) ThemeColors.primary else ThemeColors.onSurfaceVariant,
                 fontWeight = if (pagerState.currentPage == 0) FontWeight.Bold else FontWeight.Normal,
                 modifier = Modifier.clickable {
                     coroutineScope.launch { pagerState.animateScrollToPage(0) }
@@ -95,8 +97,8 @@ fun MallConfigPanel(config: MallConfig, onConfigChange: (MallConfig) -> Unit) {
             )
             Text(
                 text = stringResource(R.string.common_tab_advanced),
-                style = MaterialTheme.typography.bodyMedium,
-                color = if (pagerState.currentPage == 1) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                style = ThemeTypography.bodyMedium,
+                color = if (pagerState.currentPage == 1) ThemeColors.primary else ThemeColors.onSurfaceVariant,
                 fontWeight = if (pagerState.currentPage == 1) FontWeight.Bold else FontWeight.Normal,
                 modifier = Modifier.clickable {
                     coroutineScope.launch { pagerState.animateScrollToPage(1) }
@@ -131,7 +133,7 @@ fun MallConfigPanel(config: MallConfig, onConfigChange: (MallConfig) -> Unit) {
                         }
                         item {
                             HorizontalDivider(
-                                color = MaterialTheme.colorScheme.outlineVariant,
+                                color = ThemeColors.outlineVariant,
                                 thickness = 0.5.dp
                             )
                         }
@@ -159,7 +161,7 @@ fun MallConfigPanel(config: MallConfig, onConfigChange: (MallConfig) -> Unit) {
                         }
                         item {
                             HorizontalDivider(
-                                color = MaterialTheme.colorScheme.outlineVariant,
+                                color = ThemeColors.outlineVariant,
                                 thickness = 0.5.dp
                             )
                         }
@@ -245,14 +247,14 @@ private fun BasicMallSettings(config: MallConfig, onConfigChange: (MallConfig) -
         if (config.creditFight && !creditFightAvailability.isAvailable) {
             Surface(
                 modifier = Modifier.fillMaxWidth(),
-                color = MaterialTheme.colorScheme.tertiaryContainer,
+                color = ThemeColors.tertiaryContainer,
                 shape = RoundedCornerShape(4.dp)
             ) {
                 Text(
                     text = creditFightAvailability.warningMessage
                         ?: stringResource(R.string.panel_mall_credit_fight_unavailable),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onTertiaryContainer,
+                    style = ThemeTypography.bodySmall,
+                    color = ThemeColors.onTertiaryContainer,
                     modifier = Modifier.padding(8.dp)
                 )
             }
@@ -266,13 +268,13 @@ private fun BasicMallSettings(config: MallConfig, onConfigChange: (MallConfig) -
             )
             Surface(
                 modifier = Modifier.fillMaxWidth(),
-                color = MaterialTheme.colorScheme.secondaryContainer,
+                color = ThemeColors.secondaryContainer,
                 shape = RoundedCornerShape(4.dp)
             ) {
                 Text(
                     stringResource(R.string.panel_mall_credit_fight_notice),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    style = ThemeTypography.bodySmall,
+                    color = ThemeColors.onSecondaryContainer,
                     modifier = Modifier.padding(8.dp)
                 )
             }
@@ -285,7 +287,7 @@ private fun FormationSelector(selectedFormation: Int, onFormationChange: (Int) -
     Column(
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        Text(stringResource(R.string.panel_mall_use_formation), style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Medium)
+        Text(stringResource(R.string.panel_mall_use_formation), style = ThemeTypography.bodySmall, fontWeight = FontWeight.Medium)
         FlowRow(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp)
@@ -295,7 +297,7 @@ private fun FormationSelector(selectedFormation: Int, onFormationChange: (Int) -
                     modifier = Modifier
                         .clickable { onFormationChange(value) }
                         .background(
-                            if (selectedFormation == value) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent,
+                            if (selectedFormation == value) ThemeColors.secondaryContainer else Color.Transparent,
                             RoundedCornerShape(4.dp)
                         )
                         .padding(horizontal = 4.dp, vertical = 4.dp),
@@ -307,7 +309,7 @@ private fun FormationSelector(selectedFormation: Int, onFormationChange: (Int) -
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text(label, style = MaterialTheme.typography.bodySmall)
+                    Text(label, style = ThemeTypography.bodySmall)
                 }
             }
         }
@@ -336,7 +338,7 @@ private fun PriorityItemsSection(
             ) {
                 Text(
                     stringResource(R.string.panel_mall_priority_title),
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = ThemeTypography.bodyMedium,
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier.weight(1f)
                 )
@@ -346,8 +348,8 @@ private fun PriorityItemsSection(
                         onClick = { onReorderModeChange(!isReorderMode) },
                         modifier = Modifier.size(32.dp),
                         colors = IconButtonDefaults.iconButtonColors(
-                            containerColor = if (isReorderMode) MaterialTheme.colorScheme.primaryContainer else Color.Transparent,
-                            contentColor = if (isReorderMode) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                            containerColor = if (isReorderMode) ThemeColors.primaryContainer else Color.Transparent,
+                            contentColor = if (isReorderMode) ThemeColors.primary else ThemeColors.onSurfaceVariant
                         )
                     ) {
                         Icon(
@@ -377,19 +379,19 @@ private fun PriorityItemsSection(
             } else {
                 stringResource(R.string.panel_mall_priority_mode_inactive)
             },
-            style = MaterialTheme.typography.bodySmall,
-            color = if (isReorderMode) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+            style = ThemeTypography.bodySmall,
+            color = if (isReorderMode) ThemeColors.primary else ThemeColors.onSurfaceVariant
         )
         if (!config.shopping) {
             Surface(
                 modifier = Modifier.fillMaxWidth(),
-                color = MaterialTheme.colorScheme.tertiaryContainer,
+                color = ThemeColors.tertiaryContainer,
                 shape = RoundedCornerShape(4.dp)
             ) {
                 Text(
                     stringResource(R.string.panel_mall_enable_shopping_first),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onTertiaryContainer,
+                    style = ThemeTypography.bodySmall,
+                    color = ThemeColors.onTertiaryContainer,
                     modifier = Modifier.padding(8.dp)
                 )
             }
@@ -422,7 +424,7 @@ private fun PriorityItemsSection(
                 enabled = config.shopping,
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary
+                    containerColor = ThemeColors.primary
                 ),
                 shape = RoundedCornerShape(8.dp)
             ) {
@@ -461,18 +463,18 @@ private fun MallInfoText() {
     Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(2.dp)) {
         Text(
             stringResource(R.string.panel_mall_info_line_priority),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            style = ThemeTypography.bodySmall,
+            color = ThemeColors.onSurfaceVariant
         )
         Text(
             stringResource(R.string.panel_mall_info_line_blacklist),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            style = ThemeTypography.bodySmall,
+            color = ThemeColors.onSurfaceVariant
         )
         Text(
             stringResource(R.string.panel_mall_info_line_credit_fight),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            style = ThemeTypography.bodySmall,
+            color = ThemeColors.onSurfaceVariant
         )
     }
 }
@@ -493,7 +495,7 @@ private fun BlacklistSection(config: MallConfig, onConfigChange: (MallConfig) ->
             ) {
                 Text(
                     stringResource(R.string.panel_mall_blacklist_title),
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = ThemeTypography.bodyMedium,
                     fontWeight = FontWeight.Medium
                 )
                 ExpandableTipIcon(expanded = tipExpanded, onExpandedChange = { tipExpanded = it })
@@ -506,20 +508,20 @@ private fun BlacklistSection(config: MallConfig, onConfigChange: (MallConfig) ->
 
         Text(
             stringResource(R.string.panel_mall_blacklist_delete_hint),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            style = ThemeTypography.bodySmall,
+            color = ThemeColors.onSurfaceVariant
         )
 
         if (!config.shopping) {
             Surface(
                 modifier = Modifier.fillMaxWidth(),
-                color = MaterialTheme.colorScheme.tertiaryContainer,
+                color = ThemeColors.tertiaryContainer,
                 shape = RoundedCornerShape(4.dp)
             ) {
                 Text(
                     stringResource(R.string.panel_mall_enable_shopping_first),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onTertiaryContainer,
+                    style = ThemeTypography.bodySmall,
+                    color = ThemeColors.onTertiaryContainer,
                     modifier = Modifier.padding(8.dp)
                 )
             }
@@ -531,7 +533,7 @@ private fun BlacklistSection(config: MallConfig, onConfigChange: (MallConfig) ->
                 .fillMaxWidth()
                 .heightIn(max = 200.dp),
             shape = RoundedCornerShape(4.dp),
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+            border = BorderStroke(1.dp, ThemeColors.outlineVariant)
         ) {
             if (blacklistItems.isEmpty()) {
                 Box(
@@ -542,8 +544,8 @@ private fun BlacklistSection(config: MallConfig, onConfigChange: (MallConfig) ->
                 ) {
                     Text(
                         stringResource(R.string.panel_mall_blacklist_empty),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        style = ThemeTypography.bodySmall,
+                        color = ThemeColors.onSurfaceVariant
                     )
                 }
             } else {
@@ -573,7 +575,7 @@ private fun BlacklistSection(config: MallConfig, onConfigChange: (MallConfig) ->
             enabled = config.shopping,
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(
-                containerColor = if (showAddPanel) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.error.copy(
+                containerColor = if (showAddPanel) ThemeColors.error else ThemeColors.error.copy(
                     alpha = 0.8f
                 )
             )

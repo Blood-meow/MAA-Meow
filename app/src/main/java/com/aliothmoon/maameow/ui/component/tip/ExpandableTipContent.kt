@@ -11,6 +11,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.aliothmoon.maameow.ui.theme.ThemeColors
+import com.aliothmoon.maameow.ui.theme.ThemeTypography
 
 /**
  * 可展开的提示文字区域
@@ -29,13 +31,13 @@ fun ExpandableTipContent(
         modifier = modifier
     ) {
         Surface(
-            color = MaterialTheme.colorScheme.secondaryContainer,
+            color = ThemeColors.secondaryContainer,
             shape = RoundedCornerShape(6.dp)
         ) {
             Text(
                 text = tipText,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                style = ThemeTypography.bodySmall,
+                color = ThemeColors.onSecondaryContainer,
                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
             )
         }

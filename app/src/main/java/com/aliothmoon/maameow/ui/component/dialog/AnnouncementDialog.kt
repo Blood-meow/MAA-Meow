@@ -63,6 +63,8 @@ import com.aliothmoon.maameow.R
 import kotlinx.coroutines.flow.distinctUntilChanged
 import dev.jeziellago.compose.markdowntext.MarkdownText
 import kotlinx.coroutines.delay
+import com.aliothmoon.maameow.ui.theme.ThemeColors
+import com.aliothmoon.maameow.ui.theme.ThemeTypography
 
 /** 勾选"不再显示"前需停留的秒数 */
 private const val STAY_SECONDS_REQUIRED = 5
@@ -144,8 +146,8 @@ fun AnnouncementDialog(
                     .heightIn(max = screenHeight * 0.85f)
                     .padding(horizontal = maxHorizontalInset + 16.dp),
                 shape = RoundedCornerShape(12.dp),
-                color = MaterialTheme.colorScheme.surface,
-                contentColor = MaterialTheme.colorScheme.onSurface,
+                color = ThemeColors.surface,
+                contentColor = ThemeColors.onSurface,
                 tonalElevation = 6.dp,
                 shadowElevation = 8.dp,
             ) {
@@ -162,7 +164,7 @@ fun AnnouncementDialog(
                         modifier = Modifier
                             .size(40.dp)
                             .background(
-                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
+                                color = ThemeColors.primary.copy(alpha = 0.12f),
                                 shape = CircleShape,
                             ),
                         contentAlignment = Alignment.Center,
@@ -170,13 +172,13 @@ fun AnnouncementDialog(
                         Icon(
                             imageVector = Icons.Rounded.Campaign,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
+                            tint = ThemeColors.primary,
                             modifier = Modifier.size(20.dp),
                         )
                     }
                     Text(
                         text = stringResource(R.string.announcement_title),
-                        style = MaterialTheme.typography.titleLarge,
+                        style = ThemeTypography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.weight(1f),
                     )
@@ -201,11 +203,11 @@ fun AnnouncementDialog(
                             ) {
                                 Text(
                                     text = stringResource(R.string.announcement_dont_show_again),
-                                    style = MaterialTheme.typography.bodySmall,
+                                    style = ThemeTypography.bodySmall,
                                     color = if (canCheck) {
-                                        MaterialTheme.colorScheme.onSurface
+                                        ThemeColors.onSurface
                                     } else {
-                                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                                        ThemeColors.onSurface.copy(alpha = 0.38f)
                                     },
                                 )
                                 if (!canCheck) {
@@ -223,7 +225,7 @@ fun AnnouncementDialog(
                                             modifier = Modifier
                                                 .size(16.dp)
                                                 .clickable { showHint = true },
-                                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            tint = ThemeColors.onSurfaceVariant,
                                         )
                                         DropdownMenu(
                                             expanded = showHint,
@@ -232,7 +234,7 @@ fun AnnouncementDialog(
                                             Text(
                                                 text = hintText,
                                                 modifier = Modifier.padding(12.dp),
-                                                style = MaterialTheme.typography.bodySmall,
+                                                style = ThemeTypography.bodySmall,
                                             )
                                         }
                                     }
@@ -246,7 +248,7 @@ fun AnnouncementDialog(
                             Text(
                                 text = stringResource(R.string.announcement_confirm),
                                 maxLines = 1,
-                                style = MaterialTheme.typography.bodySmall,
+                                style = ThemeTypography.bodySmall,
                             )
                         }
                     }
@@ -276,7 +278,7 @@ fun AnnouncementDialog(
                     MarkdownText(
                         markdown = markdown,
                         modifier = Modifier.fillMaxWidth(),
-                        style = MaterialTheme.typography.bodyMedium,
+                        style = ThemeTypography.bodyMedium,
                     )
                 }
 
@@ -302,11 +304,11 @@ fun AnnouncementDialog(
                         )
                         Text(
                             text = stringResource(R.string.announcement_dont_show_again),
-                            style = MaterialTheme.typography.bodyMedium,
+                            style = ThemeTypography.bodyMedium,
                             color = if (canCheck) {
-                                MaterialTheme.colorScheme.onSurface
+                                ThemeColors.onSurface
                             } else {
-                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                                ThemeColors.onSurface.copy(alpha = 0.38f)
                             },
                         )
                     }
@@ -317,8 +319,8 @@ fun AnnouncementDialog(
                             // 尚未滚动到底部（无论 elapsedSeconds 是多少）
                             Text(
                                 text = stringResource(R.string.announcement_scroll_to_bottom_hint),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                style = ThemeTypography.bodySmall,
+                                color = ThemeColors.onSurfaceVariant,
                                 modifier = Modifier.padding(start = 48.dp),
                             )
                         } else {
@@ -329,8 +331,8 @@ fun AnnouncementDialog(
                                     R.string.announcement_dont_show_again_hint,
                                     remaining,
                                 ),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                style = ThemeTypography.bodySmall,
+                                color = ThemeColors.onSurfaceVariant,
                                 modifier = Modifier.padding(start = 48.dp),
                             )
                         }
@@ -341,7 +343,7 @@ fun AnnouncementDialog(
                     MaaUiButton(
                         onClick = { onDismiss(dontShowAgain) },
                         modifier = Modifier.fillMaxWidth(),
-                        shape = MaterialTheme.shapes.large,
+                        shape = RoundedCornerShape(16.dp),
                     ) {
                         Text(stringResource(R.string.announcement_confirm))
                     }

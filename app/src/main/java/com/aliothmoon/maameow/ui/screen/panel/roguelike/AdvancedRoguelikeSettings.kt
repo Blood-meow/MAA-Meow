@@ -30,6 +30,8 @@ import com.aliothmoon.maameow.ui.component.ITextField
 import com.aliothmoon.maameow.ui.component.tip.ExpandableTipContent
 import com.aliothmoon.maameow.ui.component.tip.ExpandableTipIcon
 import com.aliothmoon.maameow.domain.enums.UiUsageConstants.Roguelike as RoguelikeUi
+import com.aliothmoon.maameow.ui.theme.ThemeColors
+import com.aliothmoon.maameow.ui.theme.ThemeTypography
 
 @Composable
 fun AdvancedRoguelikeSettings(
@@ -40,7 +42,7 @@ fun AdvancedRoguelikeSettings(
         // 投资相关
         Text(
             stringResource(R.string.panel_roguelike_investment_settings),
-            style = MaterialTheme.typography.bodyMedium,
+            style = ThemeTypography.bodyMedium,
             fontWeight = FontWeight.Medium
         )
 
@@ -90,12 +92,12 @@ fun AdvancedRoguelikeSettings(
             }
         }
 
-        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
+        HorizontalDivider(color = ThemeColors.outlineVariant, thickness = 0.5.dp)
 
         // 助战相关
         Text(
             stringResource(R.string.panel_roguelike_support_settings),
-            style = MaterialTheme.typography.bodyMedium,
+            style = ThemeTypography.bodyMedium,
             fontWeight = FontWeight.Medium
         )
 
@@ -140,7 +142,7 @@ fun AdvancedRoguelikeSettings(
             )
         }
 
-        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
+        HorizontalDivider(color = ThemeColors.outlineVariant, thickness = 0.5.dp)
 
         // 开局次数 - WPF: Maximum="99999" (line 142)
         ITextField(
@@ -157,7 +159,7 @@ fun AdvancedRoguelikeSettings(
             modifier = Modifier.fillMaxWidth()
         )
 
-        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
+        HorizontalDivider(color = ThemeColors.outlineVariant, thickness = 0.5.dp)
 
         // 模式特殊设置
         ModeSpecificSettings(config, onConfigChange)

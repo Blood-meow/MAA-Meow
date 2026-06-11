@@ -48,6 +48,8 @@ import androidx.compose.ui.unit.dp
 import com.aliothmoon.maameow.R
 import com.aliothmoon.maameow.data.model.TaskChainNode
 import sh.calvin.reorderable.ReorderableColumn
+import com.aliothmoon.maameow.ui.theme.ThemeColors
+import com.aliothmoon.maameow.ui.theme.ThemeTypography
 
 /**
  * 左侧任务列表（支持模式切换、拖拽排序、勾选、新增任务入口）
@@ -75,7 +77,7 @@ fun TaskListPanel(
                 .clickable { onToggleProfileMode() },
             shape = RoundedCornerShape(4.dp),
             colors = CardDefaults.cardColors(
-                containerColor = if (isProfileMode) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface
+                containerColor = if (isProfileMode) ThemeColors.primary else ThemeColors.surface
             ),
             elevation = CardDefaults.cardElevation(defaultElevation = if (isProfileMode) 2.dp else 0.dp)
         ) {
@@ -89,14 +91,14 @@ fun TaskListPanel(
                     imageVector = if (isProfileMode) Icons.Default.Check else Icons.AutoMirrored.Filled.List,
                     contentDescription = null,
                     modifier = Modifier.size(20.dp),
-                    tint = if (isProfileMode) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary
+                    tint = if (isProfileMode) ThemeColors.onPrimary else ThemeColors.primary
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
                     text = if (isProfileMode) stringResource(R.string.common_done) else stringResource(R.string.panel_task_list_edit_config),
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = ThemeTypography.bodyMedium,
                     fontWeight = if (isProfileMode) FontWeight.Bold else FontWeight.Normal,
-                    color = if (isProfileMode) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
+                    color = if (isProfileMode) ThemeColors.onPrimary else ThemeColors.onSurface,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -112,7 +114,7 @@ fun TaskListPanel(
                 .clickable { onToggleEditMode() },
             shape = RoundedCornerShape(4.dp),
             colors = CardDefaults.cardColors(
-                containerColor = if (isEditMode) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface
+                containerColor = if (isEditMode) ThemeColors.primary else ThemeColors.surface
             ),
             elevation = CardDefaults.cardElevation(defaultElevation = if (isEditMode) 2.dp else 0.dp)
         ) {
@@ -126,14 +128,14 @@ fun TaskListPanel(
                     imageVector = if (isEditMode) Icons.Default.Check else Icons.Default.Edit,
                     contentDescription = null,
                     modifier = Modifier.size(20.dp),
-                    tint = if (isEditMode) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary
+                    tint = if (isEditMode) ThemeColors.onPrimary else ThemeColors.primary
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
                     text = if (isEditMode) stringResource(R.string.common_done) else stringResource(R.string.panel_task_list_edit_tasks),
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = ThemeTypography.bodyMedium,
                     fontWeight = if (isEditMode) FontWeight.Bold else FontWeight.Normal,
-                    color = if (isEditMode) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
+                    color = if (isEditMode) ThemeColors.onPrimary else ThemeColors.onSurface
                 )
             }
         }
@@ -152,9 +154,9 @@ fun TaskListPanel(
                         .clickable { onToggleAddingTask() },
                     shape = RoundedCornerShape(4.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = if (isAddingTask) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface
+                        containerColor = if (isAddingTask) ThemeColors.primaryContainer else ThemeColors.surface
                     ),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+                    border = BorderStroke(1.dp, ThemeColors.outlineVariant)
                 ) {
                     Row(
                         modifier = Modifier
@@ -166,13 +168,13 @@ fun TaskListPanel(
                             imageVector = Icons.Default.Add,
                             contentDescription = null,
                             modifier = Modifier.size(20.dp),
-                            tint = MaterialTheme.colorScheme.secondary
+                            tint = ThemeColors.secondary
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
                             stringResource(R.string.panel_task_list_add),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurface
+                            style = ThemeTypography.bodyMedium,
+                            color = ThemeColors.onSurface
                         )
                     }
                 }
@@ -220,9 +222,9 @@ private fun TaskNodeRow(
             .fillMaxWidth(),
         shape = RoundedCornerShape(4.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface
+            containerColor = if (isSelected) ThemeColors.primaryContainer else ThemeColors.surface
         ),
-        border = if (isSelected) BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)) else null
+        border = if (isSelected) BorderStroke(1.dp, ThemeColors.primary.copy(alpha = 0.5f)) else null
     ) {
         Row(
             modifier = Modifier
@@ -243,8 +245,8 @@ private fun TaskNodeRow(
             Spacer(modifier = Modifier.width(6.dp))
             Text(
                 text = node.name,
-                style = MaterialTheme.typography.bodyMedium,
-                color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
+                style = ThemeTypography.bodyMedium,
+                color = if (isSelected) ThemeColors.onPrimaryContainer else ThemeColors.onSurface,
                 fontWeight = if (isSelected) FontWeight.Medium else FontWeight.Normal,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,

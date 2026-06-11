@@ -20,20 +20,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.aliothmoon.maameow.R
+import com.aliothmoon.maameow.ui.theme.ThemeColors
+import com.aliothmoon.maameow.ui.theme.ThemeTypography
+import androidx.compose.foundation.shape.RoundedCornerShape
 
 @Composable
 fun BlacklistItemRow(item: String, enabled: Boolean, onRemove: () -> Unit) {
     MaaUiCardContainer(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
-            containerColor = if (enabled) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.surfaceVariant
+            containerColor = if (enabled) ThemeColors.surface else ThemeColors.surfaceVariant
         ),
         border = BorderStroke(
             width = 1.dp,
-            color = MaterialTheme.colorScheme.outlineVariant
+            color = ThemeColors.outlineVariant
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        shape = MaterialTheme.shapes.extraSmall
+        shape = RoundedCornerShape(4.dp)
     ) {
         Row(
             modifier = Modifier
@@ -43,8 +46,8 @@ fun BlacklistItemRow(item: String, enabled: Boolean, onRemove: () -> Unit) {
         ) {
             Text(
                 item,
-                style = MaterialTheme.typography.bodyMedium,
-                color = if (enabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
+                style = ThemeTypography.bodyMedium,
+                color = if (enabled) ThemeColors.onSurface else ThemeColors.onSurfaceVariant,
                 modifier = Modifier.weight(1f)
             )
             // 删除按钮
@@ -57,7 +60,7 @@ fun BlacklistItemRow(item: String, enabled: Boolean, onRemove: () -> Unit) {
                     Icons.Default.Close,
                     contentDescription = stringResource(R.string.common_delete),
                     modifier = Modifier.size(16.dp),
-                    tint = if (enabled) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.outlineVariant
+                    tint = if (enabled) ThemeColors.error else ThemeColors.outlineVariant
                 )
             }
         }

@@ -12,6 +12,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.aliothmoon.maameow.ui.theme.ThemeColors
+import com.aliothmoon.maameow.ui.theme.ThemeTypography
 
 /**
  * 通用的公招时长选择器（小时:分钟）
@@ -56,9 +58,9 @@ fun RecruitTimeSelector(
 
         Text(
             text = ":",
-            style = MaterialTheme.typography.titleMedium,
+            style = ThemeTypography.titleMedium,
             fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface
+            color = ThemeColors.onSurface
         )
 
         // 分钟输入：范围 0-50，步进 10，格式 00-50

@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.aliothmoon.maameow.R
+import com.aliothmoon.maameow.ui.theme.ThemeColors
 
 @Composable
 fun ExpandableTipIcon(
@@ -23,7 +24,7 @@ fun ExpandableTipIcon(
         Icon(
             imageVector = Icons.Default.Info,
             contentDescription = stringResource(R.string.accessibility_tip),
-            tint = if (expanded) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+            tint = if (expanded) ThemeColors.primary else ThemeColors.onSurfaceVariant,
             modifier = Modifier
                 .size(16.dp)
                 .clickable { onExpandedChange(!expanded) }

@@ -23,6 +23,8 @@ import com.aliothmoon.maameow.data.resource.ItemInfo
 import com.aliothmoon.maameow.domain.enums.UiUsageConstants
 import com.aliothmoon.maameow.ui.component.CheckBoxWithExpandableTip
 import com.aliothmoon.maameow.ui.component.INumericField
+import com.aliothmoon.maameow.ui.theme.ThemeColors
+import com.aliothmoon.maameow.ui.theme.ThemeTypography
 
 /**
  * 指定材料掉落区域
@@ -61,13 +63,13 @@ fun SpecifiedDropsSection(
             // 材料选择说明提示
             Surface(
                 modifier = Modifier.fillMaxWidth(),
-                color = MaterialTheme.colorScheme.tertiaryContainer,
+                color = ThemeColors.tertiaryContainer,
                 shape = RoundedCornerShape(4.dp)
             ) {
                 Text(
                     text = stringResource(R.string.panel_fight_specified_drops_stage_tip),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onTertiaryContainer,
+                    style = ThemeTypography.bodySmall,
+                    color = ThemeColors.onTertiaryContainer,
                     modifier = Modifier.padding(8.dp)
                 )
             }
@@ -95,7 +97,7 @@ fun SpecifiedDropsSection(
             ) {
                 Text(
                     text = stringResource(R.string.panel_fight_target_count),
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = ThemeTypography.bodyMedium,
                     modifier = Modifier.weight(1f)
                 )
                 INumericField(
