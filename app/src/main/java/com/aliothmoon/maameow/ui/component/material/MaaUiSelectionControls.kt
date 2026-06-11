@@ -1,15 +1,21 @@
 package com.aliothmoon.maameow.ui.component.material
 
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.state.ToggleableState
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.aliothmoon.maameow.ui.isMiuixUi
 
@@ -43,16 +49,20 @@ fun MaaUiCheckbox(
     enabled: Boolean = true,
 ) {
     if (isMiuixUi) {
-        top.yukonga.miuix.kmp.basic.Checkbox(
-            state = if (checked) ToggleableState.On else ToggleableState.Off,
-            onClick = onCheckedChange?.let { cb -> { cb(!checked) } },
-            modifier = modifier, enabled = enabled,
-        )
+        CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides Dp.Unspecified) {
+            top.yukonga.miuix.kmp.basic.Checkbox(
+                state = if (checked) ToggleableState.On else ToggleableState.Off,
+                onClick = onCheckedChange?.let { cb -> { cb(!checked) } },
+                modifier = modifier, enabled = enabled,
+            )
+        }
     } else {
-        androidx.compose.material3.Checkbox(
-            checked = checked, onCheckedChange = onCheckedChange,
-            modifier = modifier, enabled = enabled,
-        )
+        CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides Dp.Unspecified) {
+            androidx.compose.material3.Checkbox(
+                checked = checked, onCheckedChange = onCheckedChange,
+                modifier = modifier, enabled = enabled,
+            )
+        }
     }
 }
 

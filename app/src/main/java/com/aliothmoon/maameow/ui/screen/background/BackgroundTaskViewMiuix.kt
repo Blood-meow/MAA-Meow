@@ -515,10 +515,12 @@ fun BackgroundTaskViewMiuix(
                                     shape = RoundedCornerShape(8.dp),
                                 ) {
                                     if (maaState == MaaExecutionState.STOPPING) {
-                                        MiuixCircularProgressIndicator(
-                                            modifier = Modifier.size(20.dp),
-                                            strokeWidth = 2.dp
-                                        )
+                                        Box(modifier = Modifier.size(20.dp), contentAlignment = Alignment.Center) {
+                                            MiuixCircularProgressIndicator(
+                                                modifier = Modifier.size(16.dp),
+                                                strokeWidth = 2.dp
+                                            )
+                                        }
                                     } else {
                                         MiuixText(stringResource(R.string.task_btn_stop))
                                     }
