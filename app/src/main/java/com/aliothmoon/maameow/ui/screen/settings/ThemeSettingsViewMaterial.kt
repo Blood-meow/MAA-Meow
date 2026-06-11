@@ -299,7 +299,7 @@ private fun MaaMeowThemePreview(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     PreviewScreenInfoCard(
-                        modeLabel = serviceStatusText,
+                        modeLabel = modeLabel,
                         uiStyleLabel = uiStyleLabel,
                         screenWidth = screenWidth,
                         screenHeight = screenHeight,
@@ -411,7 +411,8 @@ private fun PreviewInfoRow(
         )
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(6.dp)
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            modifier = Modifier.weight(1f, fill = false)
         ) {
             Box(
                 modifier = Modifier
@@ -423,7 +424,9 @@ private fun PreviewInfoRow(
                 text = value,
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 1
+                maxLines = 1,
+                textAlign = androidx.compose.ui.text.style.TextAlign.End,
+                modifier = Modifier.weight(1f, fill = false)
             )
         }
     }

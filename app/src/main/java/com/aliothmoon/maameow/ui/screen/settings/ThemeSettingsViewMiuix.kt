@@ -278,7 +278,12 @@ private fun ThemePreviewMiuix(
                 ) {
                     PreviewInfoMiuix(
                         label = stringResource(R.string.home_display_mode),
-                        value = serviceStatusText,
+                        value = when (themeMode) {
+                            AppSettingsManager.ThemeMode.SYSTEM -> stringResource(R.string.settings_theme_system)
+                            AppSettingsManager.ThemeMode.WHITE -> stringResource(R.string.settings_theme_white)
+                            AppSettingsManager.ThemeMode.DARK -> stringResource(R.string.settings_theme_dark)
+                            AppSettingsManager.ThemeMode.PURE_DARK -> stringResource(R.string.settings_theme_pure_dark)
+                        },
                         accent = primary
                     )
                     PreviewInfoMiuix(
