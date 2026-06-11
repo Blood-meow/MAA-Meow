@@ -28,14 +28,14 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Campaign
 import androidx.compose.material.icons.rounded.Info
-import androidx.compose.material3.Button
+import com.aliothmoon.maameow.ui.component.material.MaaUiButton
 import com.aliothmoon.maameow.ui.component.material.MaaUiCheckbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import com.aliothmoon.maameow.ui.component.material.MaaUiTextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -239,7 +239,7 @@ fun AnnouncementDialog(
                                 }
                             }
                         }
-                        TextButton(
+                        MaaUiTextButton(
                             onClick = { onDismiss(dontShowAgain) },
                             contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
                         ) {
@@ -338,7 +338,7 @@ fun AnnouncementDialog(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    Button(
+                    MaaUiButton(
                         onClick = { onDismiss(dontShowAgain) },
                         modifier = Modifier.fillMaxWidth(),
                         shape = MaterialTheme.shapes.large,

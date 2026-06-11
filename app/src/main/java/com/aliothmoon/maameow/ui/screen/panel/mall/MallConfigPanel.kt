@@ -29,7 +29,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.SwapVert
-import androidx.compose.material3.Button
+import com.aliothmoon.maameow.ui.component.material.MaaUiButton
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -417,7 +417,7 @@ private fun PriorityItemsSection(
 
         // 添加按钮
         AnimatedVisibility(visible = !isReorderMode) {
-            Button(
+            MaaUiButton(
                 onClick = { showAddPanel = !showAddPanel },
                 enabled = config.shopping,
                 modifier = Modifier.fillMaxWidth(),
@@ -568,7 +568,7 @@ private fun BlacklistSection(config: MallConfig, onConfigChange: (MallConfig) ->
         }
 
         // 添加按钮
-        Button(
+        MaaUiButton(
             onClick = { showAddPanel = !showAddPanel },
             enabled = config.shopping,
             modifier = Modifier.fillMaxWidth(),

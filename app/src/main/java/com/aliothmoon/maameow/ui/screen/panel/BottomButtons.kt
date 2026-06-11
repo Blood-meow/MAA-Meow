@@ -9,11 +9,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
+import com.aliothmoon.maameow.ui.component.material.MaaUiButton
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import com.aliothmoon.maameow.ui.component.material.MaaUiOutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -36,7 +36,7 @@ fun BottomButtons(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
-        OutlinedButton(
+        MaaUiOutlinedButton(
             onClick = onClose,
             modifier = Modifier.weight(1f).height(36.dp),
             shape = RoundedCornerShape(8.dp),
@@ -52,7 +52,7 @@ fun BottomButtons(
 
         Spacer(modifier = Modifier.width(16.dp))
 
-        Button(
+        MaaUiButton(
             onClick = onStart,
             modifier = Modifier.weight(1f).height(36.dp),
             shape = RoundedCornerShape(8.dp),

@@ -23,13 +23,13 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PageSize
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
+import com.aliothmoon.maameow.ui.component.material.MaaUiButton
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import com.aliothmoon.maameow.ui.component.material.MaaUiCheckbox
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import com.aliothmoon.maameow.ui.component.material.MaaUiOutlinedButton
 import com.aliothmoon.maameow.ui.component.material.MaaUiRadioButton
 import com.aliothmoon.maameow.ui.component.material.MaaUiSlider
 import androidx.compose.material3.Surface
@@ -833,7 +833,7 @@ private fun FacilitiesSection(
         Row(
             modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Button(
+            MaaUiButton(
                 onClick = {
                     onConfigChange(
                         config.copy(
@@ -844,7 +844,7 @@ private fun FacilitiesSection(
                 Text(stringResource(R.string.common_select_all))
             }
 
-            OutlinedButton(
+            MaaUiOutlinedButton(
                 onClick = {
                     onConfigChange(
                         config.copy(

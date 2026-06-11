@@ -34,10 +34,10 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import com.aliothmoon.maameow.ui.component.material.MaaUiOutlinedButton
 import com.aliothmoon.maameow.ui.component.material.MaaUiRadioButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import com.aliothmoon.maameow.ui.component.material.MaaUiTextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -92,7 +92,7 @@ fun ProfileManagementPanel(
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface
             )
-            OutlinedButton(
+            MaaUiOutlinedButton(
                 onClick = onCreate,
                 enabled = profiles.size < 10,
                 shape = RoundedCornerShape(4.dp),
@@ -304,7 +304,7 @@ private fun ProfileCard(
                             onImeAction = onRenameConfirm
                         )
                         Spacer(modifier = Modifier.width(4.dp))
-                        TextButton(onClick = onRenameConfirm) {
+                        MaaUiTextButton(onClick = onRenameConfirm) {
                             Text(stringResource(R.string.common_confirm), style = MaterialTheme.typography.labelMedium)
                         }
                     }

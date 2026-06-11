@@ -28,7 +28,7 @@ import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.OutlinedButton
+import com.aliothmoon.maameow.ui.component.material.MaaUiOutlinedButton
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -373,7 +373,7 @@ private fun TaskManagementView(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        OutlinedButton(
+        MaaUiOutlinedButton(
             onClick = onDuplicate,
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(4.dp)
@@ -385,7 +385,7 @@ private fun TaskManagementView(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        OutlinedButton(
+        MaaUiOutlinedButton(
             onClick = onRemove,
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.outlinedButtonColors(

@@ -27,13 +27,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.Button
+import com.aliothmoon.maameow.ui.component.material.MaaUiButton
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import com.aliothmoon.maameow.ui.component.material.MaaUiOutlinedButton
 import com.aliothmoon.maameow.ui.component.material.MaaUiRadioButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -299,7 +299,7 @@ fun AutoBattlePanel(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    Button(
+                    MaaUiButton(
                         onClick = viewModel::onParseSingleInput,
                         enabled = !state.isLoading && !isStarting,
                         shape = compactButtonShape,
@@ -313,7 +313,7 @@ fun AutoBattlePanel(
                             }
                         )
                     }
-                    Button(
+                    MaaUiButton(
                         onClick = viewModel::onParseSetInput,
                         enabled = !state.isLoading && !isStarting && setImportSupported,
                         shape = compactButtonShape,
@@ -321,7 +321,7 @@ fun AutoBattlePanel(
                     ) {
                         Text(stringResource(R.string.panel_autobattle_read_set))
                     }
-                    OutlinedButton(
+                    MaaUiOutlinedButton(
                         onClick = {
                             if (filePicker != null) {
                                 filePicker.launch(arrayOf("application/json", "application/octet-stream"))
@@ -335,7 +335,7 @@ fun AutoBattlePanel(
                     ) {
                         Text(stringResource(R.string.copilot_import_file))
                     }
-                    OutlinedButton(
+                    MaaUiOutlinedButton(
                         onClick = { Misc.openUriSafely(context, "https://zoot.plus") },
                         shape = compactButtonShape,
                         contentPadding = compactButtonPadding
@@ -737,7 +737,7 @@ fun AutoBattlePanel(
                                                     },
                                                     modifier = Modifier.weight(1f)
                                                 )
-                                                OutlinedButton(
+                                                MaaUiOutlinedButton(
                                                     onClick = { viewModel.onSelectListItem(index) },
                                                     shape = compactButtonShape,
                                                     contentPadding = compactButtonPadding
@@ -766,12 +766,12 @@ fun AutoBattlePanel(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        OutlinedButton(
+                        MaaUiOutlinedButton(
                             onClick = viewModel::onCleanUnchecked,
                             shape = compactButtonShape,
                             contentPadding = compactButtonPadding
                         ) { Text(stringResource(R.string.panel_autobattle_clear_unchecked)) }
-                        OutlinedButton(
+                        MaaUiOutlinedButton(
                             onClick = viewModel::onClearList,
                             shape = compactButtonShape,
                             contentPadding = compactButtonPadding

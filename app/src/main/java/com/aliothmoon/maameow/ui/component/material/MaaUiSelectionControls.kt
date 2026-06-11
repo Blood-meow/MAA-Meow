@@ -123,3 +123,87 @@ fun MaaUiSlider(
         )
     }
 }
+/**
+ * Auto-switching Button: uses Miuix style when isMiuixUi, Material3 otherwise.
+ * Material3 Button uses shape=, Miuix uses cornerRadius=.
+ */
+@Composable
+fun MaaUiButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    content: @Composable () -> Unit,
+) {
+    if (isMiuixUi) {
+        top.yukonga.miuix.kmp.basic.Button(
+            onClick = onClick,
+            modifier = modifier,
+            enabled = enabled,
+            content = content,
+        )
+    } else {
+        androidx.compose.material3.Button(
+            onClick = onClick,
+            modifier = modifier,
+            enabled = enabled,
+            content = content,
+        )
+    }
+}
+
+/**
+ * Auto-switching OutlinedButton.
+ */
+@Composable
+fun MaaUiOutlinedButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    content: @Composable () -> Unit,
+) {
+    if (isMiuixUi) {
+        top.yukonga.miuix.kmp.basic.Button(
+            onClick = onClick,
+            modifier = modifier,
+            enabled = enabled,
+            content = content,
+        )
+    } else {
+        androidx.compose.material3.OutlinedButton(
+            onClick = onClick,
+            modifier = modifier,
+            enabled = enabled,
+            content = content,
+        )
+    }
+}
+
+/**
+ * Auto-switching TextButton.
+ * Miuix TextButton takes text as param, so we fall back to Miuix Button for composable content.
+ */
+@Composable
+fun MaaUiTextButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    content: @Composable () -> Unit,
+) {
+    if (isMiuixUi) {
+        // Miuix doesn't have a generic TextButton with composable content,
+        // so we use Button with default (transparent-ish) styling
+        top.yukonga.miuix.kmp.basic.Button(
+            onClick = onClick,
+            modifier = modifier,
+            enabled = enabled,
+            content = content,
+        )
+    } else {
+        androidx.compose.material3.TextButton(
+            onClick = onClick,
+            modifier = modifier,
+            enabled = enabled,
+            content = content,
+        )
+    }
+}

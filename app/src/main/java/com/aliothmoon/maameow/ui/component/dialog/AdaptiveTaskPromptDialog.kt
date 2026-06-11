@@ -31,14 +31,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
+import com.aliothmoon.maameow.ui.component.material.MaaUiButton
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import com.aliothmoon.maameow.ui.component.material.MaaUiOutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import com.aliothmoon.maameow.ui.component.material.MaaUiTextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -350,21 +350,21 @@ private fun TaskPromptCard(
                 if (inLandscape && landscapeAdaptive) {
                     Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                         neutralText?.let {
-                            TextButton(
+                            MaaUiTextButton(
                                 onClick = onNeutralClick,
                                 contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
                             ) {
                                 Text(it, maxLines = 1, style = MaterialTheme.typography.bodySmall)
                             }
                         }
-                        TextButton(
+                        MaaUiTextButton(
                             onClick = onConfirm,
                             contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
                         ) {
                             Text(confirmText, maxLines = 1, style = MaterialTheme.typography.bodySmall)
                         }
                         dismissText?.let {
-                            TextButton(
+                            MaaUiTextButton(
                                 onClick = onDismissRequest,
                                 contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
                             ) {
@@ -443,7 +443,7 @@ private fun TaskPromptButtons(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // 主操作按钮：Filled
-        Button(
+        MaaUiButton(
             onClick = onConfirm,
             modifier = Modifier.fillMaxWidth(),
             shape = MaterialTheme.shapes.large,
@@ -457,7 +457,7 @@ private fun TaskPromptButtons(
 
         // 中性/次要按钮：Outlined
         neutralText?.let {
-            OutlinedButton(
+            MaaUiOutlinedButton(
                 onClick = onNeutralClick,
                 modifier = Modifier.fillMaxWidth(),
                 shape = MaterialTheme.shapes.large
@@ -468,7 +468,7 @@ private fun TaskPromptButtons(
 
         // 取消/辅助按钮：Text
         dismissText?.let {
-            TextButton(
+            MaaUiTextButton(
                 onClick = onDismissRequest,
                 shape = MaterialTheme.shapes.large
             ) {

@@ -12,10 +12,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
+import com.aliothmoon.maameow.ui.component.material.MaaUiButton
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import com.aliothmoon.maameow.ui.component.material.MaaUiOutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -92,14 +92,14 @@ private fun AllowUseStoneSaveSection(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)
                     ) {
-                        OutlinedButton(
+                        MaaUiOutlinedButton(
                             onClick = { showWarningPanel = false },
                             modifier = Modifier.height(32.dp),
                             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp)
                         ) {
                             Text(stringResource(R.string.common_cancel), style = MaterialTheme.typography.bodySmall)
                         }
-                        Button(
+                        MaaUiButton(
                             onClick = {
                                 onConfigChange(config.copy(allowUseStoneSave = true))
                                 showWarningPanel = false

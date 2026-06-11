@@ -24,13 +24,13 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
+import com.aliothmoon.maameow.ui.component.material.MaaUiButton
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import com.aliothmoon.maameow.ui.component.material.MaaUiOutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -152,7 +152,7 @@ fun OverlayDialog(
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             // 取消按钮
-                            OutlinedButton(
+                            MaaUiOutlinedButton(
                                 onClick = onDismissRequest,
                                 modifier = Modifier
                                     .weight(1f)
@@ -166,7 +166,7 @@ fun OverlayDialog(
                             }
 
                             // 确认按钮
-                            Button(
+                            MaaUiButton(
                                 onClick = onConfirm,
                                 modifier = Modifier
                                     .weight(1f)
