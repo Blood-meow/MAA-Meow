@@ -24,6 +24,7 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.aliothmoon.maameow.data.preferences.AppSettingsManager
@@ -191,9 +192,17 @@ fun MainScreen(
     }
 
     if (miuix) {
+        val useFloatingBar = uiFloatingBottomBar && visible
+
         // Miuix mode: scaffold with backdrop layer (KernelSU pattern)
+        // For floating bar: transparent container so gesture bar area is transparent
+        // For standard bar: default container color
         CompositionLocalProvider(LocalMainPagerState provides mainPagerState) {
-            MiuixScaffold(bottomBar = bottomBar) { paddingValues ->
+            MiuixScaffold(
+                bottomBar = bottomBar,
+                containerColor = if (useFloatingBar) Color.Transparent
+                    else MiuixTheme.colorScheme.surface
+            ) { paddingValues ->
                 Box(
                     modifier = if (uiBlurEnabled && backdrop != null)
                         Modifier.layerBackdrop(backdrop) else Modifier

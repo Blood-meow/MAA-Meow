@@ -239,27 +239,26 @@ fun MaaMeowTheme(
     }
 
     val scaledDensity = LocalDensity.current.let { Density(it.density, it.fontScale * fontSizeScale / 100f) }
-    val themedContent: @Composable () -> Unit = {
-        CompositionLocalProvider(
-            LocalUiStyle provides uiStyle,
-            LocalIsPureDark provides isPureDark,
-            LocalDensity provides scaledDensity
-        ) {
-            content()
+
+    // Always provide MiuixTheme (which wraps MaterialTheme) so the composition tree
+    // structure is stable when switching between Material/Miuix.
+    // LocalUiStyle controls which components are rendered (isMiuixUi reads it).
+    MiuixTheme(controller = miuixController) {
+        CompositionLocalProvider(LocalIndication provides NoIndication) {
+            MaterialTheme(
+                colorScheme = colorScheme,
+                typography = Typography,
+                shapes = MaaShapes,
+            ) {
+                CompositionLocalProvider(
+                    LocalUiStyle provides uiStyle,
+                    LocalIsPureDark provides isPureDark,
+                    LocalDensity provides scaledDensity
+                ) {
+                    content()
+                }
+            }
         }
-    }
-
-    when (uiStyle) {
-        AppSettingsManager.UiStyle.MATERIAL -> MaterialThemeWrapper(
-            colorScheme = colorScheme,
-            content = themedContent
-        )
-
-        AppSettingsManager.UiStyle.MIUIX -> MiuixThemeWrapper(
-            controller = miuixController,
-            colorScheme = colorScheme,
-            content = themedContent
-        )
     }
 }
 
