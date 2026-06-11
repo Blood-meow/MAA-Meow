@@ -1,6 +1,7 @@
 package com.aliothmoon.maameow.ui.component.material
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -36,8 +37,15 @@ fun MaaUiCardContainer(
     content: @Composable ColumnScope.() -> Unit
 ) {
     if (isMiuixUi) {
+        // MiuixCard ignores shape/colors; apply background color explicitly
+        val resolvedContainerColor = containerColor.takeIf { it != Color.Unspecified }
+            ?: colors?.containerColor
+        val withBg = if (resolvedContainerColor != null) {
+            modifier.background(resolvedContainerColor, shape)
+        } else modifier
+        val withBorder = if (border != null) withBg.border(border, shape) else withBg
         MiuixCard(
-            modifier = if (border != null) modifier.border(border, shape) else modifier
+            modifier = withBorder
         ) {
             content()
         }
