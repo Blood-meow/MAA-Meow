@@ -23,10 +23,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.rounded.Delete
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
+import top.yukonga.miuix.kmp.basic.CircularProgressIndicator
 import androidx.compose.material3.Text
+import androidx.compose.material3.Icon
+
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -171,17 +171,17 @@ private fun ErrorLogListMiuix(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Column(modifier = Modifier.weight(1f)) {
-                                    Text(
+                                    MiuixText(
                                         text = logFile.name,
-                                        style = MaterialTheme.typography.titleMedium,
+                                        style = MiuixTheme.textStyles.headline2,
                                         fontWeight = FontWeight.Medium,
                                         color = MiuixTheme.colorScheme.onSurface
                                     )
                                     Spacer(modifier = Modifier.height(4.dp))
                                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                        MiuixText(text = formatFileSize(logFile.size), style = MaterialTheme.typography.bodySmall, color = MiuixTheme.colorScheme.onSurfaceVariantSummary)
-                                        MiuixText(text = "•", style = MaterialTheme.typography.bodySmall, color = MiuixTheme.colorScheme.onSurfaceVariantSummary)
-                                        MiuixText(text = formatTime(logFile.lastModified), style = MaterialTheme.typography.bodySmall, color = MiuixTheme.colorScheme.onSurfaceVariantSummary)
+                                        MiuixText(text = formatFileSize(logFile.size), style = MiuixTheme.textStyles.body2, color = MiuixTheme.colorScheme.onSurfaceVariantSummary)
+                                        MiuixText(text = "•", style = MiuixTheme.textStyles.body2, color = MiuixTheme.colorScheme.onSurfaceVariantSummary)
+                                        MiuixText(text = formatTime(logFile.lastModified), style = MiuixTheme.textStyles.body2, color = MiuixTheme.colorScheme.onSurfaceVariantSummary)
                                     }
                                 }
                             }
