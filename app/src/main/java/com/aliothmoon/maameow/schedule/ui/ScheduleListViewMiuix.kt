@@ -21,10 +21,8 @@ import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.outlined.Delete
+import top.yukonga.miuix.kmp.basic.Switch
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Switch
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -112,12 +110,12 @@ fun ScheduleListViewMiuix(
                     Spacer(modifier = Modifier.height(16.dp))
                     MiuixText(
                         text = stringResource(R.string.schedule_empty_state),
-                        style = MaterialTheme.typography.bodyLarge,
+                        style = MiuixTheme.textStyles.body1,
                         color = MiuixTheme.colorScheme.onSurfaceVariantSummary
                     )
                     MiuixText(
                         text = stringResource(R.string.schedule_empty_hint_add),
-                        style = MaterialTheme.typography.bodySmall,
+                        style = MiuixTheme.textStyles.body2,
                         color = MiuixTheme.colorScheme.onSurfaceVariantSummary.copy(alpha = 0.7f)
                     )
                 }
@@ -186,20 +184,20 @@ private fun StrategyCardMiuix(
             Column(modifier = Modifier.weight(1f)) {
                 MiuixText(
                     text = strategy.name,
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MiuixTheme.textStyles.headline2,
                     color = MiuixTheme.colorScheme.onSurface
                 )
 
                 Spacer(modifier = Modifier.height(4.dp))
                 MiuixText(
                     text = localizedScheduleStrategySummary(strategy),
-                    style = MaterialTheme.typography.bodySmall,
+                    style = MiuixTheme.textStyles.body2,
                     color = MiuixTheme.colorScheme.onSurfaceVariantSummary
                 )
                 if (profileName != null) {
                     MiuixText(
                         text = profileName,
-                        style = MaterialTheme.typography.bodySmall,
+                        style = MiuixTheme.textStyles.body2,
                         color = MiuixTheme.colorScheme.onSurfaceVariantSummary
                     )
                 }
@@ -208,7 +206,7 @@ private fun StrategyCardMiuix(
                     MiuixText(
                         text = stringResource(R.string.schedule_next_trigger, nextTrigger),
                         modifier = Modifier.padding(top = 2.dp),
-                        style = MaterialTheme.typography.labelSmall,
+                        style = MiuixTheme.textStyles.body2,
                         color = MiuixTheme.colorScheme.primary
                     )
                 }
@@ -220,7 +218,7 @@ private fun StrategyCardMiuix(
                     MiuixText(
                         text = lastResultText,
                         modifier = Modifier.padding(top = 4.dp),
-                        style = MaterialTheme.typography.labelSmall,
+                        style = MiuixTheme.textStyles.body2,
                         color = executionResultColor(
                             strategy.lastResult,
                             MiuixTheme.colorScheme.primary,
