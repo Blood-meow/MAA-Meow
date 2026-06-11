@@ -199,7 +199,7 @@ private fun UseExpeditedSection(
             MaaUiCheckbox(
                 checked = config.useExpedited,
                 onCheckedChange = { onConfigChange(config.copy(useExpedited = it)) },
-                modifier = Modifier.size(20.dp)
+                modifier = Modifier
             )
 
             MaaUiText(
@@ -289,7 +289,7 @@ private fun SelectExtraTagsSection(
                     MaaUiRadioButton(
                         selected = config.selectExtraTags == value,
                         onClick = { onConfigChange(config.copy(selectExtraTags = value)) },
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     MaaUiText(
@@ -425,7 +425,7 @@ private fun RefreshLevel3Section(
         MaaUiCheckbox(
             checked = config.refreshLevel3,
             onCheckedChange = { onConfigChange(config.copy(refreshLevel3 = it)) },
-            modifier = Modifier.size(20.dp)
+            modifier = Modifier
         )
         Spacer(modifier = Modifier.width(8.dp))
         MaaUiText(

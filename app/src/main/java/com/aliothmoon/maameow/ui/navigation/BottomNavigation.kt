@@ -187,7 +187,7 @@ fun MiuixBottomNavigation(
             isBlurEnabled = enableBlur,
             modifier = Modifier
                 .padding(horizontal = 16.dp)
-                .padding(bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()),
+                .padding(bottom = 12.dp + WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()),
         ) {
             BottomNavTab.all.forEach { tab ->
                 val label = stringResource(tab.labelRes)

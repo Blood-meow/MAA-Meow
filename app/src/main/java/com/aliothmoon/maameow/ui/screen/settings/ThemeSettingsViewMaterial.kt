@@ -100,6 +100,7 @@ fun ThemeSettingsViewMaterial(
     val monetEnabled by viewModel.uiMonetEnabled.collectAsStateWithLifecycle()
     val uiKeyColor by viewModel.uiKeyColor.collectAsStateWithLifecycle()
     val fontSizeScale by viewModel.fontSizeScale.collectAsStateWithLifecycle()
+    val language by viewModel.language.collectAsStateWithLifecycle()
 
     val context = LocalContext.current
     val (screenWidth, screenHeight) = Misc.getScreenSize(context)
@@ -236,6 +237,75 @@ fun ThemeSettingsViewMaterial(
                         )
                     })
                 )
+            }
+
+            // Language setting
+            item {
+                SettingsSectionCard(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    rows = listOf({
+                        SettingLanguageItem(
+                            selectedLanguage = language,
+                            onLanguageSelected = { viewModel.setLanguage(it) }
+                        )
+                    })
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SettingLanguageItem(
+    selectedLanguage: AppSettingsManager.AppLanguage,
+    onLanguageSelected: (AppSettingsManager.AppLanguage) -> Unit
+) {
+    val effectiveSelectedLanguage = com.aliothmoon.maameow.utils.i18n.LocaleBootstrap.resolveSelectedLanguage(selectedLanguage)
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = MaaDesignTokens.Spacing.listItemVertical),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = stringResource(R.string.settings_language_title),
+                style = MaterialTheme.typography.bodyLarge,
+                color = ThemeColors.onSurface
+            )
+        }
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            val options = listOf(
+                AppSettingsManager.AppLanguage.ZH to stringResource(R.string.settings_language_zh),
+                AppSettingsManager.AppLanguage.EN to stringResource(R.string.settings_language_en)
+            )
+            options.forEach { (lang, label) ->
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .selectable(
+                            selected = lang == effectiveSelectedLanguage,
+                            onClick = { onLanguageSelected(lang) },
+                            role = androidx.compose.ui.semantics.Role.RadioButton
+                        )
+                ) {
+                    MaaUiRadioButton(
+                        selected = lang == effectiveSelectedLanguage,
+                        onClick = null
+                    )
+                    Spacer(modifier = Modifier.width(2.dp))
+                    Text(
+                        text = label,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = ThemeColors.onSurface
+                    )
+                }
             }
         }
     }
