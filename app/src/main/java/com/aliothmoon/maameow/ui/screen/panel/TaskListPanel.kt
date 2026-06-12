@@ -72,14 +72,13 @@ fun TaskListPanel(
     Column(modifier = modifier.width(IntrinsicSize.Max)) {
         // 配置选择按钮 - 在编辑任务按钮上方
         MaaUiCardContainer(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { onToggleProfileMode() },
+            modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(4.dp),
             colors = CardDefaults.cardColors(
                 containerColor = if (isProfileMode) ThemeColors.primary else ThemeColors.surface
             ),
-            elevation = CardDefaults.cardElevation(defaultElevation = if (isProfileMode) 2.dp else 0.dp)
+            elevation = CardDefaults.cardElevation(defaultElevation = if (isProfileMode) 2.dp else 0.dp),
+            onClick = { onToggleProfileMode() }
         ) {
             Row(
                 modifier = Modifier
@@ -109,14 +108,13 @@ fun TaskListPanel(
 
         // 编辑任务按钮 - 具备高亮状态
         MaaUiCardContainer(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { onToggleEditMode() },
+            modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(4.dp),
             colors = CardDefaults.cardColors(
                 containerColor = if (isEditMode) ThemeColors.primary else ThemeColors.surface
             ),
-            elevation = CardDefaults.cardElevation(defaultElevation = if (isEditMode) 2.dp else 0.dp)
+            elevation = CardDefaults.cardElevation(defaultElevation = if (isEditMode) 2.dp else 0.dp),
+            onClick = { onToggleEditMode() }
         ) {
             Row(
                 modifier = Modifier
@@ -149,14 +147,13 @@ fun TaskListPanel(
             Column {
                 Spacer(modifier = Modifier.height(6.dp))
                 MaaUiCardContainer(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { onToggleAddingTask() },
+                    modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(4.dp),
                     colors = CardDefaults.cardColors(
                         containerColor = if (isAddingTask) ThemeColors.primaryContainer else ThemeColors.surface
                     ),
-                    border = BorderStroke(1.dp, ThemeColors.outlineVariant)
+                    border = BorderStroke(1.dp, ThemeColors.outlineVariant),
+                    onClick = { onToggleAddingTask() }
                 ) {
                     Row(
                         modifier = Modifier
@@ -218,18 +215,17 @@ private fun TaskNodeRow(
     modifier: Modifier = Modifier
 ) {
     MaaUiCardContainer(
-        modifier = modifier
-            .fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(4.dp),
         colors = CardDefaults.cardColors(
             containerColor = if (isSelected) ThemeColors.primaryContainer else ThemeColors.surface
         ),
-        border = if (isSelected) BorderStroke(1.dp, ThemeColors.primary.copy(alpha = 0.5f)) else null
+        border = if (isSelected) BorderStroke(1.dp, ThemeColors.primary.copy(alpha = 0.5f)) else null,
+        onClick = { onSelected() }
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { onSelected() }
                 .padding(horizontal = 4.dp, vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
