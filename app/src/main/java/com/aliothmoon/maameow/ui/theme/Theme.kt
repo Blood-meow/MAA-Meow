@@ -241,20 +241,22 @@ fun MaaMeowTheme(
 
     val scaledDensity = LocalDensity.current.let { Density(it.density, it.fontScale * fontSizeScale / 100f) }
 
-    // Always provide MiuixTheme (which wraps MaterialTheme) so the composition tree
-    // structure is stable when switching between Material/Miuix.
-    // LocalUiStyle controls which components are rendered (isMiuixUi reads it).
+    // Only suppress Material ripple in Miuix mode; Miuix has its own press effects.
+    // In Material mode, let MaterialTheme's default ripple indication work.
+    val indicationOverride = if (uiStyle == AppSettingsManager.UiStyle.MIUIX)
+        NoIndication else null
+
     MiuixTheme(controller = miuixController) {
-        CompositionLocalProvider(LocalIndication provides NoIndication) {
+        CompositionLocalProvider(
+            *if (indicationOverride != null) arrayOf(LocalIndication provides indicationOverride)
+            else emptyArray()
+        ) {
             MaterialTheme(
                 colorScheme = colorScheme,
                 typography = Typography,
                 shapes = MaaShapes,
             ) {
                 // In Miuix mode, bridge Miuix onSurface → Material3 LocalContentColor
-                // so bare Material3 Text() inside Miuix containers gets the correct
-                // dark-mode color (white) instead of defaulting to Color.Black.
-                // Must be INSIDE MaterialTheme to override its default.
                 val miuixOnSurface = if (uiStyle == AppSettingsManager.UiStyle.MIUIX)
                     MiuixTheme.colorScheme.onSurface else null
                 CompositionLocalProvider(

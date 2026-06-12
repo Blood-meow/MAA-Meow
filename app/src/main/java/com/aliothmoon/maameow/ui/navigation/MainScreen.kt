@@ -220,10 +220,14 @@ fun MainScreen(
                     modifier = if (uiBlurEnabled && backdrop != null)
                         Modifier.layerBackdrop(backdrop) else Modifier
                 ) {
+                    // When floating bar is active, don't apply scaffold bottom padding
+                    // so content extends behind the floating bar.
+                    // When floating bar is off, apply normal bottom padding.
+                    val bottomPad = if (useFloatingBar) 0.dp else paddingValues.calculateBottomPadding()
                     pagerContent(
                         Modifier
                             .fillMaxSize()
-                            .padding(bottom = paddingValues.calculateBottomPadding())
+                            .padding(bottom = bottomPad)
                     )
                 }
             }
