@@ -42,9 +42,13 @@ fun MaaUiCardContainer(
         val resolvedContainerColor = containerColor.takeIf { it != Color.Unspecified }
             ?: colors?.containerColor
         val withBorder = if (border != null) modifier.border(border, shape) else modifier
+        val withBackground = if (resolvedContainerColor != null) {
+            withBorder.background(resolvedContainerColor, shape)
+        } else {
+            withBorder
+        }
         MiuixCard(
-            modifier = withBorder,
-            containerColor = resolvedContainerColor
+            modifier = withBackground
         ) {
             content()
         }
