@@ -320,11 +320,15 @@ fun ScheduleEditViewMiuix(
             if (state.needBatteryOptimization) add(stringResource(R.string.schedule_permission_tip_battery_optimization))
             if (state.needExactAlarm) add(stringResource(R.string.schedule_permission_tip_exact_alarm))
         }
-        AlertDialog(
+        OverlayDialog(
+            show = true,
+            title = stringResource(R.string.schedule_permission_title),
+            summary = stringResource(R.string.schedule_permission_message, tips.joinToString(stringResource(R.string.common_enumeration_separator))),
             onDismissRequest = { showPermissionDialog = false; navController.popBackStack() },
-            title = { MiuixText(stringResource(R.string.schedule_permission_title)) },
-            text = { MiuixText(stringResource(R.string.schedule_permission_message, tips.joinToString(stringResource(R.string.common_enumeration_separator)))) },
-            confirmButton = {
+        ) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                MiuixButton(onClick = { showPermissionDialog = false; navController.popBackStack() }) { MiuixText(stringResource(R.string.schedule_later)) }
+                Spacer(modifier = Modifier.width(8.dp))
                 MiuixButton(onClick = {
                     if (state.needBatteryOptimization) {
                         runCatching { context.startActivity(Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, "package:${context.packageName}".toUri())) }
@@ -333,9 +337,8 @@ fun ScheduleEditViewMiuix(
                     }
                     showPermissionDialog = false; navController.popBackStack()
                 }) { MiuixText(stringResource(R.string.schedule_go_to_settings)) }
-            },
-            dismissButton = { MiuixButton(onClick = { showPermissionDialog = false; navController.popBackStack() }) { MiuixText(stringResource(R.string.schedule_later)) } }
-        )
+            }
+        }
     }
 }
 
@@ -351,17 +354,18 @@ private fun TimePickerDialog(initialTime: LocalTime? = null, onDismiss: () -> Un
     val configuration = LocalConfiguration.current
     var showDial by remember { mutableStateOf(configuration.screenHeightDp >= 400) }
 
-    BasicAlertDialog(onDismissRequest = onDismiss) {
-        MiuixSurface(shape = RoundedCornerShape(28.dp), color = MiuixTheme.colorScheme.surface) {
-            Column(modifier = Modifier.padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                MiuixText(text = stringResource(R.string.schedule_time_picker_title), style = MiuixTheme.textStyles.body2, color = MiuixTheme.colorScheme.onSurfaceVariantSummary, modifier = Modifier.fillMaxWidth().padding(bottom = 20.dp))
-                if (showDial) TimePicker(state = timePickerState) else TimeInput(state = timePickerState)
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    TextButton(onClick = { showDial = !showDial }) { Text(if (showDial) stringResource(R.string.schedule_time_picker_keyboard_input) else stringResource(R.string.schedule_time_picker_dial_selection)) }
-                    Row {
-                        TextButton(onClick = onDismiss) { Text(stringResource(R.string.common_cancel)) }
-                        TextButton(onClick = { onConfirm(LocalTime.of(timePickerState.hour, timePickerState.minute)) }) { Text(stringResource(R.string.common_confirm)) }
-                    }
+    OverlayDialog(
+        show = true,
+        title = stringResource(R.string.schedule_time_picker_title),
+        onDismissRequest = onDismiss,
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            if (showDial) TimePicker(state = timePickerState) else TimeInput(state = timePickerState)
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                TextButton(onClick = { showDial = !showDial }) { Text(if (showDial) stringResource(R.string.schedule_time_picker_keyboard_input) else stringResource(R.string.schedule_time_picker_dial_selection)) }
+                Row {
+                    TextButton(onClick = onDismiss) { Text(stringResource(R.string.common_cancel)) }
+                    TextButton(onClick = { onConfirm(LocalTime.of(timePickerState.hour, timePickerState.minute)) }) { Text(stringResource(R.string.common_confirm)) }
                 }
             }
         }
