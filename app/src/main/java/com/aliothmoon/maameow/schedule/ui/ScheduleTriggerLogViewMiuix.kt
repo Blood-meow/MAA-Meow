@@ -23,7 +23,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.rounded.Delete
-import androidx.compose.material3.AlertDialog
+import top.yukonga.miuix.kmp.overlay.OverlayDialog
 import top.yukonga.miuix.kmp.basic.CircularProgressIndicator
 import top.yukonga.miuix.kmp.basic.HorizontalDivider
 import top.yukonga.miuix.kmp.basic.Icon
@@ -149,7 +149,7 @@ fun ScheduleTriggerLogViewMiuix(
         }
 
         if (showClearConfirm) {
-            AlertDialog(
+            OverlayDialog(
                 onDismissRequest = { showClearConfirm = false },
                 title = { MiuixText(stringResource(R.string.schedule_log_clear_title)) },
                 text = { MiuixText(stringResource(R.string.schedule_log_clear_message)) },
@@ -166,7 +166,7 @@ fun ScheduleTriggerLogViewMiuix(
         }
 
         if (deleteConfirmFileName != null) {
-            AlertDialog(
+            OverlayDialog(
                 onDismissRequest = { deleteConfirmFileName = null },
                 title = { MiuixText(stringResource(R.string.schedule_log_delete_title)) },
                 text = { MiuixText(stringResource(R.string.schedule_log_delete_message)) },
