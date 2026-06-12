@@ -144,7 +144,7 @@ fun ScheduleListViewMiuix(
                 onClick = { navController.navigate("schedule_edit/new") },
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
-                    .padding(16.dp)
+            .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 80.dp)
             ) {
                 Icon(Icons.Default.Add, contentDescription = stringResource(R.string.schedule_create_strategy))
             }
