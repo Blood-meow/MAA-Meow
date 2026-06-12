@@ -23,7 +23,7 @@ import androidx.compose.material.icons.rounded.Build
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
-import com.aliothmoon.maameow.ui.component.material.MaaUiScaffold
+import androidx.compose.material3.Scaffold
 import com.aliothmoon.maameow.ui.theme.ThemeColors
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -166,7 +166,8 @@ fun SettingsViewMaterial(
         )
     }
 
-    MaaUiScaffold(
+    Scaffold(
+        containerColor = ThemeColors.background,
         topBar = {
             TopAppBar(
                 title = stringResource(R.string.settings_title),
