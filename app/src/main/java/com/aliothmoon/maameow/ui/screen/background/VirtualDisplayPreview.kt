@@ -1,5 +1,6 @@
 package com.aliothmoon.maameow.ui.screen.background
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -29,6 +30,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.aliothmoon.maameow.R
 import com.aliothmoon.maameow.domain.service.AppWatchdog
 import org.koin.compose.koinInject
+import com.aliothmoon.maameow.ui.isMiuixUi
 import com.aliothmoon.maameow.ui.component.material.MaaUiText
 import com.aliothmoon.maameow.ui.theme.ThemeColors
 import com.aliothmoon.maameow.ui.theme.ThemeTypography
@@ -66,7 +68,8 @@ fun VirtualDisplayPreview(
                 .height(cardHeight)
                 .clickable(onClick = onClick),
             shape = RoundedCornerShape(12.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+            border = if (isMiuixUi) BorderStroke(0.5.dp, ThemeColors.outline.copy(alpha = 0.3f)) else null
         ) {
             Box(modifier = Modifier.fillMaxSize()) {
                 content()
