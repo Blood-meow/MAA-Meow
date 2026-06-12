@@ -17,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.Dp
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.graphics.Color
@@ -25,6 +26,7 @@ import androidx.compose.ui.node.DelegatableNode
 import androidx.compose.ui.node.DrawModifierNode
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import com.aliothmoon.maameow.data.preferences.AppSettingsManager
 import com.aliothmoon.maameow.ui.LocalIsPureDark
 import com.aliothmoon.maameow.ui.LocalUiStyle
@@ -263,7 +265,10 @@ fun MaaMeowTheme(
                     LocalUiStyle provides uiStyle,
                     LocalIsPureDark provides isPureDark,
                     LocalDensity provides scaledDensity,
-                    *(if (miuixOnSurface != null) arrayOf(LocalContentColor provides miuixOnSurface)
+                    *(if (miuixOnSurface != null) arrayOf(
+                        LocalContentColor provides miuixOnSurface,
+                        LocalMinimumInteractiveComponentSize provides Dp.Unspecified
+                    )
                       else emptyArray())
                 ) {
                     content()
