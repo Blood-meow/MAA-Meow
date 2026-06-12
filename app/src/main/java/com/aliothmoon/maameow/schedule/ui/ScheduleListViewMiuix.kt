@@ -258,7 +258,7 @@ private fun DeleteConfirmDialogMiuix(
     onConfirm: () -> Unit,
     onDismiss: () -> Unit
 ) {
-    androidx.compose.material3.AlertDialog(
+    OverlayDialog(
         onDismissRequest = onDismiss,
         title = { MiuixText(text = stringResource(R.string.schedule_delete_strategy_title)) },
         text = { MiuixText(text = stringResource(R.string.schedule_delete_strategy_message)) },
@@ -280,7 +280,7 @@ private fun AutoStartGuideDialogMiuix(
     context: android.content.Context,
     onDismiss: () -> Unit
 ) {
-    androidx.compose.material3.AlertDialog(
+    OverlayDialog(
         onDismissRequest = onDismiss,
         title = { MiuixText(text = stringResource(R.string.schedule_auto_start_permission_title)) },
         text = { MiuixText(text = stringResource(R.string.schedule_auto_start_permission_message)) },
