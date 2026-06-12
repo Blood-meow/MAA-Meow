@@ -347,7 +347,7 @@ private fun SectionHeaderMiuix(title: String) {
     MiuixText(text = title, style = MiuixTheme.textStyles.headline2, color = MiuixTheme.colorScheme.onSurface, modifier = Modifier.padding(start = 16.dp, top = 24.dp, bottom = 8.dp))
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
 private fun TimePickerDialog(initialTime: LocalTime? = null, onDismiss: () -> Unit, onConfirm: (LocalTime) -> Unit) {
     val timePickerState = rememberTimePickerState(initialHour = initialTime?.hour ?: 0, initialMinute = initialTime?.minute ?: 0)
