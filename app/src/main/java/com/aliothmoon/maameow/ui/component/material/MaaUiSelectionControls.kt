@@ -2,16 +2,18 @@ package com.aliothmoon.maameow.ui.component.material
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.state.ToggleableState
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.aliothmoon.maameow.ui.isMiuixUi
+import androidx.compose.foundation.shape.RoundedCornerShape
 
 // ── RadioButton ──────────────────────────────────────────────
 
@@ -23,7 +25,6 @@ fun MaaUiRadioButton(
     enabled: Boolean = true,
 ) {
     if (isMiuixUi) {
-        // In Miuix mode, render as Checkbox for a more consistent look
         MaaUiCheckbox(
             checked = selected,
             onCheckedChange = onClick?.let { cb -> { cb() } },
@@ -31,9 +32,11 @@ fun MaaUiRadioButton(
             enabled = enabled,
         )
     } else {
-        androidx.compose.material3.RadioButton(
-            selected = selected, onClick = onClick, modifier = modifier, enabled = enabled,
-        )
+        CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides Dp.Unspecified) {
+            androidx.compose.material3.RadioButton(
+                selected = selected, onClick = onClick, modifier = modifier, enabled = enabled,
+            )
+        }
     }
 }
 
@@ -47,16 +50,21 @@ fun MaaUiCheckbox(
     enabled: Boolean = true,
 ) {
     if (isMiuixUi) {
+        // Miuix Checkbox uses its natural size; global Dp.Unspecified in Theme.kt
+        // removes Material3 minimum touch target. No hardcoded .size() here.
         top.yukonga.miuix.kmp.basic.Checkbox(
             state = if (checked) ToggleableState.On else ToggleableState.Off,
             onClick = onCheckedChange?.let { cb -> { cb(!checked) } },
-            modifier = modifier.size(18.dp), enabled = enabled,
+            modifier = modifier, enabled = enabled,
         )
     } else {
-        androidx.compose.material3.Checkbox(
-            checked = checked, onCheckedChange = onCheckedChange,
-            modifier = modifier.size(18.dp), enabled = enabled,
-        )
+        // Material mode: locally remove 48dp minimum so callers can size freely
+        CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides Dp.Unspecified) {
+            androidx.compose.material3.Checkbox(
+                checked = checked, onCheckedChange = onCheckedChange,
+                modifier = modifier, enabled = enabled,
+            )
+        }
     }
 }
 
@@ -75,10 +83,12 @@ fun MaaUiSwitch(
             modifier = modifier, enabled = enabled,
         )
     } else {
-        androidx.compose.material3.Switch(
-            checked = checked, onCheckedChange = onCheckedChange,
-            modifier = modifier, enabled = enabled,
-        )
+        CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides Dp.Unspecified) {
+            androidx.compose.material3.Switch(
+                checked = checked, onCheckedChange = onCheckedChange,
+                modifier = modifier, enabled = enabled,
+            )
+        }
     }
 }
 
