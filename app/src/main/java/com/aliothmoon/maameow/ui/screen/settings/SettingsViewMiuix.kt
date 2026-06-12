@@ -43,6 +43,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.aliothmoon.maameow.BuildConfig
 import com.aliothmoon.maameow.R
+import com.aliothmoon.maameow.constant.DefaultDisplayConfig
 import com.aliothmoon.maameow.constant.Routes
 import com.aliothmoon.maameow.data.model.update.UpdateChannel
 import com.aliothmoon.maameow.domain.models.RemoteBackend
@@ -379,8 +380,9 @@ private fun SettingChannelRowMiuix(
             MiuixText(text = stringResource(R.string.settings_update_channel_desc), style = MiuixTheme.textStyles.body2, color = MiuixTheme.colorScheme.onSurfaceSecondary)
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            val channels = listOf(UpdateChannel.STABLE to stringResource(R.string.settings_channel_stable), UpdateChannel.BETA to stringResource(R.string.settings_channel_beta))
-            channels.forEach { (channel, label) ->
+            val channels = UpdateChannel.entries
+            channels.forEach { channel ->
+                val label = stringResource(channel.resId)
                 val selected = channel == selectedChannel
                 MiuixSurface(
                     modifier = Modifier.height(36.dp).clip(RoundedCornerShape(18.dp)).clickable { onChannelSelected(channel) },
@@ -412,8 +414,9 @@ private fun SettingRemoteBackendRowMiuix(
             MiuixText(text = stringResource(R.string.settings_startup_backend_desc), style = MiuixTheme.textStyles.body2, color = MiuixTheme.colorScheme.onSurfaceSecondary)
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            val backends = listOf(RemoteBackend.SHIZUKU to stringResource(R.string.settings_backend_shizuku), RemoteBackend.ROOT to stringResource(R.string.settings_backend_root))
-            backends.forEach { (backend, label) ->
+            val backends = RemoteBackend.entries
+            backends.forEach { backend ->
+                val label = backend.display
                 val selected = backend == selectedBackend
                 MiuixSurface(
                     modifier = Modifier.height(36.dp).clip(RoundedCornerShape(18.dp)).clickable { onBackendSelected(backend) },
@@ -432,8 +435,8 @@ private fun SettingRemoteBackendRowMiuix(
 
 @Composable
 private fun SettingBackgroundResolutionRowMiuix(
-    selectedPreference: String,
-    onPreferenceSelected: (String) -> Unit
+    selectedPreference: DefaultDisplayConfig.ResolutionPreference,
+    onPreferenceSelected: (DefaultDisplayConfig.ResolutionPreference) -> Unit
 ) {
     Row(
         modifier = Modifier.fillMaxWidth().padding(16.dp),
@@ -445,7 +448,7 @@ private fun SettingBackgroundResolutionRowMiuix(
             MiuixText(text = stringResource(R.string.settings_background_resolution_desc), style = MiuixTheme.textStyles.body2, color = MiuixTheme.colorScheme.onSurfaceSecondary)
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            val options = listOf("P720" to "720p", "P1080" to "1080p")
+            val options = listOf(DefaultDisplayConfig.ResolutionPreference.P720 to "720p", DefaultDisplayConfig.ResolutionPreference.P1080 to "1080p")
             options.forEach { (value, label) ->
                 val selected = value == selectedPreference
                 MiuixSurface(
