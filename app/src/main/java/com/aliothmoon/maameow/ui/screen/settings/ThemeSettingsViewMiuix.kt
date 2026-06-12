@@ -267,7 +267,7 @@ private fun ThemePreviewMiuix(
             modifier = Modifier
                 .fillMaxWidth(0.62f)
                 .aspectRatio(0.58f)
-                .border(1.5.dp, MiuixTheme.colorScheme.outlineVariant, RoundedCornerShape(24.dp)),
+                .border(1.5.dp, MiuixTheme.colorScheme.outline, RoundedCornerShape(24.dp)),
             shape = RoundedCornerShape(24.dp),
             color = background,
         ) {
@@ -312,7 +312,7 @@ private fun ThemePreviewMiuix(
                             PreviewInfoRowMiuix(
                                 label = stringResource(R.string.home_resource_version_label),
                                 value = resourceVersion.ifBlank { stringResource(R.string.home_resource_not_installed) },
-                                accent = MiuixTheme.colorScheme.tertiary
+                                accent = MiuixTheme.colorScheme.primary
                             )
                             PreviewInfoRowMiuix(
                                 label = stringResource(R.string.home_app_version_label),
@@ -332,7 +332,7 @@ private fun ThemePreviewMiuix(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 18.dp, vertical = 10.dp)
-                        .border(1.5.dp, MiuixTheme.colorScheme.outlineVariant, CircleShape),
+                        .border(1.5.dp, MiuixTheme.colorScheme.outline, CircleShape),
                     shape = CircleShape,
                     color = surfaceVariant.copy(alpha = if (blurEnabled) 0.72f else 0.92f),
                 ) {
