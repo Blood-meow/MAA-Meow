@@ -1,6 +1,7 @@
 package com.aliothmoon.maameow.ui.component.material
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
@@ -35,6 +36,7 @@ fun MaaUiCardContainer(
     elevation: androidx.compose.material3.CardElevation = CardDefaults.cardElevation(),
     border: BorderStroke? = null,
     colors: androidx.compose.material3.CardColors? = null,
+    onClick: (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit
 ) {
     if (isMiuixUi) {
@@ -51,6 +53,7 @@ fun MaaUiCardContainer(
         MiuixCard(
             modifier = withBackground,
             pressFeedbackType = PressFeedbackType.Tilt,
+            onClick = onClick,
         ) {
             content()
         }
@@ -58,8 +61,9 @@ fun MaaUiCardContainer(
         val resolvedColors = colors ?: if (containerColor != Color.Unspecified)
             CardDefaults.cardColors(containerColor = containerColor)
         else CardDefaults.cardColors()
+        val cardModifier = if (onClick != null) modifier.clickable { onClick() } else modifier
         Card(
-            modifier = modifier,
+            modifier = cardModifier,
             shape = shape,
             colors = resolvedColors,
             elevation = elevation,
