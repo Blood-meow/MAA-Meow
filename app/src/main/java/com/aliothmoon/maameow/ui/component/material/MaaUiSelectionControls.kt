@@ -59,19 +59,18 @@ fun MaaUiCheckbox(
             top.yukonga.miuix.kmp.basic.Checkbox(
                 state = if (checked) ToggleableState.On else ToggleableState.Off,
                 onClick = onCheckedChange?.let { cb -> { cb(!checked) } },
-                modifier = modifier, enabled = enabled,
+                modifier = modifier.size(18.dp), enabled = enabled,
             )
         }
     } else {
         CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides Dp.Unspecified) {
             androidx.compose.material3.Checkbox(
                 checked = checked, onCheckedChange = onCheckedChange,
-                modifier = modifier, enabled = enabled,
+                modifier = modifier.size(18.dp), enabled = enabled,
             )
         }
     }
 }
-
 // ── Switch ───────────────────────────────────────────────────
 
 @Composable
