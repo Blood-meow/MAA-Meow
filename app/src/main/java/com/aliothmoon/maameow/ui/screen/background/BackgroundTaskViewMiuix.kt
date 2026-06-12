@@ -987,7 +987,7 @@ private fun SettingSwitchRow(
         MaaUiCheckbox(
                 checked = checked,
                 onCheckedChange = onCheckedChange,
-                modifier = Modifier.size(20.dp)
+                modifier = Modifier.size(16.dp)
             )
     }
 }
