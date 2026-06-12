@@ -12,6 +12,10 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clipToBounds
 import com.aliothmoon.maameow.ui.isMiuixUi
 import androidx.compose.foundation.shape.RoundedCornerShape
 
@@ -50,13 +54,18 @@ fun MaaUiCheckbox(
     enabled: Boolean = true,
 ) {
     if (isMiuixUi) {
-        // Miuix Checkbox uses its natural size; global Dp.Unspecified in Theme.kt
-        // removes Material3 minimum touch target. No hardcoded .size() here.
-        top.yukonga.miuix.kmp.basic.Checkbox(
-            state = if (checked) ToggleableState.On else ToggleableState.Off,
-            onClick = onCheckedChange?.let { cb -> { cb(!checked) } },
-            modifier = modifier, enabled = enabled,
-        )
+        // Clip to caller-specified size so Miuix Checkbox doesn't overflow
+        Box(
+            modifier = modifier.clipToBounds(),
+            contentAlignment = Alignment.Center
+        ) {
+            top.yukonga.miuix.kmp.basic.Checkbox(
+                state = if (checked) ToggleableState.On else ToggleableState.Off,
+                onClick = onCheckedChange?.let { cb -> { cb(!checked) } },
+                modifier = Modifier.fillMaxSize(),
+                enabled = enabled,
+            )
+        }
     } else {
         // Material mode: locally remove 48dp minimum so callers can size freely
         CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides Dp.Unspecified) {
