@@ -294,7 +294,8 @@ private fun ThemePreviewMiuix(
                 ) {
                     // Info card matching Material's PreviewScreenInfoCard layout
                     MiuixSurface(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth()
+                            .border(1.dp, MiuixTheme.colorScheme.outline.copy(alpha = 0.5f), RoundedCornerShape(14.dp)),
                         shape = RoundedCornerShape(14.dp),
                         color = if (isPureDark) Color(0xFF121212) else MiuixTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
                     ) {
