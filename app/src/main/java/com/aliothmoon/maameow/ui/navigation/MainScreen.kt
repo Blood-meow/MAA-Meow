@@ -222,11 +222,8 @@ fun MainScreen(
                 ) {
                     // When floating bar is active, don't apply scaffold bottom padding
                     // so content extends behind the floating bar.
-                    // When floating bar is off, apply scaffold bottom + gesture bar padding.
-                    val gestureBarBottom = WindowInsets.navigationBars
-                        .asPaddingValues().calculateBottomPadding()
-                    val bottomPad = if (useFloatingBar) 0.dp
-                        else paddingValues.calculateBottomPadding() + gestureBarBottom
+                    // When floating bar is off, apply normal bottom padding.
+                    val bottomPad = if (useFloatingBar) 0.dp else paddingValues.calculateBottomPadding()
                     pagerContent(
                         Modifier
                             .fillMaxSize()
