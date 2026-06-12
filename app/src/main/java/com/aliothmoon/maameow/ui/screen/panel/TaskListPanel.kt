@@ -90,7 +90,7 @@ fun TaskListPanel(
                 Icon(
                     imageVector = if (isProfileMode) Icons.Default.Check else Icons.AutoMirrored.Filled.List,
                     contentDescription = null,
-                    modifier = Modifier.size(20.dp),
+                    modifier = Modifier.size(16.dp),
                     tint = if (isProfileMode) ThemeColors.onPrimary else ThemeColors.primary
                 )
                 Spacer(modifier = Modifier.width(6.dp))
@@ -127,7 +127,7 @@ fun TaskListPanel(
                 Icon(
                     imageVector = if (isEditMode) Icons.Default.Check else Icons.Default.Edit,
                     contentDescription = null,
-                    modifier = Modifier.size(20.dp),
+                    modifier = Modifier.size(16.dp),
                     tint = if (isEditMode) ThemeColors.onPrimary else ThemeColors.primary
                 )
                 Spacer(modifier = Modifier.width(6.dp))
@@ -167,7 +167,7 @@ fun TaskListPanel(
                         Icon(
                             imageVector = Icons.Default.Add,
                             contentDescription = null,
-                            modifier = Modifier.size(20.dp),
+                            modifier = Modifier.size(16.dp),
                             tint = ThemeColors.secondary
                         )
                         Spacer(modifier = Modifier.width(6.dp))
@@ -239,7 +239,7 @@ private fun TaskNodeRow(
                 MaaUiCheckbox(
                     checked = node.enabled,
                     onCheckedChange = onEnabledChange,
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(16.dp)
                 )
             }
             Spacer(modifier = Modifier.width(6.dp))
