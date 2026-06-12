@@ -53,8 +53,8 @@ import top.yukonga.miuix.kmp.basic.CircularProgressIndicator as MiuixCircularPro
 import top.yukonga.miuix.kmp.basic.HorizontalDivider as MiuixHorizontalDivider
 import top.yukonga.miuix.kmp.basic.Text as MiuixText
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
+import top.yukonga.miuix.kmp.basic.HorizontalDivider
+import top.yukonga.miuix.kmp.basic.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
