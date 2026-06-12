@@ -221,8 +221,8 @@ fun HomeViewMaterial(
                     )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = ThemeColors.background,
-                    titleContentColor = ThemeColors.onBackground,
+                    containerColor = ThemeColors.surface,
+                    titleContentColor = ThemeColors.onSurface,
                     actionIconContentColor = ThemeColors.primary
                 )
             )
