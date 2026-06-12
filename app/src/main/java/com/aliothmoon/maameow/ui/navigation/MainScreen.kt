@@ -202,33 +202,42 @@ fun MainScreen(
     if (miuix) {
         val useFloatingBar = uiFloatingBottomBar && visible
         // Miuix mode: scaffold with backdrop layer (KernelSU / feat-miuix-ui pattern)
-        // When floating bar is active: transparent container + padding for gesture bar only
-        // When floating bar is off: standard scaffold with full paddingValues
+        // When floating bar is active: empty bottomBar so content extends to screen bottom
+        // (behind gesture bar), and the floating bar is rendered as an overlay.
+        // When floating bar is off: standard scaffold with full paddingValues.
         CompositionLocalProvider(LocalMainPagerState provides mainPagerState) {
-            // contentWindowInsets: only horizontal (status bar + display cutout).
-            // Vertical insets (navigation bar) are handled manually below,
-            // so content can extend behind floating bar / into gesture bar area.
-            MiuixScaffold(
-                bottomBar = bottomBar,
-                containerColor = if (useFloatingBar) Color.Transparent
-                    else MiuixTheme.colorScheme.surface,
-                contentWindowInsets = WindowInsets.systemBars
-                    .add(WindowInsets.displayCutout)
-                    .only(WindowInsetsSides.Horizontal)
-            ) { paddingValues ->
-                Box(
-                    modifier = if (uiBlurEnabled && backdrop != null)
-                        Modifier.layerBackdrop(backdrop) else Modifier
-                ) {
-                    // When floating bar is active, don't apply scaffold bottom padding
-                    // so content extends behind the floating bar.
-                    // When floating bar is off, apply normal bottom padding.
-                    val bottomPad = if (useFloatingBar) 0.dp else paddingValues.calculateBottomPadding()
-                    pagerContent(
-                        Modifier
-                            .fillMaxSize()
-                            .padding(bottom = bottomPad)
-                    )
+            Box(Modifier.fillMaxSize()) {
+                // contentWindowInsets: only horizontal (status bar + display cutout).
+                // Vertical insets are handled manually below.
+                MiuixScaffold(
+                    bottomBar = if (useFloatingBar) {{}} else bottomBar,
+                    containerColor = if (useFloatingBar) Color.Transparent
+                        else MiuixTheme.colorScheme.surface,
+                    contentWindowInsets = WindowInsets.systemBars
+                        .add(WindowInsets.displayCutout)
+                        .only(WindowInsetsSides.Horizontal)
+                ) { paddingValues ->
+                    Box(
+                        modifier = if (uiBlurEnabled && backdrop != null)
+                            Modifier.layerBackdrop(backdrop) else Modifier
+                    ) {
+                        val bottomPad = if (useFloatingBar) 0.dp
+                            else paddingValues.calculateBottomPadding()
+                        pagerContent(
+                            Modifier
+                                .fillMaxSize()
+                                .padding(bottom = bottomPad)
+                        )
+                    }
+                }
+                // Floating bar: overlaid on top of content.
+                // AppBottomNavigation handles its own positioning (12dp + navigationBars).
+                if (useFloatingBar) {
+                    Box(modifier = Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.BottomCenter)) {
+                        bottomBar()
+                    }
                 }
             }
         }
