@@ -1,5 +1,6 @@
 package com.aliothmoon.maameow.schedule.ui
 
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -17,6 +18,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.shape.RoundedCornerShape
 import top.yukonga.miuix.kmp.overlay.OverlayDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.AssistChip
 import top.yukonga.miuix.kmp.basic.CircularProgressIndicator
 import top.yukonga.miuix.kmp.basic.Text
@@ -36,7 +38,7 @@ import top.yukonga.miuix.kmp.basic.SnackbarHost
 import top.yukonga.miuix.kmp.basic.SnackbarHostState
 import top.yukonga.miuix.kmp.basic.Switch
 
-import top.yukonga.miuix.kmp.basic.TextButton
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimeInput
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberDatePickerState
@@ -149,7 +151,7 @@ fun ScheduleEditViewMiuix(
                 }
             }
             item {
-                OutlinedTextField(
+                TextField(
                     value = state.name,
                     onValueChange = viewModel::onNameChanged,
                     label = { Text(stringResource(R.string.schedule_name)) },
@@ -225,7 +227,7 @@ fun ScheduleEditViewMiuix(
                             Instant.ofEpochMilli(ms).atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
                         } ?: stringResource(R.string.schedule_tap_to_choose)
 
-                        OutlinedTextField(value = displayText, onValueChange = {}, readOnly = true,
+                        TextField(value = displayText, onValueChange = {}, readOnly = true,
                             label = { Text(stringResource(R.string.schedule_first_execution_time)) },
                             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
                             interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }.also { source ->
@@ -261,8 +263,8 @@ fun ScheduleEditViewMiuix(
                     item { SectionHeaderMiuix(stringResource(R.string.schedule_section_interval)) }
                     item {
                         Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                            OutlinedTextField(value = if (state.intervalDays > 0) state.intervalDays.toString() else "", onValueChange = { viewModel.onIntervalDaysChanged(it.toIntOrNull() ?: 0) }, label = { Text(stringResource(R.string.schedule_days_unit)) }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), singleLine = true, modifier = Modifier.width(80.dp))
-                            OutlinedTextField(value = if (state.intervalHours > 0) state.intervalHours.toString() else "", onValueChange = { viewModel.onIntervalHoursChanged(it.toIntOrNull() ?: 0) }, label = { Text(stringResource(R.string.schedule_hours_unit)) }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), singleLine = true, modifier = Modifier.width(80.dp))
+                            TextField(value = if (state.intervalDays > 0) state.intervalDays.toString() else "", onValueChange = { viewModel.onIntervalDaysChanged(it.toIntOrNull() ?: 0) }, label = { Text(stringResource(R.string.schedule_days_unit)) }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), singleLine = true, modifier = Modifier.width(80.dp))
+                            TextField(value = if (state.intervalHours > 0) state.intervalHours.toString() else "", onValueChange = { viewModel.onIntervalHoursChanged(it.toIntOrNull() ?: 0) }, label = { Text(stringResource(R.string.schedule_hours_unit)) }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), singleLine = true, modifier = Modifier.width(80.dp))
                             val totalMinutes = state.intervalDays * 24 * 60 + state.intervalHours * 60
                             if (totalMinutes > 0) {
                                 MiuixText(text = stringResource(R.string.schedule_total_hours, totalMinutes / 60), style = MiuixTheme.textStyles.body2, color = MiuixTheme.colorScheme.onSurfaceVariantSummary)
