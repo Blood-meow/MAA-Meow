@@ -593,7 +593,7 @@ private fun KeyColorPickerMiuix(selectedColor: Long, onColorSelected: (Long) -> 
                         .clip(CircleShape)
                         .background(colorObj)
                         .then(if (selected) Modifier.border(2.5.dp, MiuixTheme.colorScheme.onSurface, CircleShape) else Modifier)
-                        .clickable { onColorSelected(colorLong) },
+                        .clickable(interactionSource = null, indication = null) { onColorSelected(colorLong) },
                     contentAlignment = Alignment.Center
                 ) {
                     if (selected) {
