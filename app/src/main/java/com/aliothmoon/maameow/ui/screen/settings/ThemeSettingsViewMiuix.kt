@@ -45,7 +45,7 @@ import androidx.compose.material.icons.rounded.AspectRatio
 import androidx.compose.material.icons.rounded.WaterDrop
 import top.yukonga.miuix.kmp.basic.HorizontalDivider
 import top.yukonga.miuix.kmp.basic.Switch
-import androidx.compose.material3.Icon
+import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.preference.SliderPreference
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
