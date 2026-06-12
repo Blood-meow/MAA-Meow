@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import com.aliothmoon.maameow.ui.isMiuixUi
 import com.aliothmoon.maameow.ui.theme.ThemeColors
 import top.yukonga.miuix.kmp.basic.Card as MiuixCard
+import top.yukonga.miuix.kmp.utils.PressFeedbackType
 
 /**
  * Auto-switching Card container: MiuixCard in Miuix mode, Material3 Card otherwise.
@@ -48,7 +49,8 @@ fun MaaUiCardContainer(
             withBorder
         }
         MiuixCard(
-            modifier = withBackground
+            modifier = withBackground,
+            pressFeedbackType = PressFeedbackType.Tilt,
         ) {
             content()
         }
