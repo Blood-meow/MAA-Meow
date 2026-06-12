@@ -267,7 +267,7 @@ private fun ThemePreviewMiuix(
             modifier = Modifier
                 .fillMaxWidth(0.62f)
                 .aspectRatio(0.58f)
-                .border(1.5.dp, MiuixTheme.colorScheme.outline, RoundedCornerShape(24.dp)),
+                .border(0.5.dp, MiuixTheme.colorScheme.outline.copy(alpha = 0.3f), RoundedCornerShape(24.dp)),
             shape = RoundedCornerShape(24.dp),
             color = background,
         ) {
@@ -295,7 +295,7 @@ private fun ThemePreviewMiuix(
                     // Info card matching Material's PreviewScreenInfoCard layout
                     MiuixSurface(
                         modifier = Modifier.fillMaxWidth()
-                            .border(1.dp, MiuixTheme.colorScheme.outline.copy(alpha = 0.5f), RoundedCornerShape(14.dp)),
+                            .border(0.5.dp, MiuixTheme.colorScheme.outline.copy(alpha = 0.3f), RoundedCornerShape(14.dp)),
                         shape = RoundedCornerShape(14.dp),
                         color = if (isPureDark) Color(0xFF121212) else MiuixTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
                     ) {
@@ -333,7 +333,7 @@ private fun ThemePreviewMiuix(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 18.dp, vertical = 10.dp)
-                        .border(1.5.dp, MiuixTheme.colorScheme.outline, CircleShape),
+                        .border(0.5.dp, MiuixTheme.colorScheme.outline.copy(alpha = 0.3f), CircleShape),
                     shape = CircleShape,
                     color = surfaceVariant.copy(alpha = if (blurEnabled) 0.72f else 0.92f),
                 ) {
