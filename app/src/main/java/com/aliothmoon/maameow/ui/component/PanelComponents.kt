@@ -1,0 +1,188 @@
+package com.aliothmoon.maameow.ui.component
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import com.aliothmoon.maameow.ui.component.material.MaaUiCheckbox
+import androidx.compose.material3.MaterialTheme
+import com.aliothmoon.maameow.ui.component.material.MaaUiText
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import com.aliothmoon.maameow.R
+import com.aliothmoon.maameow.ui.component.tip.ExpandableTipContent
+import com.aliothmoon.maameow.ui.component.tip.ExpandableTipIcon
+import com.aliothmoon.maameow.ui.theme.MaaThemeAlphas
+import com.aliothmoon.maameow.ui.theme.ThemeColors
+import com.aliothmoon.maameow.ui.theme.ThemeTypography
+
+/**
+ * 带可展开提示的复选框
+ *
+ * 复选框旁边显示小i图标，点击图标展开/收起提示文字
+ *
+ * @param checked 是否选中
+ * @param onCheckedChange 选中状态变化回调
+ * @param label 标签文本
+ * @param tipText 提示文本
+ * @param modifier 修饰符
+ * @param enabled 是否启用
+ */
+@Composable
+fun CheckBoxWithExpandableTip(
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    label: String,
+    tipText: String,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true
+) {
+    var tipExpanded by remember { mutableStateOf(false) }
+
+    Column(
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+        modifier = modifier
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            CheckBoxWithLabel(
+                checked = checked,
+                onCheckedChange = onCheckedChange,
+                label = label,
+                enabled = enabled
+            )
+            ExpandableTipIcon(
+                expanded = tipExpanded,
+                onExpandedChange = { tipExpanded = it }
+            )
+        }
+        ExpandableTipContent(
+            visible = tipExpanded,
+            tipText = tipText
+        )
+    }
+}
+
+/**
+ * 带标签的复选框
+ *
+ * @param checked 是否选中
+ * @param onCheckedChange 选中状态变化回调
+ * @param label 标签文本
+ * @param modifier 修饰符
+ * @param enabled 是否启用
+ * @param subtitle 副标题（可选）
+ */
+@Composable
+fun CheckBoxWithLabel(
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    label: String,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    subtitle: String? = null
+) {
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        MaaUiCheckbox(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+            enabled = enabled,
+            modifier = Modifier.size(20.dp)
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Column {
+            MaaUiText(
+                text = label,
+                style = ThemeTypography.bodyMedium,
+                color = if (enabled) ThemeColors.onSurface 
+                        else ThemeColors.onSurface.copy(alpha = MaaThemeAlphas.Disabled)
+            )
+            if (subtitle != null) {
+                MaaUiText(
+                    text = subtitle,
+                    style = ThemeTypography.bodySmall,
+                    color = ThemeColors.onSurfaceVariant
+                )
+            }
+        }
+    }
+}
+
+
+
+/**
+ * 空配置提示
+ */
+@Composable
+fun EmptyConfigHint() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        MaaUiText(
+            text = stringResource(R.string.panel_empty_config_hint),
+            style = ThemeTypography.bodyLarge,
+            color = ThemeColors.onSurfaceVariant
+        )
+    }
+}
+
+/**
+ * 占位内容
+ */
+@Composable
+fun PlaceholderContent(
+    title: String,
+    description: String,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(
+                ThemeColors.surfaceVariant, 
+                RoundedCornerShape(8.dp)
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            MaaUiText(
+                text = title,
+                style = ThemeTypography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                color = ThemeColors.onSurfaceVariant
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            MaaUiText(
+                text = description,
+                style = ThemeTypography.bodyMedium,
+                color = ThemeColors.onSurfaceVariant
+            )
+        }
+    }
+}

@@ -19,11 +19,11 @@ import com.aliothmoon.maameow.domain.models.RunMode
 import com.aliothmoon.maameow.domain.service.MaaCompositionService
 import com.aliothmoon.maameow.domain.state.MaaExecutionState
 import com.aliothmoon.maameow.overlay.border.BorderOverlayManager
-import com.aliothmoon.maameow.presentation.LocalFloatingWindowContext
+import com.aliothmoon.maameow.ui.LocalFloatingWindowContext
 import com.aliothmoon.maameow.schedule.model.CountdownState
-import com.aliothmoon.maameow.presentation.view.panel.ExpandedControlPanel
+import com.aliothmoon.maameow.ui.screen.panel.ExpandedControlPanel
 import com.aliothmoon.maameow.service.AccessibilityHelperService
-import com.aliothmoon.maameow.theme.MaaMeowTheme
+import com.aliothmoon.maameow.ui.theme.MaaMeowTheme
 import com.aliothmoon.maameow.utils.Misc
 import com.petterp.floatingx.FloatingX
 import com.petterp.floatingx.assist.FxDisplayMode
@@ -211,8 +211,14 @@ class OverlayController(
             }
             setContent {
                 val themeMode by appSettings.themeMode.collectAsStateWithLifecycle()
+                val monetEnabled by appSettings.uiMonetEnabled.collectAsStateWithLifecycle()
+                val uiStyle by appSettings.uiStyle.collectAsStateWithLifecycle()
 
-                MaaMeowTheme(themeMode = themeMode) {
+                MaaMeowTheme(
+                    themeMode = themeMode,
+                    monetEnabled = monetEnabled,
+                    uiStyle = uiStyle
+                ) {
                     CompositionLocalProvider(LocalFloatingWindowContext provides true) {
                         val isLocked by _isLocked.collectAsStateWithLifecycle()
                         ExpandedControlPanel(

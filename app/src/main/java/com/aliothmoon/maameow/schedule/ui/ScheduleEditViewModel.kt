@@ -150,6 +150,17 @@ class ScheduleEditViewModel(
         }
     }
 
+    /**
+     * Replace the selected days set directly. Used by the multi-select
+     * execution-days dropdown (see [ScheduleEditViewMiuix]) so the dialog
+     * can commit the whole set in a single state update rather than racing
+     * with [onToggleDay]. Passing an empty set is valid and means
+     * "no days selected".
+     */
+    fun onSetDays(days: Set<DayOfWeek>) {
+        _state.update { it.copy(daysOfWeek = days) }
+    }
+
     fun onAddTime(time: LocalTime) {
         _state.update { state ->
             if (time !in state.executionTimes) {

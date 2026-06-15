@@ -241,9 +241,30 @@
     <string name="settings_debug_mode_desc">启用后记录详细日志信息</string>
 
     <!-- settings: other section -->
+    <string name="settings_notification_desc">管理内部通知、外部推送渠道和测试通知</string>
     <string name="settings_section_other">其他设置</string>
     <string name="settings_startup_backend_title">启动模式</string>
     <string name="settings_startup_backend_desc">选择应用获取系统权限的方式</string>
+    <string name="settings_theme_settings_title">主题设置</string>
+    <string name="settings_theme_settings_desc">Your MAA your way!</string>
+    <string name="settings_theme_monet_title">Monet 动态色</string>
+    <string name="settings_theme_monet_desc">Android 12 及以上使用系统壁纸动态配色</string>
+
+    <string name="settings_key_color">主题色</string>    <string name="settings_theme_style_section">UI 架构</string>
+    <string name="settings_theme_ui_style_title">界面风格</string>
+    <string name="settings_theme_ui_style_desc">在 Material 与 Miuix 风格之间切换；Miuix 使用更大的标题、圆角卡片和更紧凑的底栏。</string>
+    <string name="settings_theme_ui_style_material">Material</string>
+    <string name="settings_theme_ui_style_miuix">Miuix</string>
+    <string name="settings_theme_mode_section">主题模式</string>
+    <string name="settings_theme_page_scale_title">界面大小</string>
+    <string name="settings_theme_page_scale_desc">调整页面整体缩放比例</string>
+    <string name="settings_theme_effect_section">界面效果</string>
+    <string name="settings_theme_blur_title">模糊效果</string>
+    <string name="settings_theme_blur_desc">为顶栏和底栏启用模糊效果</string>
+    <string name="settings_theme_floating_bar_title">悬浮底栏</string>
+    <string name="settings_theme_floating_bar_desc">使用 Apple 风格的悬浮底栏</string>
+    <string name="settings_theme_liquid_glass_title">液态玻璃</string>
+    <string name="settings_theme_liquid_glass_desc">为悬浮底栏启用液态玻璃效果</string>
     <string name="settings_theme_title">主题模式</string>
     <string name="settings_theme_system">随系统</string>
     <string name="settings_theme_white">白色</string>
@@ -269,6 +290,8 @@
 
     <!-- settings: data section -->
     <string name="settings_section_data">数据管理</string>
+    <!-- settings: notice section -->
+    <string name="settings_section_notice">通知</string>
     <string name="settings_export_config_title">导出配置</string>
     <string name="settings_export_config_desc">将所有设置和任务配置导出为文件</string>
     <string name="settings_import_config_title">导入配置</string>
@@ -283,6 +306,7 @@
     <string name="home_resource_version_label">资源版本</string>
     <string name="home_resource_not_installed">未安装</string>
     <string name="home_app_version_label">App版本</string>
+    <string name="home_display_mode">显示模式</string>
     <string name="home_service_status">服务状态</string>
 
     <!-- home: run mode card -->
@@ -1246,8 +1270,12 @@
     <string name="schedule_go_to_settings">前往设置</string>
     <string name="schedule_later">稍后</string>
     <string name="schedule_time_picker_title">选择时间</string>
+    <string name="schedule_time_hour_label">小时</string>
+    <string name="schedule_time_minute_label">分钟</string>
     <string name="schedule_time_picker_keyboard_input">键盘输入</string>
     <string name="schedule_time_picker_dial_selection">表盘选择</string>
+    <string name="schedule_time_picker_hhmm_label">HH:mm</string>
+    <string name="schedule_time_picker_invalid">请输入有效的时间（HH:mm，00:00 – 23:59）</string>
     <string name="schedule_default_name">定时任务-%1$d</string>
     <string name="schedule_error_name_required">请输入策略名称</string>
     <string name="schedule_error_profile_required">请选择任务配置</string>
@@ -1338,4 +1366,7 @@
     <string name="overlay_floatball_state_running">运行中</string>
     <string name="overlay_floatball_state_stopping">停止中</string>
     <string name="overlay_floatball_state_error">错误</string>
+    <string name="settings_font_size_title">页面缩放</string>
+    <string name="settings_font_size_summary">调整全局显示缩放比例</string>
+    <string name="settings_font_size_preview">你是谁？请支持牛牛！</string>
 </resources>

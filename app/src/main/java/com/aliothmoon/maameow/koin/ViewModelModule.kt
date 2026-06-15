@@ -1,16 +1,16 @@
 package com.aliothmoon.maameow.koin
 
-import com.aliothmoon.maameow.presentation.viewmodel.BackgroundTaskViewModel
-import com.aliothmoon.maameow.presentation.viewmodel.CopilotViewModel
-import com.aliothmoon.maameow.presentation.viewmodel.ErrorLogViewModel
-import com.aliothmoon.maameow.presentation.viewmodel.ExpandedControlPanelViewModel
-import com.aliothmoon.maameow.presentation.viewmodel.HomeViewModel
-import com.aliothmoon.maameow.presentation.viewmodel.LogHistoryViewModel
-import com.aliothmoon.maameow.presentation.viewmodel.TaskOverrideEditorViewModel
-import com.aliothmoon.maameow.presentation.viewmodel.ToolboxViewModel
-import com.aliothmoon.maameow.presentation.viewmodel.SettingsViewModel
-import com.aliothmoon.maameow.presentation.viewmodel.NotificationSettingsViewModel
-import com.aliothmoon.maameow.presentation.viewmodel.UpdateViewModel
+import com.aliothmoon.maameow.ui.viewmodel.BackgroundTaskViewModel
+import com.aliothmoon.maameow.ui.viewmodel.CopilotViewModel
+import com.aliothmoon.maameow.ui.viewmodel.ErrorLogViewModel
+import com.aliothmoon.maameow.ui.viewmodel.ExpandedControlPanelViewModel
+import com.aliothmoon.maameow.ui.viewmodel.HomeViewModel
+import com.aliothmoon.maameow.ui.viewmodel.LogHistoryViewModel
+import com.aliothmoon.maameow.ui.viewmodel.TaskOverrideEditorViewModel
+import com.aliothmoon.maameow.ui.viewmodel.ToolboxViewModel
+import com.aliothmoon.maameow.ui.viewmodel.SettingsViewModel
+import com.aliothmoon.maameow.ui.viewmodel.NotificationSettingsViewModel
+import com.aliothmoon.maameow.ui.viewmodel.UpdateViewModel
 import com.aliothmoon.maameow.schedule.ui.ScheduleEditViewModel
 import com.aliothmoon.maameow.schedule.ui.ScheduleListViewModel
 import com.aliothmoon.maameow.schedule.ui.ScheduleTriggerLogViewModel

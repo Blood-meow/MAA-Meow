@@ -1,0 +1,85 @@
+package com.aliothmoon.maameow.ui.screen.panel
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import com.aliothmoon.maameow.ui.component.material.MaaUiButton
+import androidx.compose.material3.ButtonDefaults
+import com.aliothmoon.maameow.ui.component.material.MaaUiCircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import com.aliothmoon.maameow.ui.component.material.MaaUiOutlinedButton
+import com.aliothmoon.maameow.ui.component.material.MaaUiText
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import com.aliothmoon.maameow.R
+import com.aliothmoon.maameow.ui.theme.MaaThemeAlphas
+import com.aliothmoon.maameow.ui.theme.ThemeColors
+
+/**
+ * 底部按钮
+ */
+@Composable
+fun BottomButtons(
+    onClose: () -> Unit,
+    onStart: () -> Unit,
+    isStarting: Boolean = false
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceEvenly
+    ) {
+        MaaUiOutlinedButton(
+            onClick = onClose,
+            modifier = Modifier.weight(1f).height(36.dp),
+            shape = RoundedCornerShape(8.dp),
+            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
+            enabled = !isStarting,
+            colors = ButtonDefaults.outlinedButtonColors(
+                contentColor = ThemeColors.onSurfaceVariant,
+                disabledContentColor = ThemeColors.onSurfaceVariant.copy(alpha = MaaThemeAlphas.Disabled)
+            )
+        ) {
+            MaaUiText(stringResource(R.string.panel_bottom_hide))
+        }
+
+        Spacer(modifier = Modifier.width(16.dp))
+
+        MaaUiButton(
+            onClick = onStart,
+            modifier = Modifier.weight(1f).height(36.dp),
+            shape = RoundedCornerShape(8.dp),
+            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
+            enabled = !isStarting,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = ThemeColors.primary,
+                disabledContainerColor = ThemeColors.primary.copy(alpha = MaaThemeAlphas.Disabled)
+            )
+        ) {
+            if (isStarting) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    MaaUiCircularProgressIndicator(
+                        modifier = Modifier.size(16.dp),
+                        color = ThemeColors.onPrimary,
+                        strokeWidth = 2.dp
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    MaaUiText(stringResource(R.string.panel_bottom_starting))
+                }
+            } else {
+                MaaUiText(stringResource(R.string.panel_bottom_start))
+            }
+        }
+    }
+}

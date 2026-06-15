@@ -40,3 +40,8 @@ android/.cxx
 /app/release
 /app/debug
 /gradle/gradle-daemon-jvm.properties
+
+ci_logs.txt
+*.log
+
+ci_logs*.txt
