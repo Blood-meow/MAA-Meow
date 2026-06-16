@@ -467,7 +467,9 @@ class AppSettingsManager(
         with(AppSettingsSchema) {
             context.dataStore.edit { it[language] = lang.name }
         }
-        achievementRepository.recordEvent(AchievementEvents.LanguageChanged)
+        runCatching {
+            achievementRepository.recordEvent(AchievementEvents.LanguageChanged)
+        }.onFailure { Timber.e(it, "Failed to record LanguageChanged achievement") }
     }
 
     // 待展示的更新公告

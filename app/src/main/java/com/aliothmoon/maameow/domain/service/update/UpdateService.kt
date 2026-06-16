@@ -96,14 +96,16 @@ class UpdateService(
             val url = resolver.resolve(version, channel).getOrElse { e ->
                 val error = mapToUpdateError(e)
                 _appProcessState.value = UpdateProcessState.Failed(error)
-                achievementRepository.recordEvent(
-                    AchievementEvents.UpdateFailed,
-                    updateAchievementPayload(
-                        kind = "app",
-                        source = source,
-                        error = error,
-                    ) + mapOf("channel" to channel.name),
-                )
+                runCatching {
+                    achievementRepository.recordEvent(
+                        AchievementEvents.UpdateFailed,
+                        updateAchievementPayload(
+                            kind = "app",
+                            source = source,
+                            error = error,
+                        ) + mapOf("channel" to channel.name),
+                    )
+                }.onFailure { Timber.e(it, "Failed to record UpdateFailed achievement") }
                 return Result.failure(e)
             }
             Timber.i("downloadApp resolved URL: host=%s", safeHost(url))
