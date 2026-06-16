@@ -219,110 +219,6 @@ class AchievementRepository(private val context: Context) {
         addAll(triggers)
     }
 
-    private fun AchievementTrigger.matches(payload: Map<String, String>): Boolean {
-        return where.all { (key, value) -> payload[key] == value } && conditions.all { it.matches(payload) }
-    }
-
-    private fun AchievementCondition.matches(payload: Map<String, String>): Boolean {
-        val actual = payload[field] ?: return false
-        return when (op) {
-            AchievementConditionOp.EQ -> actual == value
-            AchievementConditionOp.NE -> actual != value
-            AchievementConditionOp.GT -> actual.toDoubleOrNull()?.let { it > (value.toDoubleOrNull() ?: return false) } == true
-            AchievementConditionOp.GTE -> actual.toDoubleOrNull()?.let { it >= (value.toDoubleOrNull() ?: return false) } == true
-            AchievementConditionOp.LT -> actual.toDoubleOrNull()?.let { it < (value.toDoubleOrNull() ?: return false) } == true
-            AchievementConditionOp.LTE -> actual.toDoubleOrNull()?.let { it <= (value.toDoubleOrNull() ?: return false) } == true
-            AchievementConditionOp.BETWEEN -> {
-                val actualNumber = actual.toDoubleOrNull() ?: return false
-                val bounds = value.split("..", limit = 2).mapNotNull { it.toDoubleOrNull() }
-                bounds.size == 2 && actualNumber >= bounds[0] && actualNumber <= bounds[1]
-            }
-            AchievementConditionOp.CONTAINS -> actual.contains(value, ignoreCase = true)
-            AchievementConditionOp.MONTH_DAY -> actual == value
-            AchievementConditionOp.MONTH_DAY_BETWEEN -> {
-                val bounds = value.split("..", limit = 2)
-                bounds.size == 2 && actual.isMonthDayBetween(bounds[0], bounds[1])
-            }
-        }
-    }
-
-    private fun String.isMonthDayBetween(start: String, end: String): Boolean {
-        val actualOrdinal = toMonthDayOrdinal() ?: return false
-        val startOrdinal = start.toMonthDayOrdinal() ?: return false
-        val endOrdinal = end.toMonthDayOrdinal() ?: return false
-        return if (startOrdinal <= endOrdinal) {
-            actualOrdinal in startOrdinal..endOrdinal
-        } else {
-            actualOrdinal >= startOrdinal || actualOrdinal <= endOrdinal
-        }
-    }
-
-    private fun String.toMonthDayOrdinal(): Int? {
-        val parts = split("-", limit = 2)
-        if (parts.size != 2) return null
-        val month = parts[0].toIntOrNull() ?: return null
-        val day = parts[1].toIntOrNull() ?: return null
-        return runCatching { LocalDate.of(2000, month, day).dayOfYear }.getOrNull()
-    }
-
-    private fun applyTrigger(
-        definition: AchievementDefinition,
-        record: AchievementRecord,
-        trigger: AchievementTrigger,
-        eventAmount: Int,
-        payload: Map<String, String>,
-    ): Pair<AchievementRecord, Boolean> {
-        if (trigger.mode == AchievementTriggerMode.RESET) return record.copy(progress = 0) to false
-        if (record.unlocked) return record to false
-
-        val nowMillis = System.currentTimeMillis()
-        val updated = when (trigger.mode) {
-            AchievementTriggerMode.UNLOCK -> record.copy(unlocked = true, unlockedAtMillis = nowMillis)
-            AchievementTriggerMode.INCREMENT -> {
-                val nextProgress = (record.progress + trigger.amount * eventAmount).coerceAtLeast(0)
-                record.withProgress(definition, nextProgress, nowMillis)
-            }
-            AchievementTriggerMode.SET_MAX -> {
-                val value = payload["value"]?.toIntOrNull() ?: eventAmount
-                record.withProgress(definition, maxOf(record.progress, value), nowMillis)
-            }
-            AchievementTriggerMode.SAME_DAY_COUNT -> {
-                val today = payload["date"].orEmpty()
-                val key = trigger.dateKey.ifBlank { "${trigger.event}_date" }
-                val nextProgress = if (record.customData[key] == today) record.progress + trigger.amount * eventAmount else trigger.amount * eventAmount
-                record.withProgress(definition, nextProgress, nowMillis)
-                    .copy(customData = record.customData + (key to today))
-            }
-            AchievementTriggerMode.DAILY_STREAK -> {
-                val today = payload["date"].orEmpty()
-                val key = trigger.dateKey.ifBlank { "${trigger.event}_date" }
-                val lastDate = record.customData[key]
-                val nextProgress = when {
-                    lastDate == today -> record.progress
-                    lastDate == null -> trigger.amount * eventAmount
-                    runCatching { LocalDate.parse(lastDate).plusDays(1).toString() }.getOrNull() == today -> record.progress + trigger.amount * eventAmount
-                    else -> trigger.amount * eventAmount
-                }
-                record.withProgress(definition, nextProgress, nowMillis)
-                    .copy(customData = record.customData + (key to today))
-            }
-            AchievementTriggerMode.RESET -> record
-        }
-        return updated to (!record.unlocked && updated.unlocked)
-    }
-
-    private fun AchievementRecord.withProgress(
-        definition: AchievementDefinition,
-        progress: Int,
-        nowMillis: Long,
-    ): AchievementRecord {
-        val shouldUnlock = definition.target > 0 && progress >= definition.target
-        return copy(
-            progress = progress,
-            unlocked = unlocked || shouldUnlock,
-            unlockedAtMillis = if (!unlocked && shouldUnlock) nowMillis else unlockedAtMillis,
-        )
-    }
 
     private suspend fun loadRecords(): Map<String, AchievementRecord> {
         cachedRecords?.let { return it }
@@ -375,4 +271,110 @@ class AchievementRepository(private val context: Context) {
                 .thenBy { it.definition.groupIndex }
                 .thenBy { it.definition.id }
         )
+}
+
+
+internal fun AchievementTrigger.matches(payload: Map<String, String>): Boolean {
+    return where.all { (key, value) -> payload[key] == value } && conditions.all { it.matches(payload) }
+}
+
+internal fun AchievementCondition.matches(payload: Map<String, String>): Boolean {
+    val actual = payload[field] ?: return false
+    return when (op) {
+        AchievementConditionOp.EQ -> actual == value
+        AchievementConditionOp.NE -> actual != value
+        AchievementConditionOp.GT -> actual.toDoubleOrNull()?.let { it > (value.toDoubleOrNull() ?: return false) } == true
+        AchievementConditionOp.GTE -> actual.toDoubleOrNull()?.let { it >= (value.toDoubleOrNull() ?: return false) } == true
+        AchievementConditionOp.LT -> actual.toDoubleOrNull()?.let { it < (value.toDoubleOrNull() ?: return false) } == true
+        AchievementConditionOp.LTE -> actual.toDoubleOrNull()?.let { it <= (value.toDoubleOrNull() ?: return false) } == true
+        AchievementConditionOp.BETWEEN -> {
+            val actualNumber = actual.toDoubleOrNull() ?: return false
+            val bounds = value.split("..", limit = 2).mapNotNull { it.toDoubleOrNull() }
+            bounds.size == 2 && actualNumber >= bounds[0] && actualNumber <= bounds[1]
+        }
+        AchievementConditionOp.CONTAINS -> actual.contains(value, ignoreCase = true)
+        AchievementConditionOp.MONTH_DAY -> actual == value
+        AchievementConditionOp.MONTH_DAY_BETWEEN -> {
+            val bounds = value.split("..", limit = 2)
+            bounds.size == 2 && actual.isMonthDayBetween(bounds[0], bounds[1])
+        }
+    }
+}
+
+internal fun String.isMonthDayBetween(start: String, end: String): Boolean {
+    val actualOrdinal = toMonthDayOrdinal() ?: return false
+    val startOrdinal = start.toMonthDayOrdinal() ?: return false
+    val endOrdinal = end.toMonthDayOrdinal() ?: return false
+    return if (startOrdinal <= endOrdinal) {
+        actualOrdinal in startOrdinal..endOrdinal
+    } else {
+        actualOrdinal >= startOrdinal || actualOrdinal <= endOrdinal
+    }
+}
+
+internal fun String.toMonthDayOrdinal(): Int? {
+    val parts = split("-", limit = 2)
+    if (parts.size != 2) return null
+    val month = parts[0].toIntOrNull() ?: return null
+    val day = parts[1].toIntOrNull() ?: return null
+    return runCatching { LocalDate.of(2000, month, day).dayOfYear }.getOrNull()
+}
+
+internal fun applyTrigger(
+    definition: AchievementDefinition,
+    record: AchievementRecord,
+    trigger: AchievementTrigger,
+    eventAmount: Int,
+    payload: Map<String, String>,
+): Pair<AchievementRecord, Boolean> {
+    if (trigger.mode == AchievementTriggerMode.RESET) return record.copy(progress = 0) to false
+    if (record.unlocked) return record to false
+
+    val nowMillis = System.currentTimeMillis()
+    val updated = when (trigger.mode) {
+        AchievementTriggerMode.UNLOCK -> record.copy(unlocked = true, unlockedAtMillis = nowMillis)
+        AchievementTriggerMode.INCREMENT -> {
+            val nextProgress = (record.progress + trigger.amount * eventAmount).coerceAtLeast(0)
+            record.withProgress(definition, nextProgress, nowMillis)
+        }
+        AchievementTriggerMode.SET_MAX -> {
+            val value = payload["value"]?.toIntOrNull() ?: eventAmount
+            record.withProgress(definition, maxOf(record.progress, value), nowMillis)
+        }
+        AchievementTriggerMode.SAME_DAY_COUNT -> {
+            val today = payload["date"].orEmpty()
+            val key = trigger.dateKey.ifBlank { "${trigger.event}_date" }
+            val nextProgress = if (record.customData[key] == today) record.progress + trigger.amount * eventAmount else trigger.amount * eventAmount
+            record.withProgress(definition, nextProgress, nowMillis)
+                .copy(customData = record.customData + (key to today))
+        }
+        AchievementTriggerMode.DAILY_STREAK -> {
+            val today = payload["date"].orEmpty()
+            val key = trigger.dateKey.ifBlank { "${trigger.event}_date" }
+            val lastDate = record.customData[key]
+            val nextProgress = when {
+                lastDate == today -> record.progress
+                lastDate == null -> trigger.amount * eventAmount
+                runCatching { LocalDate.parse(lastDate).plusDays(1).toString() }.getOrNull() == today -> record.progress + trigger.amount * eventAmount
+                else -> trigger.amount * eventAmount
+            }
+            record.withProgress(definition, nextProgress, nowMillis)
+                .copy(customData = record.customData + (key to today))
+        }
+        AchievementTriggerMode.RESET -> record
+    }
+    return updated to (!record.unlocked && updated.unlocked)
+}
+
+internal fun AchievementRecord.withProgress(
+    definition: AchievementDefinition,
+    progress: Int,
+    nowMillis: Long,
+): AchievementRecord {
+    val shouldUnlock = definition.target > 0 && progress >= definition.target
+    return copy(
+        progress = progress,
+        unlocked = unlocked || shouldUnlock,
+        unlockedAtMillis = if (!unlocked && shouldUnlock) nowMillis else unlockedAtMillis,
+    )
 }
