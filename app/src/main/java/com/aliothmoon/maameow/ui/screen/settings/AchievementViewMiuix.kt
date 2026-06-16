@@ -38,6 +38,7 @@ import com.aliothmoon.maameow.data.achievement.AchievementState
 import com.aliothmoon.maameow.data.achievement.AchievementTextFormatter
 import com.aliothmoon.maameow.data.achievement.getAchievementPlaceholder
 import com.aliothmoon.maameow.ui.theme.ThemeColors
+import com.aliothmoon.maameow.ui.component.bridge.AppTextField
 import com.aliothmoon.maameow.ui.viewmodel.AchievementViewModel
 import org.koin.androidx.compose.koinViewModel
 import java.text.DateFormat
@@ -47,7 +48,6 @@ import top.yukonga.miuix.kmp.basic.TopAppBar as MiuixTopAppBar
 import top.yukonga.miuix.kmp.basic.IconButton as MiuixIconButton
 import top.yukonga.miuix.kmp.basic.Surface as MiuixSurface
 import top.yukonga.miuix.kmp.basic.Text as MiuixText
-import top.yukonga.miuix.kmp.basic.TextField as MiuixTextField
 import top.yukonga.miuix.kmp.basic.LinearProgressIndicator as MiuixLinearProgressIndicator
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.theme.MiuixTheme
@@ -95,10 +95,12 @@ fun AchievementViewMiuix(
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             item {
-                MiuixTextField(
+                AppTextField(
                     value = searchText,
                     onValueChange = viewModel::updateSearchText,
                     modifier = Modifier.fillMaxWidth(),
+                    label = stringResource(R.string.achievement_search_hint),
+                    singleLine = true,
                 )
             }
             item {
