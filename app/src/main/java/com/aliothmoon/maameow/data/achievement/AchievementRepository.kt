@@ -36,7 +36,7 @@ class AchievementRepository(private val context: Context) {
     private val definitions: Map<String, AchievementDefinition> by lazy {
         loadDefinitions().associateBy { it.id }
     }
-    private val _achievements = MutableStateFlow(buildStates(emptyMap()))
+    private val _achievements = MutableStateFlow<List<AchievementState>>(emptyList())
     val achievements: StateFlow<List<AchievementState>> = _achievements.asStateFlow()
     private val _unlockEvents = MutableSharedFlow<AchievementState>(extraBufferCapacity = 8)
     val unlockEvents: SharedFlow<AchievementState> = _unlockEvents.asSharedFlow()
@@ -340,7 +340,10 @@ class AchievementRepository(private val context: Context) {
     }
     private suspend fun persistRecords(records: Map<String, AchievementRecord>) {
         cachedRecords = records
-        val encoded = json.encodeToString(ListSerializer(AchievementRecord.serializer()), records.values.toList())
+        val encoded = json.encodeToString(
+            ListSerializer(AchievementRecord.serializer()),
+            records.values.sortedBy { it.id },
+        )
         context.store.edit { prefs -> prefs[RECORDS_KEY] = encoded }
     }
     private fun loadDefinitions(): List<AchievementDefinition> = runCatching {

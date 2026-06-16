@@ -1,5 +1,6 @@
 package com.aliothmoon.maameow
 
+import com.aliothmoon.maameow.data.achievement.AchievementConditionOp
 import com.aliothmoon.maameow.data.achievement.AchievementDefinition
 import com.aliothmoon.maameow.utils.JsonUtils
 import java.io.File
@@ -11,7 +12,7 @@ import org.junit.Test
 /**
  * Contract tests for `app/src/main/assets/achievements.json`.
  *
- * Catches three classes of breakage that the production `loadDefinitions()`
+ * Catches four classes of breakage that the production `loadDefinitions()`
  * silently downgrades to "empty achievement system":
  *   1. JSON unparseable or schema-drift (any field rename / type change in
  *      [AchievementDefinition] that is no longer representable in the asset).
@@ -21,6 +22,9 @@ import org.junit.Test
  *      [com.aliothmoon.maameow.data.achievement.AchievementEvents] constant.
  *      The production matcher would simply skip such triggers, so the affected
  *      achievement becomes permanently un-unlockable with no warning.
+ *   4. BETWEEN conditions with malformed bounds: production's
+ *      `mapNotNull` silently treats "abc..def" / "1..2..3" as no-match
+ *      rather than a configuration error.
  */
 class AchievementJsonContractTest {
     @Test
@@ -68,6 +72,35 @@ class AchievementJsonContractTest {
         assertTrue(
             "Trigger events not declared in AchievementEvents: $unknown",
             unknown.isEmpty(),
+        )
+    }
+
+    @Test
+    fun achievementsJson_allTriggersHaveValidBetweenBounds() {
+        val definitions = parseDefinitions()
+        val issues = mutableListOf<String>()
+        definitions.forEach { def ->
+            val allTriggers = buildList {
+                def.trigger?.let(::add)
+                addAll(def.triggers)
+            }
+            allTriggers.forEach { trigger ->
+                trigger.conditions.forEach { cond ->
+                    if (cond.op == AchievementConditionOp.BETWEEN) {
+                        val bounds = cond.value.split("..", limit = 2)
+                            .mapNotNull { it.toDoubleOrNull() }
+                        if (bounds.size != 2) {
+                            issues += "${def.id}: condition op BETWEEN value=\"${cond.value}\" does not parse as two doubles (got $bounds)"
+                        } else if (bounds[0] > bounds[1]) {
+                            issues += "${def.id}: condition op BETWEEN value=\"${cond.value}\" has lower bound > upper bound"
+                        }
+                    }
+                }
+            }
+        }
+        assertTrue(
+            "Invalid BETWEEN trigger conditions: $issues",
+            issues.isEmpty(),
         )
     }
 
