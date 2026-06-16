@@ -31,13 +31,13 @@ class AchievementRepository(private val context: Context) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val json = JsonUtils.common
     private val recordMutex = Mutex()
-
+    @Volatile
+    private var cachedRecords: Map<String, AchievementRecord>? = null
     private val definitions: Map<String, AchievementDefinition> by lazy {
         loadDefinitions().associateBy { it.id }
     }
     private val _achievements = MutableStateFlow(buildStates(emptyMap()))
     val achievements: StateFlow<List<AchievementState>> = _achievements.asStateFlow()
-
     private val _unlockEvents = MutableSharedFlow<AchievementState>(extraBufferCapacity = 8)
     val unlockEvents: SharedFlow<AchievementState> = _unlockEvents.asSharedFlow()
 
@@ -325,24 +325,31 @@ class AchievementRepository(private val context: Context) {
     }
 
     private suspend fun loadRecords(): Map<String, AchievementRecord> {
+        cachedRecords?.let { return it }
+        val loaded = readRecordsFromStore()
+        cachedRecords = loaded
+        return loaded
+    }
+
+    private suspend fun readRecordsFromStore(): Map<String, AchievementRecord> {
         val raw = context.store.data.first()[RECORDS_KEY].orEmpty()
         if (raw.isBlank()) return emptyMap()
         return runCatching {
             json.decodeFromString(ListSerializer(AchievementRecord.serializer()), raw).associateBy { it.id }
         }.getOrDefault(emptyMap())
     }
-
     private suspend fun persistRecords(records: Map<String, AchievementRecord>) {
+        cachedRecords = records
         val encoded = json.encodeToString(ListSerializer(AchievementRecord.serializer()), records.values.toList())
         context.store.edit { prefs -> prefs[RECORDS_KEY] = encoded }
     }
-
     private fun loadDefinitions(): List<AchievementDefinition> = runCatching {
         context.assets.open("achievements.json").bufferedReader().use { reader ->
             json.decodeFromString(ListSerializer(AchievementDefinition.serializer()), reader.readText())
         }
     }.getOrElse {
         Timber.e(it, "Failed to load achievements.json")
+        android.util.Log.e("AchievementRepo", "Failed to load assets/achievements.json — achievement system will be disabled", it)
         emptyList()
     }
 
