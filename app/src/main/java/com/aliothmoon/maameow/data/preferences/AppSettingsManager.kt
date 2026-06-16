@@ -38,6 +38,8 @@ class AppSettingsManager(
 
     companion object {
         val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "app_settings")
+        const val FONT_SIZE_SCALE_MIN = 80
+        const val FONT_SIZE_SCALE_MAX = 110
     }
 
     val settings: Flow<AppSettings> = with(AppSettingsSchema) { context.dataStore.flow }
@@ -391,8 +393,9 @@ class AppSettingsManager(
         .distinctUntilChanged()
         .stateIn(scope, SharingStarted.Eagerly, initialSettings.fontSizeScale.toIntOrNull() ?: 100)
     suspend fun setFontSizeScale(scale: Int) {
+        val clamped = scale.coerceIn(FONT_SIZE_SCALE_MIN, FONT_SIZE_SCALE_MAX)
         with(AppSettingsSchema) {
-            context.dataStore.edit { it[fontSizeScale] = scale.toString() }
+            context.dataStore.edit { it[fontSizeScale] = clamped.toString() }
         }
     }
 
