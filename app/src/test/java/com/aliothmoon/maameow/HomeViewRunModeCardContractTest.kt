@@ -9,7 +9,7 @@ class HomeViewRunModeCardContractTest {
     @Test
     fun runModeCard_doesNotRenderSecondaryDescriptionText() {
         val source = resolveSourceFile(
-            "src/main/java/com/aliothmoon/maameow/presentation/view/home/HomeView.kt"
+            "src/main/java/com/aliothmoon/maameow/ui/screen/home/HomeView.kt"
         ).readText()
 
         assertFalse(source.contains("R.string.home_run_mode_fg_desc"))

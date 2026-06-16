@@ -43,9 +43,33 @@
     <string name="settings_log_export_chooser_title">Export Logs</string>
     <string name="settings_debug_mode_title">Debug Mode</string>
     <string name="settings_debug_mode_desc">Record detailed log information when enabled</string>
+    <string name="settings_notification_desc">Manage internal alerts, external push channels, and test notifications</string>
     <string name="settings_section_other">Other</string>
     <string name="settings_startup_backend_title">Startup Mode</string>
     <string name="settings_startup_backend_desc">Choose how the app obtains system permissions</string>
+    <string name="settings_theme_settings_title">Theme settings</string>
+    <string name="settings_theme_settings_desc">Your MAA your way!</string>
+    <string name="settings_theme_monet_title">Monet dynamic color</string>
+    <string name="settings_theme_monet_desc">Use Android 12+ wallpaper-based dynamic colors</string>
+
+    <string name="settings_key_color">Key Color</string>    <string name="settings_theme_style_section">UI architecture</string>
+    <string name="settings_theme_ui_style_title">UI style</string>
+    <string name="settings_theme_ui_style_desc">Switch between Material and Miuix styles. Miuix uses larger titles, rounder cards, and a denser bottom navigation.</string>
+    <string name="settings_theme_ui_style_material">Material</string>
+    <string name="settings_theme_ui_style_miuix">Miuix</string>
+    <string name="settings_theme_mode_section">Theme mode</string>
+    <string name="settings_theme_page_scale_title">Page scale</string>
+    <string name="settings_theme_page_scale_desc">Adjust overall page density.</string>
+    <string name="settings_theme_effect_section">UI effects</string>
+    <string name="settings_theme_blur_title">Blur</string>
+    <string name="settings_theme_blur_desc">Enable blur effect for top and bottom bars.</string>
+    <string name="settings_theme_floating_bar_title">Floating bottom bar</string>
+    <string name="settings_theme_floating_bar_desc">Use Apple style floating bottom bar.</string>
+    <string name="settings_theme_liquid_glass_title">Liquid glass</string>
+    <string name="settings_theme_liquid_glass_desc">Enable liquid glass effect for floating bottom bar.</string>
+
+    <string name="settings_achievement_title">Achievements</string>
+    <string name="settings_achievement_desc">View MaaMeow milestones and hidden easter eggs</string>
     <string name="settings_theme_title">Theme</string>
     <string name="settings_theme_system">System</string>
     <string name="settings_theme_white">Light</string>
@@ -70,10 +94,79 @@
     <string name="editor_json_invalid">JSON invalid</string>
     <string name="editor_save_success">Saved. Changes take effect on next task start.</string>
     <string name="settings_section_data">Data Management</string>
+    <!-- settings: notice section -->
+    <string name="settings_section_notice">Notices</string>
     <string name="settings_export_config_title">Export Configuration</string>
     <string name="settings_export_config_desc">Export all settings and task configurations to a file</string>
     <string name="settings_import_config_title">Import Configuration</string>
     <string name="settings_import_config_desc">Restore settings and task configurations from a file</string>
+    <string name="achievement_title">Achievements</string>
+    <string name="achievement_unlocked_message">Achievement unlocked: %1$s</string>
+    <string name="achievement_search_hint">Search achievement name</string>
+    <string name="achievement_unlocked_count">Unlocked %1$d / %2$d</string>
+    <string name="achievement_locked_title">\?\?\?</string>
+    <string name="achievement_locked_desc">This hidden achievement has not been revealed yet</string>
+    <string name="achievement_locked_condition">\?\?\?</string>
+    <string name="achievement_progress">Progress %1$d / %2$d</string>
+    <string name="achievement_unlocked_at">Unlocked at %1$s</string>
+    <string name="achievement_first_launch_title">First Encounter</string>
+    <string name="achievement_first_launch_desc">Welcome to MaaMeow.</string>
+    <string name="achievement_first_launch_condition">Launch MaaMeow once</string>
+    <string name="achievement_use_daily_1_title">Steady Check-in</string>
+    <string name="achievement_use_daily_1_desc">Use MaaMeow for a full week in a row.</string>
+    <string name="achievement_use_daily_1_condition">Use the app for 7 consecutive days</string>
+    <string name="achievement_use_daily_2_title">Long-term Companion</string>
+    <string name="achievement_use_daily_2_desc">MaaMeow has become part of your routine.</string>
+    <string name="achievement_use_daily_2_condition">Use the app for 30 consecutive days</string>
+    <string name="achievement_task_starter_1_title">First Commission</string>
+    <string name="achievement_task_starter_1_desc">Start your first task run.</string>
+    <string name="achievement_task_starter_1_condition">Start tasks once</string>
+    <string name="achievement_task_starter_2_title">Skilled Doctor</string>
+    <string name="achievement_task_starter_2_desc">The task queue is becoming familiar.</string>
+    <string name="achievement_task_starter_2_condition">Start tasks 20 times</string>
+    <string name="achievement_copilot_starter_1_title">Auto Battle Starter</string>
+    <string name="achievement_copilot_starter_1_desc">Use auto battle for the first time.</string>
+    <string name="achievement_copilot_starter_1_condition">Start auto battle once</string>
+    <string name="achievement_copilot_starter_2_title">Copilot Operator</string>
+    <string name="achievement_copilot_starter_2_desc">Auto battle is now part of your workflow.</string>
+    <string name="achievement_copilot_starter_2_condition">Start auto battle 10 times</string>
+    <string name="achievement_error_reporter_title">Exception Catcher</string>
+    <string name="achievement_error_reporter_desc">You found and recorded an app exception.</string>
+    <string name="achievement_error_reporter_condition">Open the error log page</string>
+    <string name="achievement_observer_title">Achievement Observer</string>
+    <string name="achievement_observer_desc">You started watching these small milestones.</string>
+    <string name="achievement_observer_condition">Open the achievements page once</string>
+    <string name="achievement_midnight_launch_title">Night Owl Doctor</string>
+    <string name="achievement_midnight_launch_desc">Still watching over Rhodes Island at midnight.</string>
+    <string name="achievement_midnight_launch_condition">Launch MaaMeow between 00:00 and 04:00</string>
+    <string name="achievement_key_achievement_list">Achievements</string>
+    <string name="achievement_key_auto_roguelike">Auto I.S.</string>
+    <string name="achievement_key_auto_squad">Auto Squad</string>
+    <string name="achievement_key_combat">Combat</string>
+    <string name="achievement_key_copilot">Copilot</string>
+    <string name="achievement_key_credit_fight">Credit Fight</string>
+    <string name="achievement_key_infrast_mode_custom">Custom Infrastructure Scheduler</string>
+    <string name="achievement_key_issue_report">Issue Report</string>
+    <string name="achievement_key_mirror_chyan">MirrorChyan</string>
+    <string name="achievement_key_open_debug_folder">Open Debug Folder</string>
+    <string name="achievement_key_operator">Operator</string>
+    <string name="achievement_key_recruiting">Auto Recruit</string>
+    <string name="achievement_key_schedule_settings">Schedule Settings</string>
+    <string name="achievement_key_starting_core_char">Starting Core Operator</string>
+    <string name="achievement_key_update_check_beta">Beta</string>
+    <string name="achievement_key_update_check_nightly">Nightly</string>
+    <string name="achievement_key_use_expiring_medicine">Expiring Sanity Potion</string>
+    <string name="achievement_key_use_sanity_potion">Sanity Potion</string>
+    <string name="achievement_key_user_data_update">User Data Sync</string>
+    <string name="achievement_debug_title">Achievement Debug</string>
+    <string name="achievement_debug_desc">Debug achievement data. Entry: tap the version number on the Settings page 20 times.</string>
+    <string name="achievement_debug_select_label">Achievement</string>
+    <string name="achievement_debug_unlock">Unlock Selected Achievement</string>
+    <string name="achievement_debug_unlock_done">Achievement unlocked</string>
+    <string name="achievement_debug_unlock_all">Unlock All Achievements</string>
+    <string name="achievement_debug_unlock_all_done">All achievements unlocked with one tap</string>
+    <string name="achievement_debug_clear_all">Delete All Achievement Records</string>
+    <string name="achievement_debug_clear_done">All achievement records deleted</string>
     <!-- home: top bar & app title -->
     <string name="home_app_title">MAA</string>
     <string name="home_cd_open_settings">Settings</string>
@@ -83,6 +176,7 @@
     <string name="home_resource_version_label">Resource Version</string>
     <string name="home_resource_not_installed">Not Installed</string>
     <string name="home_app_version_label">App Version</string>
+    <string name="home_display_mode">Display mode</string>
     <string name="home_service_status">Service Status</string>
 
     <!-- home: run mode card -->
@@ -732,7 +826,7 @@
     <string name="bottom_nav_home">Home</string>
     <string name="bottom_nav_background_task">Tasks</string>
     <string name="bottom_nav_schedule">Schedule</string>
-    <string name="bottom_nav_notification">Push</string>
+    <string name="bottom_nav_settings">Settings</string>
     <string name="navigation_toast_switch_background_mode">Current mode is foreground. Switch to background mode first.</string>
 
     <!-- shared panel / toolbox -->
@@ -1233,8 +1327,12 @@
     <string name="schedule_go_to_settings">Go to settings</string>
     <string name="schedule_later">Later</string>
     <string name="schedule_time_picker_title">Choose time</string>
+    <string name="schedule_time_hour_label">Hour</string>
+    <string name="schedule_time_minute_label">Minute</string>
     <string name="schedule_time_picker_keyboard_input">Keyboard input</string>
     <string name="schedule_time_picker_dial_selection">Dial selection</string>
+    <string name="schedule_time_picker_hhmm_label">HH:mm</string>
+    <string name="schedule_time_picker_invalid">Enter a valid time (HH:mm, 00:00 – 23:59)</string>
     <string name="schedule_default_name">Schedule-%1$d</string>
     <string name="schedule_error_name_required">Enter a schedule name</string>
     <string name="schedule_error_profile_required">Select a task profile</string>
@@ -1325,4 +1423,7 @@
     <string name="overlay_floatball_state_running">Running</string>
     <string name="overlay_floatball_state_stopping">Stopping</string>
     <string name="overlay_floatball_state_error">Error</string>
+    <string name="settings_font_size_title">Page Scale</string>
+    <string name="settings_font_size_summary">Adjust the global display scale</string>
+    <string name="settings_font_size_preview">The quick brown fox jumps over the lazy dog</string>
 </resources>

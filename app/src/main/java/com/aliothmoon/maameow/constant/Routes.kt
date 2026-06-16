@@ -3,6 +3,10 @@ package com.aliothmoon.maameow.constant
 object Routes {
     const val HOME = "home"
     const val SETTINGS = "settings"
+    const val THEME_SETTINGS = "theme_settings"
+
+    const val ACHIEVEMENT = "achievement"
+    const val ACHIEVEMENT_DEBUG = "achievement_debug"
     const val LOG_HISTORY = "log_history"
     const val ERROR_LOG = "error_log"
     const val BACKGROUND_TASK = "background_task"
@@ -11,4 +15,5 @@ object Routes {
     const val SCHEDULE_TRIGGER_LOG = "schedule_trigger_log"
     const val NOTIFICATION = "notification"
     const val TASK_OVERRIDE_EDITOR = "task_override_editor"
+    const val MONET_COLORS = "monet_colors"
 }

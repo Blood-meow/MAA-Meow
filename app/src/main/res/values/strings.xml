@@ -241,9 +241,33 @@
     <string name="settings_debug_mode_desc">启用后记录详细日志信息</string>
 
     <!-- settings: other section -->
+    <string name="settings_notification_desc">管理内部通知、外部推送渠道和测试通知</string>
     <string name="settings_section_other">其他设置</string>
     <string name="settings_startup_backend_title">启动模式</string>
     <string name="settings_startup_backend_desc">选择应用获取系统权限的方式</string>
+    <string name="settings_theme_settings_title">主题设置</string>
+    <string name="settings_theme_settings_desc">Your MAA your way!</string>
+    <string name="settings_theme_monet_title">Monet 动态色</string>
+    <string name="settings_theme_monet_desc">Android 12 及以上使用系统壁纸动态配色</string>
+
+    <string name="settings_key_color">主题色</string>    <string name="settings_theme_style_section">UI 架构</string>
+    <string name="settings_theme_ui_style_title">界面风格</string>
+    <string name="settings_theme_ui_style_desc">在 Material 与 Miuix 风格之间切换；Miuix 使用更大的标题、圆角卡片和更紧凑的底栏。</string>
+    <string name="settings_theme_ui_style_material">Material</string>
+    <string name="settings_theme_ui_style_miuix">Miuix</string>
+    <string name="settings_theme_mode_section">主题模式</string>
+    <string name="settings_theme_page_scale_title">界面大小</string>
+    <string name="settings_theme_page_scale_desc">调整页面整体缩放比例</string>
+    <string name="settings_theme_effect_section">界面效果</string>
+    <string name="settings_theme_blur_title">模糊效果</string>
+    <string name="settings_theme_blur_desc">为顶栏和底栏启用模糊效果</string>
+    <string name="settings_theme_floating_bar_title">悬浮底栏</string>
+    <string name="settings_theme_floating_bar_desc">使用 Apple 风格的悬浮底栏</string>
+    <string name="settings_theme_liquid_glass_title">液态玻璃</string>
+    <string name="settings_theme_liquid_glass_desc">为悬浮底栏启用液态玻璃效果</string>
+
+    <string name="settings_achievement_title">成就</string>
+    <string name="settings_achievement_desc">查看 MaaMeow 使用记录与隐藏彩蛋</string>
     <string name="settings_theme_title">主题模式</string>
     <string name="settings_theme_system">随系统</string>
     <string name="settings_theme_white">白色</string>
@@ -269,10 +293,81 @@
 
     <!-- settings: data section -->
     <string name="settings_section_data">数据管理</string>
+    <!-- settings: notice section -->
+    <string name="settings_section_notice">通知</string>
     <string name="settings_export_config_title">导出配置</string>
     <string name="settings_export_config_desc">将所有设置和任务配置导出为文件</string>
     <string name="settings_import_config_title">导入配置</string>
     <string name="settings_import_config_desc">从文件恢复设置和任务配置</string>
+
+    <!-- achievements -->
+    <string name="achievement_title">成就</string>
+    <string name="achievement_unlocked_message">达成成就：%1$s</string>
+    <string name="achievement_search_hint">搜索成就名称</string>
+    <string name="achievement_unlocked_count">已解锁 %1$d / %2$d</string>
+    <string name="achievement_locked_title">\?\?\?</string>
+    <string name="achievement_locked_desc">隐藏的成就仍未揭晓</string>
+    <string name="achievement_locked_condition">\?\?\?</string>
+    <string name="achievement_progress">进度 %1$d / %2$d</string>
+    <string name="achievement_unlocked_at">解锁于 %1$s</string>
+    <string name="achievement_first_launch_title">初次见面</string>
+    <string name="achievement_first_launch_desc">欢迎来到 MaaMeow。</string>
+    <string name="achievement_first_launch_condition">启动一次 MaaMeow</string>
+    <string name="achievement_use_daily_1_title">稳定上线</string>
+    <string name="achievement_use_daily_1_desc">连续使用 MaaMeow 一周。</string>
+    <string name="achievement_use_daily_1_condition">连续使用 7 天</string>
+    <string name="achievement_use_daily_2_title">长期陪伴</string>
+    <string name="achievement_use_daily_2_desc">MaaMeow 已经成为你的日常工具。</string>
+    <string name="achievement_use_daily_2_condition">连续使用 30 天</string>
+    <string name="achievement_task_starter_1_title">第一次委托</string>
+    <string name="achievement_task_starter_1_desc">开始执行第一轮任务。</string>
+    <string name="achievement_task_starter_1_condition">开始任务 1 次</string>
+    <string name="achievement_task_starter_2_title">熟练博士</string>
+    <string name="achievement_task_starter_2_desc">任务队列已经跑得很顺手了。</string>
+    <string name="achievement_task_starter_2_condition">开始任务 20 次</string>
+    <string name="achievement_copilot_starter_1_title">自动战斗入门</string>
+    <string name="achievement_copilot_starter_1_desc">首次使用自动战斗相关能力。</string>
+    <string name="achievement_copilot_starter_1_condition">启动自动战斗 1 次</string>
+    <string name="achievement_copilot_starter_2_title">作业执行员</string>
+    <string name="achievement_copilot_starter_2_desc">自动战斗已经是你的常用流程。</string>
+    <string name="achievement_copilot_starter_2_condition">启动自动战斗 10 次</string>
+    <string name="achievement_error_reporter_title">异常捕手</string>
+    <string name="achievement_error_reporter_desc">你发现并记录了一次异常。</string>
+    <string name="achievement_error_reporter_condition">进入错误日志页面</string>
+    <string name="achievement_observer_title">成就观测者</string>
+    <string name="achievement_observer_desc">你开始关注这些小小的里程碑。</string>
+    <string name="achievement_observer_condition">打开一次成就页面</string>
+    <string name="achievement_midnight_launch_title">夜猫子博士</string>
+    <string name="achievement_midnight_launch_desc">深夜也在照看罗德岛。</string>
+    <string name="achievement_midnight_launch_condition">0 点至 4 点启动 MaaMeow</string>
+    <string name="achievement_key_achievement_list">成就列表</string>
+    <string name="achievement_key_auto_roguelike">自动肉鸽</string>
+    <string name="achievement_key_auto_squad">自动编队</string>
+    <string name="achievement_key_combat">理智作战</string>
+    <string name="achievement_key_copilot">自动战斗</string>
+    <string name="achievement_key_credit_fight">借助战刷信用</string>
+    <string name="achievement_key_infrast_mode_custom">自定义基建排班</string>
+    <string name="achievement_key_issue_report">问题反馈</string>
+    <string name="achievement_key_mirror_chyan">Mirror酱</string>
+    <string name="achievement_key_open_debug_folder">打开调试文件夹</string>
+    <string name="achievement_key_operator">干员</string>
+    <string name="achievement_key_recruiting">自动公招</string>
+    <string name="achievement_key_schedule_settings">定时设置</string>
+    <string name="achievement_key_starting_core_char">开局核心干员</string>
+    <string name="achievement_key_update_check_beta">公测版</string>
+    <string name="achievement_key_update_check_nightly">内测版</string>
+    <string name="achievement_key_use_expiring_medicine">临期理智药</string>
+    <string name="achievement_key_use_sanity_potion">理智药</string>
+    <string name="achievement_key_user_data_update">用户数据同步</string>
+    <string name="achievement_debug_title">成就调试</string>
+    <string name="achievement_debug_desc">用于调试成就数据。入口：连续点击设置页版本号 20 次。</string>
+    <string name="achievement_debug_select_label">指定成就</string>
+    <string name="achievement_debug_unlock">获得指定成就</string>
+    <string name="achievement_debug_unlock_done">已获得指定成就</string>
+    <string name="achievement_debug_unlock_all">一键获得所有成就</string>
+    <string name="achievement_debug_unlock_all_done">已一键获得所有成就</string>
+    <string name="achievement_debug_clear_all">删除所有成就记录</string>
+    <string name="achievement_debug_clear_done">已删除所有成就记录</string>
 
     <!-- home: top bar & app title -->
     <string name="home_app_title">MAA</string>
@@ -283,6 +378,7 @@
     <string name="home_resource_version_label">资源版本</string>
     <string name="home_resource_not_installed">未安装</string>
     <string name="home_app_version_label">App版本</string>
+    <string name="home_display_mode">显示模式</string>
     <string name="home_service_status">服务状态</string>
 
     <!-- home: run mode card -->
@@ -783,7 +879,7 @@
     <string name="bottom_nav_home">首页</string>
     <string name="bottom_nav_background_task">后台任务</string>
     <string name="bottom_nav_schedule">定时</string>
-    <string name="bottom_nav_notification">通知</string>
+    <string name="bottom_nav_settings">设置</string>
     <string name="navigation_toast_switch_background_mode">当前是前台模式，请先切换到后台模式</string>
 
     <!-- shared panel / toolbox -->
@@ -1285,8 +1381,12 @@
     <string name="schedule_go_to_settings">前往设置</string>
     <string name="schedule_later">稍后</string>
     <string name="schedule_time_picker_title">选择时间</string>
+    <string name="schedule_time_hour_label">小时</string>
+    <string name="schedule_time_minute_label">分钟</string>
     <string name="schedule_time_picker_keyboard_input">键盘输入</string>
     <string name="schedule_time_picker_dial_selection">表盘选择</string>
+    <string name="schedule_time_picker_hhmm_label">HH:mm</string>
+    <string name="schedule_time_picker_invalid">请输入有效的时间（HH:mm，00:00 – 23:59）</string>
     <string name="schedule_default_name">定时任务-%1$d</string>
     <string name="schedule_error_name_required">请输入策略名称</string>
     <string name="schedule_error_profile_required">请选择任务配置</string>
@@ -1377,4 +1477,7 @@
     <string name="overlay_floatball_state_running">运行中</string>
     <string name="overlay_floatball_state_stopping">停止中</string>
     <string name="overlay_floatball_state_error">错误</string>
+    <string name="settings_font_size_title">页面缩放</string>
+    <string name="settings_font_size_summary">调整全局显示缩放比例</string>
+    <string name="settings_font_size_preview">你是谁？请支持牛牛！</string>
 </resources>

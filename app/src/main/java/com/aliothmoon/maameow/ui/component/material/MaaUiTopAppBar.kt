@@ -1,0 +1,109 @@
+package com.aliothmoon.maameow.ui.component.material
+
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import com.aliothmoon.maameow.R
+import com.aliothmoon.maameow.ui.isMiuixUi
+import com.aliothmoon.maameow.ui.theme.ThemeColors
+import top.yukonga.miuix.kmp.basic.Icon as MiuixIcon
+import top.yukonga.miuix.kmp.basic.IconButton as MiuixIconButton
+import top.yukonga.miuix.kmp.basic.Text as MiuixText
+import top.yukonga.miuix.kmp.basic.TopAppBar as MiuixTopAppBar
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MaaUiTopAppBar(
+    title: String,
+    navigationIcon: ImageVector? = null,
+    onNavigationClick: () -> Unit = {},
+    actionIcon: ImageVector? = null,
+    actionIconDescription: String? = null,
+    onActionClick: () -> Unit = {},
+    actions: @Composable (RowScope.() -> Unit)? = null
+) {
+    if (isMiuixUi) {
+        MiuixTopAppBar(
+            title = title,
+            navigationIcon = if (navigationIcon != null) {
+                @Composable {
+                    MiuixIconButton(onClick = onNavigationClick) {
+                        MiuixIcon(
+                            imageVector = navigationIcon,
+                            contentDescription = stringResource(R.string.accessibility_navigation)
+                        )
+                    }
+                }
+            } else {
+                {}
+            },
+            actions = {
+                if (actions != null) {
+                    actions()
+                } else {
+                    actionIcon?.let { icon ->
+                        MiuixIconButton(onClick = onActionClick) {
+                            MiuixIcon(
+                                imageVector = icon,
+                                contentDescription = actionIconDescription
+                            )
+                        }
+                    }
+                }
+            }
+        )
+    } else {
+        val titleContent: @Composable () -> Unit = {
+            Text(
+                text = title,
+                fontWeight = FontWeight.SemiBold,
+                style = MaterialTheme.typography.titleLarge
+            )
+        }
+        val navigationContent: @Composable () -> Unit = {
+            navigationIcon?.let { icon ->
+                IconButton(onClick = onNavigationClick) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = stringResource(R.string.accessibility_navigation)
+                    )
+                }
+            }
+        }
+        val actionsContent: @Composable RowScope.() -> Unit = {
+            if (actions != null) {
+                actions()
+            } else {
+                actionIcon?.let { icon ->
+                    IconButton(onClick = onActionClick) {
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = actionIconDescription
+                        )
+                    }
+                }
+            }
+        }
+        val colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = ThemeColors.background,
+            titleContentColor = ThemeColors.onSurface,
+            navigationIconContentColor = ThemeColors.primary,
+            actionIconContentColor = ThemeColors.primary
+        )
+        TopAppBar(
+            title = titleContent,
+            navigationIcon = navigationContent,
+            actions = actionsContent,
+            colors = colors
+        )
+    }
+}

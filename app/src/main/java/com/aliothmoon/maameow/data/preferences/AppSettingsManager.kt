@@ -7,6 +7,8 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.preferencesDataStore
 import com.aliothmoon.maameow.R
 import com.aliothmoon.maameow.constant.DefaultDisplayConfig
+import com.aliothmoon.maameow.data.achievement.AchievementEvents
+import com.aliothmoon.maameow.data.achievement.AchievementRepository
 import com.aliothmoon.maameow.data.model.update.UpdateChannel
 import com.aliothmoon.maameow.data.model.update.UpdateSource
 import com.aliothmoon.maameow.domain.models.AppSettings
@@ -27,7 +29,10 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.runBlocking
 
 
-class AppSettingsManager(private val context: Context) {
+class AppSettingsManager(
+    private val context: Context,
+    private val achievementRepository: AchievementRepository,
+) {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
@@ -298,6 +303,10 @@ class AppSettingsManager(private val context: Context) {
         SYSTEM, WHITE, DARK, PURE_DARK
     }
 
+    enum class UiStyle {
+        MATERIAL, MIUIX
+    }
+
     val themeMode: StateFlow<ThemeMode> = settings
         .map {
             runCatching { ThemeMode.valueOf(it.themeMode) }.getOrDefault(ThemeMode.SYSTEM)
@@ -314,6 +323,76 @@ class AppSettingsManager(private val context: Context) {
     suspend fun setThemeMode(mode: ThemeMode) {
         with(AppSettingsSchema) {
             context.dataStore.edit { it[themeMode] = mode.name }
+        }
+    }
+    val uiStyle: StateFlow<UiStyle> = settings
+        .map { runCatching { UiStyle.valueOf(it.uiStyle) }.getOrDefault(UiStyle.MATERIAL) }
+        .distinctUntilChanged()
+        .stateIn(
+            scope, SharingStarted.Eagerly,
+            runCatching { UiStyle.valueOf(initialSettings.uiStyle) }.getOrDefault(UiStyle.MATERIAL)
+        )
+
+    suspend fun setUiStyle(style: UiStyle) {
+        with(AppSettingsSchema) {
+            context.dataStore.edit { it[uiStyle] = style.name }
+        }
+    }
+
+    val uiBlurEnabled: StateFlow<Boolean> = settings
+        .map { it.uiBlurEnabled.toBooleanStrictOrNull() ?: true }
+        .distinctUntilChanged()
+        .stateIn(scope, SharingStarted.Eagerly, initialSettings.uiBlurEnabled.toBooleanStrictOrNull() ?: true)
+    suspend fun setUiBlurEnabled(enabled: Boolean) {
+        with(AppSettingsSchema) {
+            context.dataStore.edit { it[uiBlurEnabled] = enabled.toString() }
+        }
+    }
+    val uiFloatingBottomBar: StateFlow<Boolean> = settings
+        .map { it.uiFloatingBottomBar.toBooleanStrictOrNull() ?: true }
+        .distinctUntilChanged()
+        .stateIn(scope, SharingStarted.Eagerly, initialSettings.uiFloatingBottomBar.toBooleanStrictOrNull() ?: true)
+    suspend fun setUiFloatingBottomBar(enabled: Boolean) {
+        with(AppSettingsSchema) {
+            context.dataStore.edit { it[uiFloatingBottomBar] = enabled.toString() }
+        }
+    }
+    val uiLiquidGlassEnabled: StateFlow<Boolean> = settings
+        .map { it.uiLiquidGlassEnabled.toBooleanStrictOrNull() ?: true }
+        .distinctUntilChanged()
+        .stateIn(scope, SharingStarted.Eagerly, initialSettings.uiLiquidGlassEnabled.toBooleanStrictOrNull() ?: true)
+    suspend fun setUiLiquidGlassEnabled(enabled: Boolean) {
+        with(AppSettingsSchema) {
+            context.dataStore.edit { it[uiLiquidGlassEnabled] = enabled.toString() }
+        }
+    }
+    val uiMonetEnabled: StateFlow<Boolean> = settings
+        .map { it.uiMonetEnabled.toBooleanStrictOrNull() ?: false }
+        .distinctUntilChanged()
+        .stateIn(scope, SharingStarted.Eagerly, initialSettings.uiMonetEnabled.toBooleanStrictOrNull() ?: false)
+    suspend fun setUiMonetEnabled(enabled: Boolean) {
+        with(AppSettingsSchema) {
+            context.dataStore.edit { it[uiMonetEnabled] = enabled.toString() }
+        }
+    }
+
+    val uiKeyColor: StateFlow<Long> = settings
+        .map { it.uiKeyColor.toLongOrNull() ?: 0L }
+        .distinctUntilChanged()
+        .stateIn(scope, SharingStarted.Eagerly, initialSettings.uiKeyColor.toLongOrNull() ?: 0L)
+    suspend fun setUiKeyColor(color: Long) {
+        with(AppSettingsSchema) {
+            context.dataStore.edit { it[uiKeyColor] = color.toString() }
+        }
+    }
+
+    val fontSizeScale: StateFlow<Int> = settings
+        .map { it.fontSizeScale.toIntOrNull() ?: 100 }
+        .distinctUntilChanged()
+        .stateIn(scope, SharingStarted.Eagerly, initialSettings.fontSizeScale.toIntOrNull() ?: 100)
+    suspend fun setFontSizeScale(scale: Int) {
+        with(AppSettingsSchema) {
+            context.dataStore.edit { it[fontSizeScale] = scale.toString() }
         }
     }
 
@@ -385,6 +464,7 @@ class AppSettingsManager(private val context: Context) {
         with(AppSettingsSchema) {
             context.dataStore.edit { it[language] = lang.name }
         }
+        achievementRepository.recordEvent(AchievementEvents.LanguageChanged)
     }
 
     // 待展示的更新公告

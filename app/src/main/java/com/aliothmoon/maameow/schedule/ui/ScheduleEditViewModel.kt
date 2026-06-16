@@ -7,6 +7,8 @@ import android.os.PowerManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aliothmoon.maameow.R
+import com.aliothmoon.maameow.data.achievement.AchievementEvents
+import com.aliothmoon.maameow.data.achievement.AchievementRepository
 import com.aliothmoon.maameow.data.model.TaskProfile
 import com.aliothmoon.maameow.data.preferences.TaskChainState
 import com.aliothmoon.maameow.schedule.data.ScheduleStrategyRepository
@@ -54,6 +56,7 @@ class ScheduleEditViewModel(
     private val repository: ScheduleStrategyRepository,
     private val taskChainState: TaskChainState,
     private val scheduleAlarmManager: ScheduleAlarmManager,
+    private val achievementRepository: AchievementRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(ScheduleEditUiState())
@@ -148,6 +151,17 @@ class ScheduleEditViewModel(
             }
             state.copy(daysOfWeek = newDays)
         }
+    }
+
+    /**
+     * Replace the selected days set directly. Used by the multi-select
+     * execution-days dropdown (see [ScheduleEditViewMiuix]) so the dialog
+     * can commit the whole set in a single state update rather than racing
+     * with [onToggleDay]. Passing an empty set is valid and means
+     * "no days selected".
+     */
+    fun onSetDays(days: Set<DayOfWeek>) {
+        _state.update { it.copy(daysOfWeek = days) }
     }
 
     fun onAddTime(time: LocalTime) {
@@ -247,6 +261,17 @@ class ScheduleEditViewModel(
                 } else {
                     repository.update(strategy)
                 }
+
+                achievementRepository.recordEvent(
+                    AchievementEvents.ScheduleSaved,
+                    mapOf(
+                        "type" to strategy.scheduleType.name,
+                        "timerCount" to when (strategy.scheduleType) {
+                            ScheduleType.FIXED_TIME -> strategy.executionTimes.size.toString()
+                            ScheduleType.INTERVAL -> "1"
+                        },
+                    ),
+                )
 
                 scheduleAlarmManager.cancel(strategy.id)
                 scheduleAlarmManager.scheduleNext(strategy)

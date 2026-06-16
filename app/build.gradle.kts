@@ -44,7 +44,7 @@ android {
 
     defaultConfig {
         applicationId = "com.aliothmoon.maameow"
-        minSdk = 28
+        minSdk = 33
         targetSdk = 36
         versionCode = gitVersionCode
         versionName = gitVersionName
@@ -171,6 +171,10 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.miuix.ui)
+    implementation(libs.miuix.blur)
+    implementation(libs.miuix.shader)
+    implementation(libs.miuix.preference)
     implementation(libs.androidx.material.icons.core)
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.androidx.navigation.compose)

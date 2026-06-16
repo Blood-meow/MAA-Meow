@@ -4,26 +4,33 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.ViewTreeObserver
 import android.view.WindowManager
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.aliothmoon.maameow.data.achievement.AchievementRepository
 import com.aliothmoon.maameow.data.preferences.AppSettingsManager
 import kotlinx.coroutines.flow.drop
 import com.aliothmoon.maameow.domain.service.MaaCompositionService
 import com.aliothmoon.maameow.domain.state.MaaExecutionState
 import com.aliothmoon.maameow.overlay.screensaver.HardwareScreenOffManager
 import com.aliothmoon.maameow.overlay.screensaver.ScreenSaverOverlayManager
-import com.aliothmoon.maameow.presentation.navigation.AppNavigation
-import com.aliothmoon.maameow.presentation.viewmodel.BackgroundTaskViewModel
+import com.aliothmoon.maameow.ui.navigation.AppNavigation
+import com.aliothmoon.maameow.ui.viewmodel.BackgroundTaskViewModel
 import com.aliothmoon.maameow.schedule.model.ScheduledExecutionRequest
-import com.aliothmoon.maameow.theme.MaaMeowTheme
+import com.aliothmoon.maameow.ui.theme.MaaMeowTheme
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
@@ -35,6 +42,7 @@ class MainActivity : AppCompatActivity() {
     private var isUiReady: Boolean = false
 
     private val appSettingsManager: AppSettingsManager by inject()
+    private val achievementRepository: AchievementRepository by inject()
     private val compositionService: MaaCompositionService by inject()
     private val screenSaverManager: ScreenSaverOverlayManager by inject()
     private val hardwareScreenOffManager: HardwareScreenOffManager by inject()
@@ -47,6 +55,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         dispatchScheduledLaunchIntent(intent)
         enableEdgeToEdge()
+        window.isNavigationBarContrastEnforced = false
+
+        lifecycleScope.launch { achievementRepository.recordAppLaunch() }
         doObserveKeepScreenOn()
         doObserveThemeMode()
         window.decorView.viewTreeObserver.addOnPreDrawListener(object :
@@ -59,12 +70,45 @@ class MainActivity : AppCompatActivity() {
         })
         setContent {
             val themeMode by appSettingsManager.themeMode.collectAsStateWithLifecycle()
+            val monetEnabled by appSettingsManager.uiMonetEnabled.collectAsStateWithLifecycle()
+            val uiStyle by appSettingsManager.uiStyle.collectAsStateWithLifecycle()
+            val keyColor by appSettingsManager.uiKeyColor.collectAsStateWithLifecycle()
+            val fontSizeScale by appSettingsManager.fontSizeScale.collectAsStateWithLifecycle()
+            val systemDensity = LocalDensity.current
 
-            MaaMeowTheme(themeMode = themeMode) {
-                AppNavigation(backgroundTaskViewModel = backgroundTaskViewModel)
+            // Re-apply transparent system bars on dark mode change
+            val darkMode = when (themeMode) {
+                AppSettingsManager.ThemeMode.DARK,
+                AppSettingsManager.ThemeMode.PURE_DARK -> true
+                AppSettingsManager.ThemeMode.WHITE -> false
+                AppSettingsManager.ThemeMode.SYSTEM -> isSystemInDarkTheme()
+            }
+            DisposableEffect(darkMode) {
+                enableEdgeToEdge(
+                    statusBarStyle = SystemBarStyle.auto(
+                        android.graphics.Color.TRANSPARENT,
+                        android.graphics.Color.TRANSPARENT
+                    ) { darkMode },
+                    navigationBarStyle = SystemBarStyle.auto(
+                        android.graphics.Color.TRANSPARENT,
+                        android.graphics.Color.TRANSPARENT
+                    ) { darkMode },
+                )
+                window.isNavigationBarContrastEnforced = false
+                onDispose { }
+            }
+
+            MaaMeowTheme(
+                themeMode = themeMode,
+                monetEnabled = monetEnabled,
+                uiStyle = uiStyle,
+                keyColor = keyColor,
+                fontSizeScale = fontSizeScale
+            ) {
+                    AppNavigation(backgroundTaskViewModel = backgroundTaskViewModel)
+                }
             }
         }
-    }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
@@ -101,22 +145,28 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-    }
-
     private fun doObserveThemeMode() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
+                // Track the last applied night mode to avoid redundant recreate
+                // when only the UI style changes but the light/dark mode stays the same.
+                var lastAppliedNightMode: Int = delegate.localNightMode
                 appSettingsManager.themeMode.drop(1).collect { mode ->
                     val target = mode.toAppCompatNightMode()
-                    if (delegate.localNightMode != target) {
+                    if (lastAppliedNightMode != target) {
+                        lastAppliedNightMode = target
                         delegate.localNightMode = target
                     }
                 }
             }
         }
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+    }
+
+
 
     private fun AppSettingsManager.ThemeMode.toAppCompatNightMode(): Int = when (this) {
         AppSettingsManager.ThemeMode.SYSTEM -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
