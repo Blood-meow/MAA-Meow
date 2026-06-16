@@ -23,6 +23,7 @@ import com.aliothmoon.maameow.data.achievement.AchievementRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.util.Locale
@@ -45,6 +46,15 @@ class SubTaskHandler(
     private val achievementScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val resources = applicationContext.resources
     private val packageName = applicationContext.packageName
+
+    /**
+     * Cancel pending [achievementScope] coroutines. Safe to call once when the
+     * owning task chain is being torn down (currently [SubTaskHandler] lives
+     * for the process lifetime, so this is best-effort cleanup for future use).
+     */
+    fun shutdown() {
+        achievementScope.coroutineContext[kotlinx.coroutines.Job]?.cancel()
+    }
 
     // 战斗进度临时暂存（FightTimes/SanityBeforeStage 先于 StartButton2/AnnihilationConfirm 到达）
     private data class PendingFightState(
