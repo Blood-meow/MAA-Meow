@@ -114,7 +114,7 @@ class UiI18nHardcodedStringsTest {
                     "确认下载 App 更新: version=${'$'}version",
                 ),
             ),
-TargetFile("src/main/java/com/aliothmoon/maameow/ui/viewmodel/TaskStartUiHelpers.kt"),
+            TargetFile("src/main/java/com/aliothmoon/maameow/ui/viewmodel/TaskStartUiHelpers.kt"),
             TargetFile("src/main/java/com/aliothmoon/maameow/ui/viewmodel/ExpandedControlPanelViewModel.kt"),
             TargetFile("src/main/java/com/aliothmoon/maameow/ui/viewmodel/BackgroundTaskViewModel.kt"),
             TargetFile(
