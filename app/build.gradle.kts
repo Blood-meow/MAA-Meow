@@ -44,7 +44,7 @@ android {
 
     defaultConfig {
         applicationId = "com.aliothmoon.maameow"
-        minSdk = 33
+        minSdk = 28
         targetSdk = 36
         versionCode = gitVersionCode
         versionName = gitVersionName

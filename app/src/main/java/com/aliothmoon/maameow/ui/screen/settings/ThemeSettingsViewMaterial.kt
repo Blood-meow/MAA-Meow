@@ -1,5 +1,6 @@
 package com.aliothmoon.maameow.ui.screen.settings
 
+import android.os.Build
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -154,22 +155,27 @@ fun ThemeSettingsViewMaterial(
                     modifier = Modifier.padding(horizontal = 16.dp),
                     rows = listOf(
                         {
-                            ThemeChoiceRow(
-                                icon = Icons.Rounded.Style,
-                                title = stringResource(R.string.settings_theme_ui_style_title),
-                                summary = stringResource(R.string.settings_theme_ui_style_desc),
-                                selectedIndex = if (uiStyle == AppSettingsManager.UiStyle.MIUIX) 1 else 0,
-                                options = listOf(
-                                    stringResource(R.string.settings_theme_ui_style_material),
-                                    stringResource(R.string.settings_theme_ui_style_miuix)
-                                ),
-                                onSelected = { index ->
-                                    viewModel.setUiStyle(
-                                        if (index == 1) AppSettingsManager.UiStyle.MIUIX
-                                        else AppSettingsManager.UiStyle.MATERIAL
-                                    )
-                                }
-                            )
+                            // Miuix UI requires Android 13 (API 33) or later.
+                            // Hide the UI Style entry on lower API levels so users
+                            // cannot enable a mode that would not work on their device.
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                ThemeChoiceRow(
+                                    icon = Icons.Rounded.Style,
+                                    title = stringResource(R.string.settings_theme_ui_style_title),
+                                    summary = stringResource(R.string.settings_theme_ui_style_desc),
+                                    selectedIndex = if (uiStyle == AppSettingsManager.UiStyle.MIUIX) 1 else 0,
+                                    options = listOf(
+                                        stringResource(R.string.settings_theme_ui_style_material),
+                                        stringResource(R.string.settings_theme_ui_style_miuix)
+                                    ),
+                                    onSelected = { index ->
+                                        viewModel.setUiStyle(
+                                            if (index == 1) AppSettingsManager.UiStyle.MIUIX
+                                            else AppSettingsManager.UiStyle.MATERIAL
+                                        )
+                                    }
+                                )
+                            }
                         },
                         {
                             Column {
