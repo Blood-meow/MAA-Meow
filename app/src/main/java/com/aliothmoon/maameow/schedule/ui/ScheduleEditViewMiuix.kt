@@ -738,18 +738,28 @@ private fun TimePickerDialog(initialTime: LocalTime? = null, onDismiss: () -> Un
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 MiuixButton(onClick = {
-                    // wheel <-> keyboard mode toggle. The two TextFields stay
-                    // bound to their `remember { mutableStateOf("") }` slots,
-                    // so flipping into keyboard mode always shows empty
-                    // fields with the label acting as a placeholder. We
-                    // intentionally do NOT seed textHour / textMinute from
-                    // selectedHour / selectedMinute here: doing so would
-                    // show a number ("0", "5", "23", ...) which looks like
-                    // a stale placeholder the moment the user opens the
-                    // dialog. keyboard -> wheel: no resync needed;
-                    // NumberPicker reads selectedHour / selectedMinute
-                    // directly and the wheel labels are formatted with %02d
-                    // when shown.
+                    // wheel <-> keyboard mode toggle.
+                    //   - The two TextFields are bound to their
+                    //     `remember { mutableStateOf("") }` slots, so on the
+                    //     FIRST toggle into keyboard mode the fields are
+                    //     empty (the label HH / mm acts as a placeholder).
+                    //   - We do NOT pre-fill textHour / textMinute from
+                    //     selectedHour / selectedMinute, so the dialog
+                    //     never opens to a stale number ("0", "5", ...).
+                    //   - We DO push textHour / textMinute back into
+                    //     selectedHour / selectedMinute on the wheel ->
+                    //     keyboard leg, but only if the text is non-empty.
+                    //     This means: after the user has typed into the
+                    //     keyboard once, the next wheel -> keyboard round
+                    //     trip keeps their text instead of going blank.
+                    //   - keyboard -> wheel: no resync needed; the
+                    //     NumberPicker reads selectedHour / selectedMinute
+                    //     directly and the wheel labels are formatted with
+                    //     %02d when shown.
+                    if (!keyboardMode) {
+                        textHour.toIntOrNull()?.coerceIn(0, 23)?.let { selectedHour = it }
+                        textMinute.toIntOrNull()?.coerceIn(0, 59)?.let { selectedMinute = it }
+                    }
                     keyboardMode = !keyboardMode
                 }) {
                     MiuixText(stringResource(R.string.schedule_time_picker_keyboard_input))
