@@ -306,18 +306,18 @@ fun SettingsViewMaterial(
                         navController.navigate(Routes.THEME_SETTINGS)
                     }
                     SettingsDivider(contentColor)
-                    SettingRemoteBackendItem(
-                        contentColor = contentColor,
-                        selectedBackend = startupBackend,
-                        onBackendSelected = { viewModel.setStartupBackend(it) }
-                    )
-                    SettingsDivider(contentColor)
                     SettingClickItem(
                         title = stringResource(R.string.settings_achievement_title),
                         contentColor = contentColor
                     ) {
                         navController.navigate(Routes.ACHIEVEMENT)
                     }
+                    SettingsDivider(contentColor)
+                    SettingRemoteBackendItem(
+                        contentColor = contentColor,
+                        selectedBackend = startupBackend,
+                        onBackendSelected = { viewModel.setStartupBackend(it) }
+                    )
                     SettingsDivider(contentColor)
                     SettingBackgroundResolutionItem(
                         contentColor = contentColor,
