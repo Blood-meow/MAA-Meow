@@ -267,16 +267,22 @@ fun BackgroundTaskViewMaterial(
     // Auto-dismiss it when the active page is no longer the Tasks tab.
     // LocalMainPagerState is provided by MainScreen in both Miuix and
     // Material modes, so the same read works here.
+    //
+    // LocalMainPagerState.current is a @Composable read, so it can only be
+    // touched from a @Composable function. We read it here (once) to grab
+    // the underlying PagerState, then subscribe to its currentPage with
+    // snapshotFlow, which is a plain lambda (not @Composable). Stashing
+    // the read inside derivedStateOf would fail to compile.
+    val mainPagerState = LocalMainPagerState.current?.pagerState
+    var isOnTasksPage by remember { mutableStateOf(mainPagerState?.currentPage == 1) }
+    LaunchedEffect(mainPagerState) {
+        if (mainPagerState == null) return@LaunchedEffect
+        snapshotFlow { mainPagerState.currentPage }.collect { page ->
+            isOnTasksPage = (page == 1)
+        }
+    }
     val shouldHideMoreActions by remember {
         derivedStateOf {
-            // See the matching comment in BackgroundTaskViewMiuix: the
-            // pager page read must happen INSIDE this block so that
-            // derivedStateOf subscribes to PagerState.currentPage.
-            // Reading it outside, as a plain val, would not pick up
-            // page changes because LocalMainPagerState is a
-            // staticCompositionLocalOf and the parent composable
-            // doesn't recompose on pager change.
-            val isOnTasksPage = (LocalMainPagerState.current?.pagerState?.currentPage == 1)
             !canShowTaskActions ||
                 showCloseConfirm ||
                 state.isFullscreenMonitor ||
