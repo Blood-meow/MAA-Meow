@@ -57,13 +57,24 @@ class SubTaskHandler(
 
     /**
      * Cancel pending achievement coroutines and rebuild the scope so future
-     * `achievementScope.launch { ... }` calls succeed. Idempotent: calling it
-     * when the scope is already cancelled is a no-op followed by a fresh
-     * scope, which is exactly what we want.
+     * `achievementScope.launch { ... }` calls succeed. Idempotent and
+     * thread-safe:
+     *
+     *   * `synchronized` makes the cancel+rebuild sequence atomic with
+     *     respect to other invocations of shutdown() on the same instance.
+     *   * Assign-then-cancel ordering: a concurrent reader that has already
+     *     loaded the previous `achievementScope` reference into a local
+     *     must see either the still-live previous scope (we have not
+     *     cancelled it yet, so the launch still runs) or the new live
+     *     scope. The previous cancel-then-assign order briefly exposed a
+     *     cancelled scope to readers in the gap between the two writes,
+     *     which would silently no-op their subsequent `launch { ... }`.
      */
+    @Synchronized
     fun shutdown() {
-        achievementScope.coroutineContext[kotlinx.coroutines.Job]?.cancel()
+        val old = achievementScope
         achievementScope = newAchievementScope()
+        old.coroutineContext[kotlinx.coroutines.Job]?.cancel()
     }
 
     // 战斗进度临时暂存（FightTimes/SanityBeforeStage 先于 StartButton2/AnnihilationConfirm 到达）
