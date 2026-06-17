@@ -43,17 +43,27 @@ class SubTaskHandler(
     private val activityManager: ActivityManager,
     private val achievementRepository: AchievementRepository,
 ) {
-    private val achievementScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    // Re-creatable so that callers may shut the scope down (e.g. when the
+    // owning task chain is torn down) and subsequent `launch` calls still
+    // succeed. The previous implementation cancelled the SupervisorJob and
+    // left it dead, so any later `achievementScope.launch { ... }` would
+    // silently no-op until process restart.
+    @Volatile
+    private var achievementScope: CoroutineScope = newAchievementScope()
+    private fun newAchievementScope(): CoroutineScope =
+        CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val resources = applicationContext.resources
     private val packageName = applicationContext.packageName
 
     /**
-     * Cancel pending [achievementScope] coroutines. Safe to call once when the
-     * owning task chain is being torn down (currently [SubTaskHandler] lives
-     * for the process lifetime, so this is best-effort cleanup for future use).
+     * Cancel pending achievement coroutines and rebuild the scope so future
+     * `achievementScope.launch { ... }` calls succeed. Idempotent: calling it
+     * when the scope is already cancelled is a no-op followed by a fresh
+     * scope, which is exactly what we want.
      */
     fun shutdown() {
         achievementScope.coroutineContext[kotlinx.coroutines.Job]?.cancel()
+        achievementScope = newAchievementScope()
     }
 
     // 战斗进度临时暂存（FightTimes/SanityBeforeStage 先于 StartButton2/AnnihilationConfirm 到达）
