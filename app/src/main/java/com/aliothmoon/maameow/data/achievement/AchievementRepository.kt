@@ -44,7 +44,7 @@ class AchievementRepository internal constructor(
     // `applicationContext`, which matches the [preferencesDataStore] delegate's
     // documented requirement that the receiver Context live as long as the
     // DataStore.
-    internal val store: DataStore<Preferences> = dataStoreOverride ?: applicationContext.store
+    internal val store: DataStore<Preferences> = dataStoreOverride ?: context.applicationContext.store
     private val recordMutex = Mutex()
     @Volatile
     internal var cachedRecords: Map<String, AchievementRecord>? = null
