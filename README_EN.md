@@ -21,6 +21,8 @@ One-click automation for all daily tasks, powered by image recognition
 ---
 
 > No root required. Run Arknights in the background! Still in development — expect instability. Feedback is welcome!
+>
+> **System requirement: Android 13 (API 33) or newer.** The app raises `minSdk` from 28 to 33 to use Miuix and blur/shader features natively; Android 9–12 users should not upgrade.
 
 <p align="center">
   <img src="docs/screenshots/home.png" width="200" />

@@ -21,6 +21,8 @@
 ---
 
 > 无需 Root 权限，明日方舟可后台！正在开发中，功能不稳定，欢迎尝鲜体验～
+>
+> **系统要求：Android 13 (API 33) 及以上**。项目把 `minSdk` 从 28 提升到 33 以使用 Miuix / blur 等原生能力，Android 9–12 用户请勿升级。
 
 <p align="center">
   <img src="docs/screenshots/home.png" width="200" />
