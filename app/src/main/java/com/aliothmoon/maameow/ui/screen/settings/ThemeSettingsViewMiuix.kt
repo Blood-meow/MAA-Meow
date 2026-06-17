@@ -1,3 +1,10 @@
+// Adapted from KernelSU — https://github.com/tiann/KernelSU (GPL-3.0).
+// The theme preview card (ThemePreviewMiuix / PreviewInfoRowMiuix /
+// PreviewDotMiuix) below reuses the structural layout from KernelSU's
+// "ui.theme.Preview" so the in-app mockup matches the upstream
+// settings preview look. All values are sourced from local
+// AppSettingsManager; no code is copied verbatim.
+
 package com.aliothmoon.maameow.ui.screen.settings
 
 import androidx.compose.animation.AnimatedVisibility
