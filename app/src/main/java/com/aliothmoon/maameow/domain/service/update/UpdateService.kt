@@ -110,15 +110,17 @@ class UpdateService(
             }
             Timber.i("downloadApp resolved URL: host=%s", safeHost(url))
             val result = downloadAndInstallApp(url, version)
-            achievementRepository.recordEvent(
-                if (result.isSuccess) AchievementEvents.UpdateCompleted else AchievementEvents.UpdateFailed,
-                mapOf(
-                    "kind" to "app",
-                    "source" to source.name,
-                    "channel" to channel.name,
-                    "version" to version,
-                ),
-            )
+            runCatching {
+                achievementRepository.recordEvent(
+                    if (result.isSuccess) AchievementEvents.UpdateCompleted else AchievementEvents.UpdateFailed,
+                    mapOf(
+                        "kind" to "app",
+                        "source" to source.name,
+                        "channel" to channel.name,
+                        "version" to version,
+                    ),
+                )
+            }.onFailure { Timber.e(it, "Failed to record update result achievement") }
             return result
         } finally {
             appDownloading.set(false)
@@ -218,22 +220,26 @@ class UpdateService(
             val url = resolver.resolve(currentVersion).getOrElse { e ->
                 val error = mapToUpdateError(e)
                 _resourceProcessState.value = UpdateProcessState.Failed(error)
-                achievementRepository.recordEvent(
-                    AchievementEvents.UpdateFailed,
-                    updateAchievementPayload(
-                        kind = "resource",
-                        source = source,
-                        error = error,
-                    ),
-                )
+                runCatching {
+                    achievementRepository.recordEvent(
+                        AchievementEvents.UpdateFailed,
+                        updateAchievementPayload(
+                            kind = "resource",
+                            source = source,
+                            error = error,
+                        ),
+                    )
+                }.onFailure { Timber.e(it, "Failed to record resource update failure achievement") }
                 return Result.failure(e)
             }
             Timber.i("downloadResource resolved URL: host=%s", safeHost(url))
             val result = downloadAndExtractResource(target, url)
-            achievementRepository.recordEvent(
-                if (result.isSuccess) AchievementEvents.UpdateCompleted else AchievementEvents.UpdateFailed,
-                mapOf("kind" to "resource", "source" to source.name),
-            )
+            runCatching {
+                achievementRepository.recordEvent(
+                    if (result.isSuccess) AchievementEvents.UpdateCompleted else AchievementEvents.UpdateFailed,
+                    mapOf("kind" to "resource", "source" to source.name),
+                )
+            }.onFailure { Timber.e(it, "Failed to record resource update result achievement") }
             return result
         } finally {
             resourceDownloading.set(false)
