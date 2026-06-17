@@ -738,11 +738,18 @@ private fun TimePickerDialog(initialTime: LocalTime? = null, onDismiss: () -> Un
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 MiuixButton(onClick = {
-                    // Resync the text fields from the current wheel selection
-                    // before flipping modes, so neither side of the round trip
-                    // loses state.
-                    textHour = "%02d".format(selectedHour)
-                    textMinute = "%02d".format(selectedMinute)
+                    // wheel -> keyboard: resync the text fields from the
+                    // current wheel selection. We use toString() (no leading
+                    // zero) so the user sees a value that looks like
+                    // something they could have just typed, not a "00"
+                    // placeholder. keyboard -> wheel: no resync needed;
+                    // NumberPicker reads selectedHour / selectedMinute
+                    // directly and the wheel labels are formatted with %02d
+                    // when shown.
+                    if (!keyboardMode) {
+                        textHour = selectedHour.toString()
+                        textMinute = selectedMinute.toString()
+                    }
                     keyboardMode = !keyboardMode
                 }) {
                     MiuixText(stringResource(R.string.schedule_time_picker_keyboard_input))
