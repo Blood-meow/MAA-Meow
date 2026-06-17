@@ -178,19 +178,27 @@ fun ThemeSettingsViewMaterial(
                             }
                         },
                         {
-                            Column {
-                                ThemeSwitchRow(
-                                    icon = Icons.Rounded.Palette,
-                                    title = stringResource(R.string.settings_theme_monet_title),
-                                    summary = stringResource(R.string.settings_theme_monet_desc),
-                                    checked = monetEnabled,
-                                    onCheckedChange = viewModel::setUiMonetEnabled
-                                )
-                                AnimatedVisibility(visible = monetEnabled) {
-                                    KeyColorPicker(
-                                        selectedColor = uiKeyColor,
-                                        onColorSelected = viewModel::setUiKeyColor
+                            // Monet requires Android 12 (API 31) for the system
+                            // wallpaper-derived dynamic color path. On Android 9-11
+                            // the toggle would have no observable effect (no system
+                            // Monet, and the keyColor seed path looks identical to
+                            // the static theme), so we hide the whole row for
+                            // consistency with the UI Style row guard.
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                                Column {
+                                    ThemeSwitchRow(
+                                        icon = Icons.Rounded.Palette,
+                                        title = stringResource(R.string.settings_theme_monet_title),
+                                        summary = stringResource(R.string.settings_theme_monet_desc),
+                                        checked = monetEnabled,
+                                        onCheckedChange = viewModel::setUiMonetEnabled
                                     )
+                                    AnimatedVisibility(visible = monetEnabled) {
+                                        KeyColorPicker(
+                                            selectedColor = uiKeyColor,
+                                            onColorSelected = viewModel::setUiKeyColor
+                                        )
+                                    }
                                 }
                             }
                         }
