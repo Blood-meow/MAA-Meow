@@ -248,6 +248,12 @@ fun MaaMeowTheme(
     val indicationOverride = if (uiStyle == AppSettingsManager.UiStyle.MIUIX)
         NoIndication else null
 
+    // miuix 0.9.2 internally calls Android 13+ RenderEffect / RuntimeShader APIs
+    // that are not available on Android 9-12. Gate the Miuix wrapper behind a
+    // SDK check so older devices (where the UI Style entry is also hidden) get
+    // a pure Material3 theme with no miuix initialization.
+    val canUseMiuix = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+    if (canUseMiuix) {
     MiuixTheme(controller = miuixController) {
         CompositionLocalProvider(
             *if (indicationOverride != null) arrayOf(LocalIndication provides indicationOverride)
@@ -320,6 +326,23 @@ fun MaaMeowTheme(
                     }
                 }
             }
+        }
+    }
+    } else {
+        // Android < 13: miuix is unavailable, fall back to pure Material3.
+        // LocalUiStyle / LocalIsPureDark / LocalDensity are still provided so
+        // child composables that read them keep working.
+        CompositionLocalProvider(
+            LocalUiStyle provides uiStyle,
+            LocalIsPureDark provides isPureDark,
+            LocalDensity provides scaledDensity
+        ) {
+            MaterialTheme(
+                colorScheme = colorScheme,
+                typography = Typography,
+                shapes = MaaShapes,
+                content = content
+            )
         }
     }
 }
