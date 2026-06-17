@@ -94,7 +94,7 @@ val appModule = module {
 
 
     singleOf(::AppSettingsManager)
-    singleOf(::AchievementRepository)
+    single { AchievementRepository(get()) }
     singleOf(::ScheduleStrategyRepository)
     singleOf(::ScheduleTriggerLogger)
     singleOf(::ScheduleAlarmManager)
