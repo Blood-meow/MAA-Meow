@@ -27,12 +27,27 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
 
-class AchievementRepository(private val context: Context) {
+class AchievementRepository internal constructor(
+    private val context: Context,
+    // Optional DataStore override for unit tests. Production code uses the
+    // primary constructor, which captures the [preferencesDataStore] extension
+    // off `applicationContext`. Tests may pass a mock DataStore so the write
+    // can be made to fail (e.g. to verify cache consistency on disk error).
+    private val dataStoreOverride: DataStore<Preferences>? = null,
+) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val json = JsonUtils.common
+    // Exposed as an `internal` field so unit tests can substitute a mock
+    // [DataStore] without going through [Context.preferencesDataStore] (which
+    // is a process-wide singleton bound to a real file and cannot be mocked).
+    // Production code uses the real preferences DataStore bound to
+    // `applicationContext`, which matches the [preferencesDataStore] delegate's
+    // documented requirement that the receiver Context live as long as the
+    // DataStore.
+    internal val store: DataStore<Preferences> = dataStoreOverride ?: applicationContext.store
     private val recordMutex = Mutex()
     @Volatile
-    private var cachedRecords: Map<String, AchievementRecord>? = null
+    internal var cachedRecords: Map<String, AchievementRecord>? = null
     private val definitions: Map<String, AchievementDefinition> by lazy {
         loadDefinitions().associateBy { it.id }
     }
@@ -42,6 +57,7 @@ class AchievementRepository(private val context: Context) {
     val unlockEvents: SharedFlow<AchievementState> = _unlockEvents.asSharedFlow()
 
     companion object {
+        // Backing extension property. The instance used by the repository is captured into [store] above.
         private val Context.store: DataStore<Preferences> by preferencesDataStore(name = "achievements")
         private val RECORDS_KEY = stringPreferencesKey("records")
     }
@@ -234,7 +250,7 @@ class AchievementRepository(private val context: Context) {
             json.decodeFromString(ListSerializer(AchievementRecord.serializer()), raw).associateBy { it.id }
         }.getOrDefault(emptyMap())
     }
-    private suspend fun persistRecords(records: Map<String, AchievementRecord>) {
+    internal suspend fun persistRecords(records: Map<String, AchievementRecord>) {
         // Persist to disk first, then update the in-memory cache. If the
         // DataStore write throws, the cache stays consistent with the last
         // successful on-disk state instead of recording a state that was
