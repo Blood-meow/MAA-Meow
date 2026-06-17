@@ -80,6 +80,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.aliothmoon.maameow.R
 import com.aliothmoon.maameow.constant.DefaultDisplayConfig
 import com.aliothmoon.maameow.ui.navigation.LocalFloatingBottomBarHeight
+import com.aliothmoon.maameow.ui.navigation.LocalMainPagerState
 import com.aliothmoon.maameow.domain.service.MaaCompositionService
 import com.aliothmoon.maameow.domain.service.UnifiedStateDispatcher
 import com.aliothmoon.maameow.domain.state.MaaExecutionState
@@ -258,9 +259,20 @@ fun BackgroundTaskViewMiuix(
         }
     }
 
+    // The Miuix more-actions dialog is a center-overlay that competes for
+    // taps with whatever tab the user is currently looking at. If the user
+    // swipes the bottom bar to a different tab while the dialog is open,
+    // we want it to auto-dismiss instead of floating in space over an
+    // unrelated page. LocalMainPagerState is provided by MainScreen in
+    // both Miuix and Material modes, so this works in either branch.
+    val isOnTasksPage = (LocalMainPagerState.current?.pagerState?.currentPage == 1)
     val shouldHideMoreActions by remember {
         derivedStateOf {
-            !canShowTaskActions || showCloseConfirm || state.isFullscreenMonitor || state.dialog != null
+            !canShowTaskActions ||
+                showCloseConfirm ||
+                state.isFullscreenMonitor ||
+                state.dialog != null ||
+                !isOnTasksPage
         }
     }
     LaunchedEffect(shouldHideMoreActions) {

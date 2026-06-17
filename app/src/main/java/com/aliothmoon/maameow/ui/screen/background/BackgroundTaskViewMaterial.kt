@@ -85,6 +85,7 @@ import com.aliothmoon.maameow.domain.service.MaaCompositionService
 import com.aliothmoon.maameow.domain.service.UnifiedStateDispatcher
 import com.aliothmoon.maameow.domain.state.MaaExecutionState
 import com.aliothmoon.maameow.manager.PermissionManager
+import com.aliothmoon.maameow.ui.navigation.LocalMainPagerState
 import com.aliothmoon.maameow.ui.component.dialog.AdaptiveTaskPromptDialog
 import com.aliothmoon.maameow.ui.component.dialog.ShizukuPermissionDialog
 import com.aliothmoon.maameow.ui.screen.panel.PanelHeader
@@ -259,9 +260,21 @@ fun BackgroundTaskViewMaterial(
         }
     }
 
+    // The more-actions overlay in Material mode is anchored to BottomCenter.
+    // When the user taps a different bottom tab while the overlay is open,
+    // the underlying page changes but the overlay's own showMoreActions
+    // state stays true, so it stays visible over the wrong page.
+    // Auto-dismiss it when the active page is no longer the Tasks tab.
+    // LocalMainPagerState is provided by MainScreen in both Miuix and
+    // Material modes, so the same read works here.
+    val isOnTasksPage = (LocalMainPagerState.current?.pagerState?.currentPage == 1)
     val shouldHideMoreActions by remember {
         derivedStateOf {
-            !canShowTaskActions || showCloseConfirm || state.isFullscreenMonitor || state.dialog != null
+            !canShowTaskActions ||
+                showCloseConfirm ||
+                state.isFullscreenMonitor ||
+                state.dialog != null ||
+                !isOnTasksPage
         }
     }
     LaunchedEffect(shouldHideMoreActions) {
