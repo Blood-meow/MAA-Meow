@@ -26,7 +26,15 @@ class ToolboxResultCollector(
     private val resourceDataManager: ResourceDataManager,
     private val achievementRepository: AchievementRepository,
 ) {
-    private val achievementScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    // Re-creatable so a future shutdown() does not permanently kill the
+    // scope. Mirrors the fix applied to SubTaskHandler.shutdown(): cancel
+    // the current SupervisorJob and assign a fresh scope in its place.
+    // The @Volatile field keeps the launcher seeing a consistent value
+    // across threads.
+    @Volatile
+    private var achievementScope: CoroutineScope = newAchievementScope()
+    private fun newAchievementScope(): CoroutineScope =
+        CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     // ==================== 公招识别 ====================
 
