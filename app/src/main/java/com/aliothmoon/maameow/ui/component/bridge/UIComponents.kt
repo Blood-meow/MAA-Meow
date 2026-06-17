@@ -4,9 +4,15 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.TextFieldValue
 import top.yukonga.miuix.kmp.basic.TextField as MiuixTextField
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
@@ -43,12 +49,27 @@ fun AppTextField(
     trailingIcon: @Composable (() -> Unit)? = null,
     textStyle: TextStyle = MiuixTheme.textStyles.body1,
 ) {
-    val textFieldValue = remember(value) { androidx.compose.ui.text.input.TextFieldValue(value) }
+    // Hold a TextFieldValue in the bridge so Miuix TextField's IME-managed
+    // selection (cursor / composition) survives parent-level value updates.
+    // Previously this used `remember(value) { TextFieldValue(value) }`, which
+    // rebuilt a fresh TextFieldValue(selection = 0) on every IME edit and
+    // reset the cursor, making Backspace appear to "do nothing" after the
+    // first character was typed. We only sync `text` from the parent value,
+    // never the selection, unless the parent actually changes the text.
+    var tfv by remember { mutableStateOf(TextFieldValue(value, TextRange(value.length))) }
+    LaunchedEffect(value) {
+        if (tfv.text != value) {
+            tfv = tfv.copy(text = value)
+        }
+    }
     val effectiveLabel = label ?: placeholder ?: ""
     val useLabelAsPlaceholder = label == null && placeholder != null
     MiuixTextField(
-        value = textFieldValue,
-        onValueChange = { tfv -> onValueChange(tfv.text) },
+        value = tfv,
+        onValueChange = { newTfv ->
+            tfv = newTfv
+            onValueChange(newTfv.text)
+        },
         modifier = modifier,
         label = effectiveLabel,
         useLabelAsPlaceholder = useLabelAsPlaceholder,
