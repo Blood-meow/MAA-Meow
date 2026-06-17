@@ -52,3 +52,34 @@
 - **项目地址**：[MaaAssistantArknights](https://github.com/MaaAssistantArknights/MaaAssistantArknights)
 - **许可证**：[AGPL-3.0](https://www.gnu.org/licenses/agpl-3.0.html)
 - **使用方式**：通过 `scripts/setup_maa_core.py` 下载预编译产物（`libMaaCore.so` 及资源文件），运行时由 JNA 动态加载
+---
+
+## compose-miuix-ui example
+
+- **项目地址**：[compose-miuix-ui](https://github.com/compose-miuix-ui/miuix)
+- **版权**：Copyright (c) 2024 Kyant
+- **许可证**：[Apache License 2.0](../LICENSE-Apache-2.0)
+- **本项目中的位置**：
+  - [`app/src/main/java/com/aliothmoon/maameow/ui/component/bottombar/FloatingBottomBar.kt`](../app/src/main/java/com/aliothmoon/maameow/ui/component/bottombar/FloatingBottomBar.kt)
+  - [`app/src/main/java/com/aliothmoon/maameow/ui/component/liquid/CombinedBackdrop.kt`](../app/src/main/java/com/aliothmoon/maameow/ui/component/liquid/CombinedBackdrop.kt)
+  - [`app/src/main/java/com/aliothmoon/maameow/ui/component/liquid/Lens.kt`](../app/src/main/java/com/aliothmoon/maameow/ui/component/liquid/Lens.kt)
+  - [`app/src/main/java/com/aliothmoon/maameow/ui/component/liquid/Vibrancy.kt`](../app/src/main/java/com/aliothmoon/maameow/ui/component/liquid/Vibrancy.kt)
+
+### 用途
+
+这些文件借鉴了 `compose-miuix-ui` 示例项目中的 Liquid Glass / Bottom Bar 实现思路，参考其 API 调用方式与效果组合方法。本项目仅参考了 Miuix SDK 公开 API（`BackdropEffectScope` / `runtimeShaderEffect` / `colorControls` / `IosLiquidGlassNavigationBar` 等）与示例布局，未逐字复制示例源码；具体效果实现与参数适配由本项目独立完成。
+
+注：`ui/component/liquid/` 下的三个文件同时基于 [Kyant0/AndroidLiquidGlass](https://github.com/Kyant0/AndroidLiquidGlass)（Apache 2.0），头部的文件级声明以 Kyant0 为主要来源；本条目仅说明其与 `compose-miuix-ui` 示例的参考关系。
+
+---
+
+## tiann/KernelSU
+
+- **项目地址**：[tiann/KernelSU](https://github.com/tiann/KernelSU)
+- **版权**：Copyright (c) 2022 tiann
+- **许可证**：[GPL-3.0](https://www.gnu.org/licenses/gpl-3.0.html)
+- **本项目中的位置**：[`app/src/main/java/com/aliothmoon/maameow/ui/screen/settings/ThemeSettingsViewMiuix.kt`](../app/src/main/java/com/aliothmoon/maameow/ui/screen/settings/ThemeSettingsViewMiuix.kt)
+
+### 用途
+
+Miuix 模式设置页中的“主题预览卡片”（`ThemePreviewMiuix` / `PreviewInfoRowMiuix` / `PreviewDotMiuix`）参考了 KernelSU `ui.theme.Preview` 的结构布局，使应用内 Mockup 与上游设置预览的视觉效果保持一致。本项目未逐字复制其源码；所有显示数值均绑定至本地 `AppSettingsManager`，Compose 布局形态借鉴自上游。
