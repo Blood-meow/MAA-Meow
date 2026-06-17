@@ -235,12 +235,16 @@ class AchievementRepository(private val context: Context) {
         }.getOrDefault(emptyMap())
     }
     private suspend fun persistRecords(records: Map<String, AchievementRecord>) {
-        cachedRecords = records
+        // Persist to disk first, then update the in-memory cache. If the
+        // DataStore write throws, the cache stays consistent with the last
+        // successful on-disk state instead of recording a state that was
+        // never actually written.
         val encoded = json.encodeToString(
             ListSerializer(AchievementRecord.serializer()),
             records.values.sortedBy { it.id },
         )
         context.store.edit { prefs -> prefs[RECORDS_KEY] = encoded }
+        cachedRecords = records
     }
     private fun loadDefinitions(): List<AchievementDefinition> = runCatching {
         context.assets.open("achievements.json").bufferedReader().use { reader ->
