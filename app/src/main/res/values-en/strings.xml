@@ -1269,6 +1269,9 @@
     <string name="task_start_execution_finished_message">The task has ended. Check logs for details</string>
     <string name="task_start_execution_completed_title">Task completed</string>
     <string name="task_start_triggered_by_schedule">Triggered by scheduled task \"%1$s\"</string>
+    <string name="task_start_device_memory">Device memory: %1$dMB free / %2$dMB total (%3$d%% used)</string>
+    <string name="task_start_device_memory_low"> [system is low on memory]</string>
+    <string name="task_start_device_memory_unavailable">Device memory: unavailable</string>
 
     <!-- i18n: toolbox / mini game -->
     <string name="toolbox_status_starting">Starting…</string>

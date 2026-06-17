@@ -1323,6 +1323,9 @@
     <string name="task_start_execution_finished_message">任务已结束，详细信息请查看日志</string>
     <string name="task_start_execution_completed_title">任务完成</string>
     <string name="task_start_triggered_by_schedule">由定时任务「%1$s」触发</string>
+    <string name="task_start_device_memory">设备内存: 可用 %1$dMB / 共 %2$dMB (已用 %3$d%%)</string>
+    <string name="task_start_device_memory_low"> [系统已处于低内存]</string>
+    <string name="task_start_device_memory_unavailable">设备内存: 读取失败</string>
 
     <!-- i18n: toolbox / mini game -->
     <string name="toolbox_status_starting">正在启动…</string>
