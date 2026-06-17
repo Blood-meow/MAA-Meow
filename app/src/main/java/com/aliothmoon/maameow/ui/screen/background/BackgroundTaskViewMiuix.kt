@@ -265,9 +265,16 @@ fun BackgroundTaskViewMiuix(
     // we want it to auto-dismiss instead of floating in space over an
     // unrelated page. LocalMainPagerState is provided by MainScreen in
     // both Miuix and Material modes, so this works in either branch.
-    val isOnTasksPage = (LocalMainPagerState.current?.pagerState?.currentPage == 1)
     val shouldHideMoreActions by remember {
         derivedStateOf {
+            // Note: isOnTasksPage must be read INSIDE this block so the
+            // derivedStateOf subscribes to PagerState.currentPage's
+            // snapshot. Reading it outside the block (as a plain val)
+            // wouldn't establish that subscription, because
+            // LocalMainPagerState is a staticCompositionLocalOf and
+            // the parent composable (BackgroundTaskView) does not
+            // recompose when only the pager page changes.
+            val isOnTasksPage = (LocalMainPagerState.current?.pagerState?.currentPage == 1)
             !canShowTaskActions ||
                 showCloseConfirm ||
                 state.isFullscreenMonitor ||
