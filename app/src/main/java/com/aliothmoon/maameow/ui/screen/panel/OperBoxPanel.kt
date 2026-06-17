@@ -15,6 +15,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -28,6 +31,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -46,7 +50,11 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.res.stringResource
 import com.aliothmoon.maameow.R
+import com.aliothmoon.maameow.data.model.toolbox.OperBoxExportFormatter
+import com.aliothmoon.maameow.data.model.toolbox.OperBoxExportLabels
 import com.aliothmoon.maameow.data.model.toolbox.OperBoxOperator
+import com.aliothmoon.maameow.domain.service.ToolboxExportFileType
+import com.aliothmoon.maameow.ui.screen.panel.LocalToolboxFileExporter
 import com.aliothmoon.maameow.ui.viewmodel.ToolboxViewModel
 import com.aliothmoon.maameow.utils.i18n.asString
 import kotlinx.coroutines.launch
@@ -69,6 +77,9 @@ fun OperBoxPanel(
 
     // 0 = 已拥有, 1 = 未拥有
     var selectedTab by remember { mutableIntStateOf(0) }
+    var exportExpanded by remember { mutableStateOf(false) }
+    val fileExporter = LocalToolboxFileExporter.current
+    val exportLabels = rememberOperBoxExportLabels()
 
     val data = result
     if (data == null) {
@@ -115,19 +126,80 @@ fun OperBoxPanel(
                         )
                     }
                 }
-                TextButton(onClick = {
-                    scope.launch {
-                        val text = viewModel.exportOperBox()
-                        val entry = ClipData.newPlainText("label", text).toClipEntry()
-                        clipboard.setClipEntry(entry)
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    TextButton(onClick = {
+                        scope.launch {
+                            val text = viewModel.exportOperBox()
+                            val entry = ClipData.newPlainText("label", text).toClipEntry()
+                            clipboard.setClipEntry(entry)
+                        }
+                        Toast.makeText(
+                            context,
+                            copyToastMessage,
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }) {
+                        MaaUiText(
+                            stringResource(R.string.panel_export_copy),
+                            style = ThemeTypography.bodySmall
+                        )
                     }
-                    Toast.makeText(
-                        context,
-                        copyToastMessage,
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }) {
-                    MaaUiText(stringResource(R.string.common_export), style = ThemeTypography.bodySmall)
+                    if (fileExporter != null) {
+                        TextButton(onClick = { exportExpanded = !exportExpanded }) {
+                            MaaUiText(
+                                stringResource(R.string.panel_export_file),
+                                style = ThemeTypography.bodySmall
+                            )
+                            Icon(
+                                imageVector = if (exportExpanded) Icons.Default.ArrowDropUp else Icons.Default.ArrowDropDown,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    }
+                }
+                if (fileExporter != null) {
+                    AnimatedVisibility(visible = exportExpanded) {
+                        val exportFormats = listOf(
+                            Triple("JSON", ToolboxExportFileType.JSON, { viewModel.exportOperBox() }),
+                            Triple(
+                                "Markdown",
+                                ToolboxExportFileType.MARKDOWN,
+                                {
+                                    OperBoxExportFormatter.toMarkdown(
+                                        viewModel.exportOperBoxList(),
+                                        exportLabels
+                                    )
+                                }
+                            ),
+                            Triple(
+                                "CSV",
+                                ToolboxExportFileType.CSV,
+                                {
+                                    OperBoxExportFormatter.toCsv(
+                                        viewModel.exportOperBoxList(),
+                                        exportLabels
+                                    )
+                                }
+                            ),
+                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.End)
+                        ) {
+                            exportFormats.forEach { (label, fileType, buildContent) ->
+                                TextButton(onClick = {
+                                    fileExporter.export("operbox", buildContent(), fileType)
+                                    exportExpanded = false
+                                }) {
+                                    MaaUiText(label, style = ThemeTypography.bodySmall)
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -244,5 +316,22 @@ private fun OperatorRow(oper: OperBoxOperator) {
                 )
             }
         }
+    }
+}
+
+
+@Composable
+private fun rememberOperBoxExportLabels(): OperBoxExportLabels {
+    val name = stringResource(R.string.operbox_export_header_name)
+    val id = stringResource(R.string.operbox_export_header_id)
+    val rarity = stringResource(R.string.operbox_export_header_rarity)
+    val elite = stringResource(R.string.operbox_export_header_elite)
+    val level = stringResource(R.string.operbox_export_header_level)
+    val own = stringResource(R.string.operbox_export_header_own)
+    val potential = stringResource(R.string.operbox_export_header_potential)
+    val yes = stringResource(R.string.operbox_export_yes)
+    val no = stringResource(R.string.operbox_export_no)
+    return remember(name, id, rarity, elite, level, own, potential, yes, no) {
+        OperBoxExportLabels(name, id, rarity, elite, level, own, potential, yes, no)
     }
 }

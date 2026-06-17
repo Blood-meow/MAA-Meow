@@ -120,6 +120,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import com.aliothmoon.maameow.ui.screen.panel.ToolboxPanel
+import com.aliothmoon.maameow.ui.screen.panel.LocalToolboxFileExporter
+import com.aliothmoon.maameow.ui.screen.panel.rememberSafToolboxFileExporter
 import top.yukonga.miuix.kmp.basic.Button as MiuixButton
 import top.yukonga.miuix.kmp.basic.Checkbox as MiuixCheckbox
 import androidx.compose.ui.state.ToggleableState
@@ -491,7 +493,11 @@ fun BackgroundTaskViewMiuix(
                                 }
 
                                 1 -> AutoBattlePanel(modifier = Modifier.fillMaxSize())
-                                2 -> ToolboxPanel(modifier = Modifier.fillMaxSize())
+                                2 -> CompositionLocalProvider(
+                                    LocalToolboxFileExporter provides rememberSafToolboxFileExporter()
+                                ) {
+                                    ToolboxPanel(modifier = Modifier.fillMaxSize())
+                                }
                                 3 -> {
                                     val runtimeLogs by viewModel.logs.collectAsStateWithLifecycle()
                                     LogPanel(

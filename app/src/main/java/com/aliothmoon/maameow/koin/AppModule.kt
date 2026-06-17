@@ -29,6 +29,7 @@ import com.aliothmoon.maameow.data.resource.ItemIconLoader
 import com.aliothmoon.maameow.data.resource.ResourceDataManager
 import com.aliothmoon.maameow.domain.service.CopilotManager
 import com.aliothmoon.maameow.domain.service.LogExportService
+import com.aliothmoon.maameow.domain.service.ToolboxExportService
 import com.aliothmoon.maameow.domain.service.AppAliveChecker
 import com.aliothmoon.maameow.domain.service.MaaCompositionService
 import com.aliothmoon.maameow.domain.service.MaaEventNotifier
@@ -153,6 +154,7 @@ val appModule = module {
 
     singleOf(::UnifiedStateDispatcher)
     singleOf(::LogExportService)
+    singleOf(::ToolboxExportService)
 
 
     singleOf(::BorderOverlayManager)
