@@ -5,6 +5,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -49,6 +50,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
+import androidx.compose.material3.dynamicDarkColorScheme
+import androidx.compose.material3.dynamicLightColorScheme
 import top.yukonga.miuix.kmp.preference.SliderPreference
 import com.aliothmoon.maameow.ui.isMiuixUi
 import androidx.compose.material3.Text
@@ -769,6 +772,14 @@ private fun KeyColorPicker(
     selectedColor: Long,
     onColorSelected: (Long) -> Unit
 ) {
+    // System Monet swatch: preview the *real* system wallpaper-derived primary,
+    // not the app's current primary (which may be overridden by a user-picked
+    // key color or PureDark treatment in MaaMeowTheme). Compute once at this
+    // composable scope so we don't rebuild the ColorScheme per LazyRow item.
+    val context = LocalContext.current
+    val systemInDark = isSystemInDarkTheme()
+    val systemMonet = if (systemInDark) dynamicDarkColorScheme(context).primary
+                      else dynamicLightColorScheme(context).primary
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -791,11 +802,13 @@ private fun KeyColorPicker(
             items(presetColors.size) { index ->
                 val (colorLong, colorObj) = presetColors[index]
                 val selected = colorLong == selectedColor
+                // First item is "system default": always show the live system Monet color.
+                val displayColor = if (index == 0) systemMonet else colorObj
                 Box(
                     modifier = Modifier
                         .size(40.dp)
                         .clip(CircleShape)
-                        .background(colorObj)
+                        .background(displayColor)
                         .then(
                             if (selected) Modifier.border(2.5.dp, MaterialTheme.colorScheme.onSurface, CircleShape)
                             else Modifier
