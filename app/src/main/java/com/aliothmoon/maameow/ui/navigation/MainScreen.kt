@@ -2,6 +2,7 @@ package com.aliothmoon.maameow.ui.navigation
 
 import androidx.compose.animation.core.EaseInOut
 import androidx.compose.animation.core.tween
+import com.aliothmoon.maameow.ui.theme.MaaAnimations.iOSSpringEasing
 import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
@@ -98,7 +99,7 @@ class MainPagerState(
             try {
                 pagerState.animateScrollBy(
                     value = scrollPixels,
-                    animationSpec = tween(easing = EaseInOut, durationMillis = duration)
+                    animationSpec = tween(easing = iOSSpringEasing, durationMillis = duration)
                 )
             } finally {
                 if (navJob == myJob) {

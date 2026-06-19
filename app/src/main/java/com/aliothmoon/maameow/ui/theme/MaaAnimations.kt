@@ -3,7 +3,7 @@ package com.aliothmoon.maameow.ui.theme
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
-import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -57,9 +57,19 @@ fun Modifier.pressableScale(pressed: Boolean): Modifier {
 object MaaAnimations {
 
     // ---- Page transitions (inspired by rikkahub / miuix) ----
-    private const val PAGE_DURATION = 300
+    private const val PAGE_DURATION = 380
 
-    private val pageEasing = FastOutSlowInEasing
+    /**
+     * iOS-spring cubic bezier (0.32, 0.72, 0.0, 1.0) -- the elastic ease used
+     * by UIKit for present/dismiss and alert transitions. The middle control
+     * point (y1=0.72) overshoots the linear interpolation, producing a
+     * "decelerate past the target, settle back" feel -- a subtle bounce.
+     * Used for tab switches, page transitions, and dialog enter/exit so all
+     * motion shares a single signature feel.
+     */
+    val iOSSpringEasing = CubicBezierEasing(0.32f, 0.72f, 0.0f, 1.0f)
+
+    private val pageEasing = iOSSpringEasing
 
     /** Forward enter: new page slides in from right, full width */
     fun sharedAxisForwardEnter(): EnterTransition =
@@ -108,34 +118,34 @@ object MaaAnimations {
 
     /** Tab enter: new tab slides in from right + fades in */
     fun tabEnter(): EnterTransition =
-        fadeIn(animationSpec = tween(TAB_DURATION, easing = FastOutSlowInEasing)) +
+        fadeIn(animationSpec = tween(TAB_DURATION, easing = iOSSpringEasing)) +
         slideInHorizontally(
             initialOffsetX = { fullWidth -> fullWidth / 4 },
-            animationSpec = tween(TAB_DURATION, easing = FastOutSlowInEasing)
+            animationSpec = tween(TAB_DURATION, easing = iOSSpringEasing)
         )
 
     /** Tab exit: old tab slides out to left + fades out */
     fun tabExit(): ExitTransition =
-        fadeOut(animationSpec = tween(TAB_DURATION, easing = FastOutSlowInEasing)) +
+        fadeOut(animationSpec = tween(TAB_DURATION, easing = iOSSpringEasing)) +
         slideOutHorizontally(
             targetOffsetX = { fullWidth -> -fullWidth / 4 },
-            animationSpec = tween(TAB_DURATION, easing = FastOutSlowInEasing)
+            animationSpec = tween(TAB_DURATION, easing = iOSSpringEasing)
         )
 
     /** Tab pop enter: underlying tab slides in from left + fades in */
     fun tabPopEnter(): EnterTransition =
-        fadeIn(animationSpec = tween(TAB_DURATION, easing = FastOutSlowInEasing)) +
+        fadeIn(animationSpec = tween(TAB_DURATION, easing = iOSSpringEasing)) +
         slideInHorizontally(
             initialOffsetX = { fullWidth -> -fullWidth / 4 },
-            animationSpec = tween(TAB_DURATION, easing = FastOutSlowInEasing)
+            animationSpec = tween(TAB_DURATION, easing = iOSSpringEasing)
         )
 
     /** Tab pop exit: current tab slides out to right + fades out */
     fun tabPopExit(): ExitTransition =
-        fadeOut(animationSpec = tween(TAB_DURATION, easing = FastOutSlowInEasing)) +
+        fadeOut(animationSpec = tween(TAB_DURATION, easing = iOSSpringEasing)) +
         slideOutHorizontally(
             targetOffsetX = { fullWidth -> fullWidth / 4 },
-            animationSpec = tween(TAB_DURATION, easing = FastOutSlowInEasing)
+            animationSpec = tween(TAB_DURATION, easing = iOSSpringEasing)
         )
 
     // ---- Staggered list item enter ----
@@ -164,7 +174,7 @@ object MaaAnimations {
             visible = visible,
             enter = slideInVertically(
                 initialOffsetY = { it / 5 },
-                animationSpec = tween(STAGGER_DURATION, easing = FastOutSlowInEasing)
+                animationSpec = tween(STAGGER_DURATION, easing = iOSSpringEasing)
             ) + fadeIn(
                 animationSpec = tween(STAGGER_DURATION, easing = LinearEasing)
             )
@@ -181,7 +191,7 @@ object MaaAnimations {
     fun expandEnter(): EnterTransition =
         expandVertically(
             expandFrom = Alignment.Top,
-            animationSpec = tween(300, easing = FastOutSlowInEasing)
+            animationSpec = tween(300, easing = iOSSpringEasing)
         ) + fadeIn(animationSpec = tween(200))
 
     /**
@@ -190,7 +200,7 @@ object MaaAnimations {
     fun collapseExit(): ExitTransition =
         shrinkVertically(
             shrinkTowards = Alignment.Top,
-            animationSpec = tween(300, easing = FastOutSlowInEasing)
+            animationSpec = tween(300, easing = iOSSpringEasing)
         ) + fadeOut(animationSpec = tween(200))
 
     // ---- Press feedback ----
