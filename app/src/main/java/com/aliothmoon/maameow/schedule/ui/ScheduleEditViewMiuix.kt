@@ -32,6 +32,8 @@ import androidx.compose.material3.rememberDatePickerState
 
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.NumberPicker
+import top.yukonga.miuix.kmp.basic.RadioButton as MiuixRadioButton
+import top.yukonga.miuix.kmp.basic.RadioButtonDefaults as MiuixRadioButtonDefaults
 
 import top.yukonga.miuix.kmp.basic.SnackbarHost
 import top.yukonga.miuix.kmp.basic.SnackbarHostState
@@ -607,17 +609,29 @@ private fun ProfileSelectorMiuix(
             MiuixSurface(
                 onClick = { onSelect(profile.id) },
                 shape = RoundedCornerShape(12.dp),
-                color = if (isSelected) MiuixTheme.colorScheme.secondaryContainer
+                color = if (isSelected) MiuixTheme.colorScheme.primary.copy(alpha = 0.15f)
                 else MiuixTheme.colorScheme.surfaceContainer,
             ) {
-                Box(
+                Row(
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                    contentAlignment = Alignment.Center,
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
+                    if (isSelected) {
+                        MiuixRadioButton(
+                            selected = true,
+                            onClick = null,
+                            enabled = false,
+                            colors = MiuixRadioButtonDefaults.radioButtonColors(
+                                disabledSelectedColor = MiuixTheme.colorScheme.primary,
+                            ),
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                    }
                     MiuixText(
                         text = profile.name,
                         style = MiuixTheme.textStyles.body2,
-                        color = if (isSelected) MiuixTheme.colorScheme.onSecondaryContainer
+                        color = if (isSelected) MiuixTheme.colorScheme.primary
                         else MiuixTheme.colorScheme.onSurface,
                     )
                 }
