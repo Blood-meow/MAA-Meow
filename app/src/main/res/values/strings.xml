@@ -290,6 +290,11 @@
     <string name="editor_json_invalid">JSON 格式错误</string>
     <string name="editor_save_success">保存成功，下次任务启动生效</string>
 
+    <!-- settings: notification section -->
+    <string name="settings_section_notification">通知</string>
+    <string name="settings_notification_title">通知设置</string>
+    <string name="settings_notification_desc">管理内部和外部通知渠道</string>
+
     <!-- settings: data section -->
     <string name="settings_section_data">数据管理</string>
     <string name="settings_export_config_title">导出配置</string>
@@ -877,7 +882,7 @@
     <string name="bottom_nav_home">首页</string>
     <string name="bottom_nav_background_task">后台任务</string>
     <string name="bottom_nav_schedule">定时</string>
-    <string name="bottom_nav_notification">通知</string>
+    <string name="bottom_nav_settings">设置</string>
     <string name="navigation_toast_switch_background_mode">当前是前台模式，请先切换到后台模式</string>
 
     <!-- shared panel / toolbox -->

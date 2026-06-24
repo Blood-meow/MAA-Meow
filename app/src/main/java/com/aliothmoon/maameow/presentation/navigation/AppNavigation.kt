@@ -87,7 +87,7 @@ fun AppNavigation(
     val scheduledCountdownState by backgroundTaskViewModel.coordinator.countdownState.collectAsStateWithLifecycle()
 
     // 定义哪些页面属于主 Tab
-    val mainTabs = listOf(Routes.HOME, Routes.BACKGROUND_TASK, Routes.SCHEDULE, Routes.NOTIFICATION)
+    val mainTabs = listOf(Routes.HOME, Routes.BACKGROUND_TASK, Routes.SCHEDULE, Routes.SETTINGS)
     
     // 判断是否处于主 Tab 页面
     val isOnMainTab = currentNavRoute in mainTabs || currentNavRoute == null
@@ -225,17 +225,6 @@ fun AppNavigation(
 
                     composable(
                         route = Routes.NOTIFICATION,
-                        enterTransition = { tabEnterTransition },
-                        exitTransition = { tabExitTransition },
-                        popEnterTransition = { tabEnterTransition },
-                        popExitTransition = { tabExitTransition }
-                    ) {
-                        BackHandler { navController.popBackStack() }
-                        NotificationSettingsView()
-                    }
-
-                    composable(
-                        route = Routes.SETTINGS,
                         enterTransition = {
                             slideInHorizontally(initialOffsetX = { it }, animationSpec = tween(350))
                         },
@@ -249,6 +238,17 @@ fun AppNavigation(
                             slideOutHorizontally(targetOffsetX = { it }, animationSpec = tween(350))
                         }
                     ) {
+                        NotificationSettingsView(navController = navController)
+                    }
+
+                    composable(
+                        route = Routes.SETTINGS,
+                        enterTransition = { tabEnterTransition },
+                        exitTransition = { tabExitTransition },
+                        popEnterTransition = { tabEnterTransition },
+                        popExitTransition = { tabExitTransition }
+                    ) {
+                        BackHandler { navController.popBackStack() }
                         SettingsView(
                             navController = navController,
                             onViewAnnouncement = { forceShowAnnouncement = true },

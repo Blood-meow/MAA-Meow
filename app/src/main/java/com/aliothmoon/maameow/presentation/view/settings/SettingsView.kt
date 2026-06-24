@@ -653,6 +653,28 @@ fun SettingsView(
                 }
             }
 
+            // 通知
+            item {
+                SectionHeader(stringResource(R.string.settings_section_notification))
+                InfoCard(
+                    title = "",
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    contentColor = contentColor,
+                    contentPadding = PaddingValues(
+                        horizontal = MaaDesignTokens.Card.innerPadding,
+                        vertical = MaaDesignTokens.Spacing.listItemVertical
+                    )
+                ) {
+                    SettingClickItem(
+                        title = stringResource(R.string.settings_notification_title),
+                        description = stringResource(R.string.settings_notification_desc),
+                        contentColor = contentColor
+                    ) {
+                        navController.navigate(Routes.NOTIFICATION)
+                    }
+                }
+            }
+
             // 关于
             item {
                 SectionHeader(stringResource(R.string.settings_section_about))
