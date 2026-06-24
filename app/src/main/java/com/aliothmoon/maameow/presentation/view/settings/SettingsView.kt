@@ -23,6 +23,8 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.rounded.Build
 import androidx.compose.material3.CircularProgressIndicator
 import android.os.Build
@@ -516,16 +518,6 @@ fun SettingsView(
                             }
                         }
                     }
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                        SettingSwitchItem(
-                            title = stringResource(R.string.settings_monet_color_title),
-                            description = stringResource(R.string.settings_monet_color_desc),
-                            contentColor = contentColor,
-                            checked = useSystemMonetColor,
-                            onCheckedChange = { viewModel.setUseSystemMonetColor(it) }
-                        )
-                        SettingsDivider(contentColor)
-                    }
                     SettingClickItem(
                         title = stringResource(R.string.settings_achievement_title),
                         description = stringResource(R.string.settings_achievement_desc),
@@ -550,6 +542,14 @@ fun SettingsView(
                         onModeSelected = { viewModel.setThemeMode(it) }
                     )
                     SettingsDivider(contentColor)
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        SettingMonetColorItem(
+                            contentColor = contentColor,
+                            checked = useSystemMonetColor,
+                            onCheckedChange = { viewModel.setUseSystemMonetColor(it) }
+                        )
+                        SettingsDivider(contentColor)
+                    }
                     FontSizeSetting(
                         contentColor = contentColor,
                         value = fontSizeScale,
@@ -1198,6 +1198,52 @@ private fun SettingRemoteBackendItem(
                         color = contentColor
                     )
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SettingMonetColorItem(
+    contentColor: Color,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { expanded = !expanded }
+                .padding(vertical = MaaDesignTokens.Spacing.listItemVertical),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = stringResource(R.string.settings_monet_color_title),
+                style = MaterialTheme.typography.bodyLarge,
+                color = contentColor,
+                modifier = Modifier.weight(1f)
+            )
+            Icon(
+                imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                contentDescription = null,
+                tint = contentColor.copy(alpha = 0.6f)
+            )
+        }
+        AnimatedVisibility(visible = expanded) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = MaaDesignTokens.Spacing.sm),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = stringResource(R.string.settings_monet_color_desc),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = contentColor.copy(alpha = 0.7f),
+                    modifier = Modifier.weight(1f)
+                )
+                Switch(checked = checked, onCheckedChange = onCheckedChange)
             }
         }
     }
