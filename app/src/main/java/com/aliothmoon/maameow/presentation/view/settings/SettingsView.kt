@@ -30,6 +30,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -52,6 +53,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import kotlin.math.roundToInt
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.aliothmoon.maameow.BuildConfig
@@ -109,6 +111,7 @@ fun SettingsView(
     val updateChannel by viewModel.updateChannel.collectAsStateWithLifecycle()
     val themeMode by viewModel.themeMode.collectAsStateWithLifecycle()
     val useSystemMonetColor by viewModel.useSystemMonetColor.collectAsStateWithLifecycle()
+    val fontSizeScale by viewModel.fontSizeScale.collectAsStateWithLifecycle()
     val backgroundResolution by viewModel.backgroundResolution.collectAsStateWithLifecycle()
     val language by viewModel.language.collectAsStateWithLifecycle()
     val backupMessage by viewModel.backupMessage.collectAsStateWithLifecycle()
@@ -547,6 +550,12 @@ fun SettingsView(
                         onModeSelected = { viewModel.setThemeMode(it) }
                     )
                     SettingsDivider(contentColor)
+                    FontSizeSetting(
+                        contentColor = contentColor,
+                        value = fontSizeScale,
+                        onValueChange = { viewModel.setFontSizeScale(it) }
+                    )
+                    SettingsDivider(contentColor)
                     SettingLanguageItem(
                         contentColor = contentColor,
                         selectedLanguage = language,
@@ -786,6 +795,74 @@ private fun SettingClickItem(
                     text = description,
                     style = MaterialTheme.typography.bodySmall,
                     color = contentColor.copy(alpha = 0.7f)
+                )
+            }
+        }
+    }
+}
+
+/**
+ * 字体大小（页面缩放）设置：整数 80~110，默认 100。
+ * 松手后才提交全局缩放。
+ */
+@Composable
+private fun FontSizeSetting(
+    contentColor: Color,
+    value: Int,
+    onValueChange: (Int) -> Unit
+) {
+    var sliderValue by remember { mutableStateOf(value.toFloat()) }
+    LaunchedEffect(value) {
+        sliderValue = value.toFloat()
+    }
+    val current = sliderValue.roundToInt().coerceIn(AppSettingsManager.FONT_SIZE_SCALE_MIN, AppSettingsManager.FONT_SIZE_SCALE_MAX)
+
+    Column(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = stringResource(R.string.settings_font_size_title),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = contentColor
+                )
+                Text(
+                    text = stringResource(R.string.settings_font_size_summary),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = contentColor.copy(alpha = 0.6f)
+                )
+            }
+            Text(
+                text = current.toString(),
+                style = MaterialTheme.typography.bodyMedium,
+                color = contentColor
+            )
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        Slider(
+            value = sliderValue,
+            onValueChange = { sliderValue = it },
+            onValueChangeFinished = {
+                onValueChange(sliderValue.roundToInt().coerceIn(
+                    AppSettingsManager.FONT_SIZE_SCALE_MIN,
+                    AppSettingsManager.FONT_SIZE_SCALE_MAX
+                ))
+            },
+            valueRange = AppSettingsManager.FONT_SIZE_SCALE_MIN.toFloat()..AppSettingsManager.FONT_SIZE_SCALE_MAX.toFloat(),
+            steps = 0,
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            listOf(AppSettingsManager.FONT_SIZE_SCALE_MIN, 90, 100, AppSettingsManager.FONT_SIZE_SCALE_MAX).forEach { kp ->
+                Text(
+                    text = kp.toString(),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = contentColor.copy(alpha = 0.5f)
                 )
             }
         }
