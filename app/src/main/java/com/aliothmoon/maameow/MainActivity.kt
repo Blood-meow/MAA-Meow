@@ -78,7 +78,7 @@ class MainActivity : AppCompatActivity() {
                 CompositionLocalProvider(
                     LocalDensity provides Density(
                         density = baseDensity.density * fontSizeScale / 100f,
-                        fontScale = baseDensity.fontScale * fontSizeScale / 100f
+                        fontScale = baseDensity.fontScale
                     )
                 ) {
                     AppNavigation(backgroundTaskViewModel = backgroundTaskViewModel)
