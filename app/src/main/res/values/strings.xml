@@ -301,6 +301,11 @@
     <string name="settings_import_config_title">导入配置</string>
     <string name="settings_import_config_desc">从文件恢复设置和任务配置</string>
 
+        <string name="settings_section_achievement">成就</string>
+    <string name="settings_achievement_snackbar_title">弹窗提示</string>
+    <string name="settings_achievement_snackbar_desc">成就解锁时弹出 Snackbar 提示</string>
+
+
     <!-- achievements -->
     <string name="achievement_title">成就</string>
     <string name="achievement_unlocked_message">达成成就：%1$s</string>

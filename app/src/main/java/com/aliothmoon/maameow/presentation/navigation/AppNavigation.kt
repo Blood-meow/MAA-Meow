@@ -81,6 +81,7 @@ fun AppNavigation(
     // 执行模式状态 - 用于底部导航拦截
     val runMode by appSettings.runMode.collectAsStateWithLifecycle()
     val announcementReadVersion by appSettings.announcementReadVersion.collectAsStateWithLifecycle()
+    val showAchievementSnackbar by appSettings.showAchievementSnackbar.collectAsStateWithLifecycle()
     val language by appSettings.language.collectAsStateWithLifecycle()
     val overlayControlMode by appSettings.overlayControlMode.collectAsStateWithLifecycle()
     val pendingScheduledExecution by backgroundTaskViewModel.coordinator.pendingExecution.collectAsStateWithLifecycle()
@@ -131,16 +132,18 @@ fun AppNavigation(
             Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
         }
     }
-    LaunchedEffect(achievementRepository) {
-        achievementRepository.unlockEvents.collect { id ->
-            val title = context.achievementText(id, "title")
-            snackbarHostState.showSnackbar(
-                message = context.getString(
-                    R.string.achievement_unlocked_message,
-                    title,
-                ),
-                duration = SnackbarDuration.Short,
-            )
+    LaunchedEffect(achievementRepository, showAchievementSnackbar) {
+        if (showAchievementSnackbar) {
+            achievementRepository.unlockEvents.collect { id ->
+                val title = context.achievementText(id, "title")
+                snackbarHostState.showSnackbar(
+                    message = context.getString(
+                        R.string.achievement_unlocked_message,
+                        title,
+                    ),
+                    duration = SnackbarDuration.Short,
+                )
+            }
         }
     }
 
@@ -270,7 +273,9 @@ fun AppNavigation(
                             slideOutHorizontally(targetOffsetX = { it }, animationSpec = tween(350))
                         }
                     ) {
-                        AchievementView(navController = navController)
+                        AchievementView(
+                            navController = navController,
+                        )
                     }
 
                     composable(
