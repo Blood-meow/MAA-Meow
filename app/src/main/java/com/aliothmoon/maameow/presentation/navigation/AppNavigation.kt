@@ -1,6 +1,5 @@
 package com.aliothmoon.maameow.presentation.navigation
 import android.widget.Toast
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.SnackbarDuration
@@ -68,7 +67,6 @@ fun AppNavigation(
     val announcementReadVersion by appSettings.announcementReadVersion.collectAsStateWithLifecycle()
     val showAchievementSnackbar by appSettings.showAchievementSnackbar.collectAsStateWithLifecycle()
     val language by appSettings.language.collectAsStateWithLifecycle()
-    val overlayControlMode by appSettings.overlayControlMode.collectAsStateWithLifecycle()
     val pendingScheduledExecution by backgroundTaskViewModel.coordinator.pendingExecution.collectAsStateWithLifecycle()
     val scheduledCountdownState by backgroundTaskViewModel.coordinator.countdownState.collectAsStateWithLifecycle()
 
@@ -77,17 +75,12 @@ fun AppNavigation(
         Routes.HOME, Routes.BACKGROUND_TASK, Routes.SCHEDULE, Routes.SETTINGS
     ) || currentNavRoute == null
 
-    val switchBackgroundModeMessage = stringResource(R.string.navigation_toast_switch_background_mode)
 
+    // 定时任务自动跳转 - 通过 LocalMainPagerState 滑到任务页
+    val mainPagerState = LocalMainPagerState.current
     LaunchedEffect(pendingScheduledExecution?.requestId) {
-        if (pendingScheduledExecution != null && currentNavRoute != Routes.BACKGROUND_TASK) {
-            navController.navigate(Routes.BACKGROUND_TASK) {
-                popUpTo(Routes.HOME) {
-                    saveState = true
-                }
-                launchSingleTop = true
-                restoreState = true
-            }
+        if (pendingScheduledExecution != null && mainPagerState != null) {
+            mainPagerState.animateToPage(1) // BACKGROUND_TASK = index 1
         }
     }
     LaunchedEffect(backgroundTaskViewModel) {
@@ -232,6 +225,7 @@ fun AppNavigation(
                 TaskOverrideEditorView(navController = navController)
             }
         }
+        ResourceLoadingOverlay()
         // SnackbarHost overlaid on top
         SnackbarHost(
             hostState = snackbarHostState,
