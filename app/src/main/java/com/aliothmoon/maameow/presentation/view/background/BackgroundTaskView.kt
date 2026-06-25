@@ -9,6 +9,8 @@ import android.view.Surface
 import android.view.SurfaceHolder
 import android.view.SurfaceView
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.animation.core.tween
+import com.aliothmoon.maameow.theme.MaaAnimations
 import androidx.compose.foundation.layout.aspectRatio
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
@@ -182,7 +184,13 @@ fun BackgroundTaskView(
 
     LaunchedEffect(state.current) {
         if (pagerState.currentPage != state.current.ordinal) {
-            pagerState.scrollToPage(state.current.ordinal)
+            pagerState.animateScrollToPage(
+                state.current.ordinal,
+                animationSpec = tween(
+                    easing = MaaAnimations.springEasing,
+                    durationMillis = 250
+                )
+            )
         }
     }
     val context = LocalContext.current
