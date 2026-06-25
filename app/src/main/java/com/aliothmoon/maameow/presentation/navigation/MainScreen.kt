@@ -11,6 +11,7 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -114,6 +115,7 @@ fun MainScreen(
 
     val runMode by appSettings.runMode.collectAsStateWithLifecycle()
 
+    CompositionLocalProvider(LocalMainPagerState provides mainPagerState) {
     Scaffold(
         bottomBar = {
             if (showBottomBar) {
@@ -153,5 +155,6 @@ fun MainScreen(
                 }
             }
         }
+    }
     }
 }
