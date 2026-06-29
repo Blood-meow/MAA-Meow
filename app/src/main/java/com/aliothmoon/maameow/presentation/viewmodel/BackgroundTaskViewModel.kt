@@ -241,6 +241,29 @@ class BackgroundTaskViewModel(
         }
     }
 
+    fun onInjectText(text: String) {
+        if (text.isBlank()) return
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                RemoteServiceManager.getInstanceOrNull()?.sendText(text)
+            } catch (e: Exception) {
+                Timber.e(e, "sendText failed")
+            }
+        }
+    }
+
+    fun onSendKeyEvents(keyCode: Int, count: Int) {
+        if (count <= 0) return
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val service = RemoteServiceManager.getInstanceOrNull() ?: return@launch
+                repeat(count) { service.sendKeyEvent(keyCode) }
+            } catch (e: Exception) {
+                Timber.e(e, "sendKeyEvents failed")
+            }
+        }
+    }
+
     fun onScreenOff() {
         runCatching {
             hardwareScreenOffManager.activate()
@@ -249,7 +272,7 @@ class BackgroundTaskViewModel(
         }
     }
 
-    // ==================== Task Chain ====================
+    // ======================== Task Chain ========================
 
     fun onNodeEnabledChange(nodeId: String, enabled: Boolean) {
         viewModelScope.launch {

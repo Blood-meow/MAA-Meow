@@ -157,6 +157,29 @@ class RemoteServiceImpl : RemoteService.Stub() {
         }
     }
 
+    override fun sendText(text: String?) {
+        if (text.isNullOrBlank()) return
+        val displayId = VirtualDisplayManager.getDisplayId()
+        if (displayId == DefaultDisplayConfig.DISPLAY_NONE) {
+            Ln.w("$TAG: sendText - no virtual display")
+            return
+        }
+        // Escape single quote only: end-quote, escaped-quote, start-quote
+        val escaped = text.replace("'", "'\\''")
+        val cmd = "input -d $displayId text '$escaped'"
+        Ln.i("$TAG: sendText cmd=$cmd")
+        RemoteUtils.shellExec(cmd)
+    }
+
+    override fun sendKeyEvent(keyCode: Int) {
+        val displayId = VirtualDisplayManager.getDisplayId()
+        if (displayId == DefaultDisplayConfig.DISPLAY_NONE) {
+            Ln.w("$TAG: sendKeyEvent - no virtual display")
+            return
+        }
+        RemoteUtils.shellExec("input -d $displayId keyevent $keyCode")
+    }
+
     override fun setForcedDisplaySize(width: Int, height: Int): Boolean {
         return ScreenManager.setForcedDisplaySize(width, height)
     }

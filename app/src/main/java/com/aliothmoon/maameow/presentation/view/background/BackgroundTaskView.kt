@@ -114,6 +114,16 @@ import androidx.compose.material.icons.filled.PowerSettingsNew
 import androidx.compose.material.icons.filled.NotificationsPaused
 import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.Screenshot
+import androidx.compose.material.icons.filled.Keyboard
+import androidx.compose.ui.draw.alpha
+import android.content.Context
+import android.text.InputType
+import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputConnection
+import android.view.inputmethod.InputConnectionWrapper
+import android.view.inputmethod.InputMethodManager
+import android.view.KeyEvent
+import android.widget.EditText
 import androidx.compose.material.icons.filled.StayCurrentPortrait
 import androidx.compose.material.icons.filled.TouchApp
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -286,7 +296,8 @@ fun BackgroundTaskView(
                         modifier = Modifier.fillMaxSize()
                     )
                 }
-            }
+
+                }
         }
     }
 
@@ -630,7 +641,23 @@ fun BackgroundTaskView(
                 }
             }
 
-            BackHandler { viewModel.onToggleFullscreenMonitor() }
+            // Keyboard toggle + hidden EditText for direct IME interception
+            val showKeyboard = remember { mutableStateOf(false) }
+            val context = LocalContext.current
+            val editTextRef = remember { mutableStateOf<EditText?>(null) }
+
+            BackHandler {
+                if (showKeyboard.value) {
+                    editTextRef.value?.let { et ->
+                        val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                        imm.toggleSoftInputFromWindow(et.windowToken, InputMethodManager.SHOW_FORCED, 0)
+                        et.clearFocus()
+                    }
+                    showKeyboard.value = false
+                } else {
+                    viewModel.onToggleFullscreenMonitor()
+                }
+            }
 
             Box(
                 modifier = Modifier
@@ -668,6 +695,32 @@ fun BackgroundTaskView(
                 previewContent()
 
                 IconButton(
+                    onClick = {
+                        val et = editTextRef.value
+                        val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                        if (et != null && et.hasFocus()) {
+                            imm.hideSoftInputFromWindow(et.windowToken, 0)
+                            et.clearFocus()
+                            showKeyboard.value = false
+                        } else if (et != null) {
+                            et.requestFocus()
+                            imm.toggleSoftInputFromWindow(et.windowToken, InputMethodManager.SHOW_FORCED, 0)
+                            showKeyboard.value = true
+                        }
+                    },
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .padding(top = 8.dp, start = 8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Keyboard,
+                        contentDescription = stringResource(R.string.task_keyboard_cd),
+                        tint = if (showKeyboard.value) MaterialTheme.colorScheme.primary
+                               else Color.White.copy(alpha = 0.7f),
+                        modifier = Modifier.size(28.dp)
+                    )
+                }
+                IconButton(
                     onClick = { viewModel.onToggleFullscreenMonitor() },
                     modifier = Modifier
                         .align(Alignment.TopEnd)
@@ -680,6 +733,65 @@ fun BackgroundTaskView(
                         modifier = Modifier.size(28.dp)
                     )
                 }
+
+                // Hidden EditText - intercepts IME commitText/deleteSurroundingText directly
+                AndroidView(
+                    factory = { ctx ->
+                        object : EditText(ctx) {
+                            override fun onCreateInputConnection(outAttrs: EditorInfo): InputConnection? {
+                                val ic = super.onCreateInputConnection(outAttrs) ?: return null
+                                outAttrs.imeOptions = outAttrs.imeOptions or EditorInfo.IME_FLAG_NO_FULLSCREEN or EditorInfo.IME_ACTION_DONE
+                                outAttrs.inputType = InputType.TYPE_CLASS_TEXT
+                                return object : InputConnectionWrapper(ic, false) {
+                                    override fun commitText(text: CharSequence, newCursorPosition: Int): Boolean {
+                                        val result = super.commitText(text, newCursorPosition)
+                                        viewModel.onInjectText(text.toString())
+                                        return result
+                                    }
+                                    override fun deleteSurroundingText(beforeLength: Int, afterLength: Int): Boolean {
+                                        val result = super.deleteSurroundingText(beforeLength, afterLength)
+                                        if (beforeLength > 0) viewModel.onSendKeyEvents(67, beforeLength)
+                                        return result
+                                    }
+                                    override fun sendKeyEvent(event: KeyEvent): Boolean {
+                                        if (event.action == KeyEvent.ACTION_DOWN && event.keyCode == KeyEvent.KEYCODE_DEL) {
+                                            val result = super.sendKeyEvent(event)
+                                            viewModel.onSendKeyEvents(67, 1)
+                                            return result
+                                        }
+                                        return super.sendKeyEvent(event)
+                                    }
+                                }
+                            }
+                        }.apply {
+                            setBackgroundColor(0x00000000)
+                            setTextColor(0x00000000)
+                            setCursorVisible(false)
+                            isFocusable = true
+                            isFocusableInTouchMode = true
+                            setOnFocusChangeListener { _, hasFocus ->
+                                if (!hasFocus && showKeyboard.value) {
+                                    showKeyboard.value = false
+                                }
+                            }
+                            setOnEditorActionListener { _, actionId, _ ->
+                                if (actionId == EditorInfo.IME_ACTION_DONE) {
+                                    val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                                    imm.toggleSoftInputFromWindow(windowToken, InputMethodManager.SHOW_FORCED, 0)
+                                    clearFocus()
+                                    showKeyboard.value = false
+                                    true
+                                } else false
+                            }
+                            editTextRef.value = this
+                        }
+                    },
+                    modifier = Modifier
+                        .alpha(0f)
+                        .size(48.dp)
+                        .align(Alignment.TopStart)
+                        .padding(top = 8.dp, start = 48.dp)
+                )
             }
         }
 

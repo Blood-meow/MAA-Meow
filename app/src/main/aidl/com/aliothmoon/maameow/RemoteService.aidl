@@ -68,4 +68,10 @@ interface RemoteService {
     // 调试用：抓取当前帧缓冲，编码为 PNG 写入 dirPath 目录（由远端 shell 进程直接落盘，
     // 避免跨进程读取 ashmem 被 SELinux 拒绝）。返回保存的绝对路径，失败返回 null。仅调试模式 UI 调用。
     String captureFramePng(String dirPath) = 31;
+
+    // 向虚拟屏幕注入文本（通过 input -d <displayId> text）
+    void sendText(String text) = 32;
+
+    // 向虚拟屏幕发送按键事件 (input -d <displayId> keyevent <keyCode>)
+    void sendKeyEvent(int keyCode) = 33;
 }
