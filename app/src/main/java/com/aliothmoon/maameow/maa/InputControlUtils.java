@@ -1,12 +1,16 @@
 package com.aliothmoon.maameow.maa;
 
 import android.app.UiAutomation;
+import android.os.IBinder;
 import android.os.RemoteException;
 import android.os.SystemClock;
 import android.view.InputDevice;
 import android.view.InputEvent;
 import android.view.KeyEvent;
+import android.view.KeyCharacterMap;
 import android.view.MotionEvent;
+
+import java.lang.reflect.Method;
 
 import com.aliothmoon.maameow.ITouchEventCallback;
 import com.aliothmoon.maameow.third.Ln;
@@ -163,4 +167,79 @@ public final class InputControlUtils {
 
         return getManager().injectInputEvent(keyEvent, InputManager.INJECT_INPUT_EVENT_MODE_ASYNC);
     }
+
+    public static boolean keyDownWithMeta(int keyCode, int metaState, int displayId) {
+        long downTime = SystemClock.uptimeMillis();
+        KeyEvent keyEvent = new KeyEvent(downTime, downTime, KeyEvent.ACTION_DOWN, keyCode, 0, metaState);
+        if (!setDisplayId(keyEvent, displayId)) {
+            return false;
+        }
+        return getManager().injectInputEvent(keyEvent, InputManager.INJECT_INPUT_EVENT_MODE_WAIT_FOR_FINISH);
+    }
+
+    public static boolean keyUpWithMeta(int keyCode, int metaState, int displayId) {
+        long upTime = SystemClock.uptimeMillis();
+        KeyEvent keyEvent = new KeyEvent(upTime, upTime, KeyEvent.ACTION_UP, keyCode, 0, metaState);
+        if (!setDisplayId(keyEvent, displayId)) {
+            return false;
+        }
+        return getManager().injectInputEvent(keyEvent, InputManager.INJECT_INPUT_EVENT_MODE_ASYNC);
+    }
+
+    public static boolean injectEvent(KeyEvent keyEvent, int displayId) {
+        if (!setDisplayId(keyEvent, displayId)) {
+            return false;
+        }
+        return getManager().injectInputEvent(keyEvent, InputManager.INJECT_INPUT_EVENT_MODE_WAIT_FOR_FINISH);
+    }
+
+    @SuppressWarnings("deprecation")
+    public static boolean sendText(String text, int displayId) {
+        if (text == null || text.isEmpty()) return true;
+        try {
+            // Get clipboard binder via reflection (hidden API)
+            Method getServiceMethod = Class.forName("android.os.ServiceManager")
+                    .getDeclaredMethod("getService", String.class);
+            IBinder binder = (IBinder) getServiceMethod.invoke(null, "clipboard");
+            if (binder == null) {
+                Ln.e("InputControlUtils: sendText - clipboard binder null");
+                return false;
+            }
+            // IClipboard.Stub.asInterface(binder)
+            Class<?> stubClass = Class.forName("android.content.IClipboard$Stub");
+            Method asInterface = stubClass.getMethod("asInterface", IBinder.class);
+            Object clipboard = asInterface.invoke(null, binder);
+
+            // Save original clip
+            Method getPrimaryClip = clipboard.getClass().getMethod("getPrimaryClip", String.class, String.class, int.class);
+            Object savedClip = getPrimaryClip.invoke(clipboard, "com.android.shell", null, 0);
+
+            // Set new clip with our text
+            Class<?> clipDataClass = Class.forName("android.content.ClipData");
+            Method newPlainText = clipDataClass.getMethod("newPlainText", CharSequence.class, CharSequence.class);
+            Object newClip = newPlainText.invoke(null, "input", text);
+            Method setPrimaryClip = clipboard.getClass().getMethod("setPrimaryClip", clipDataClass, String.class, String.class, int.class);
+            setPrimaryClip.invoke(clipboard, newClip, "com.android.shell", null, 0);
+
+            // Inject Ctrl+V on virtual display
+            long downTime = SystemClock.uptimeMillis();
+            int metaCtrl = KeyEvent.META_CTRL_ON | KeyEvent.META_CTRL_LEFT_ON;
+            KeyEvent vDown = new KeyEvent(downTime, downTime, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_V, 0, metaCtrl);
+            if (!setDisplayId(vDown, displayId)) return false;
+            getManager().injectInputEvent(vDown, InputManager.INJECT_INPUT_EVENT_MODE_WAIT_FOR_FINISH);
+            KeyEvent vUp = new KeyEvent(downTime, SystemClock.uptimeMillis(), KeyEvent.ACTION_UP, KeyEvent.KEYCODE_V, 0, metaCtrl);
+            if (!setDisplayId(vUp, displayId)) return false;
+            getManager().injectInputEvent(vUp, InputManager.INJECT_INPUT_EVENT_MODE_ASYNC);
+
+            // Restore original clip
+            if (savedClip != null) {
+                setPrimaryClip.invoke(clipboard, savedClip, "com.android.shell", null, 0);
+            }
+            return true;
+        } catch (Exception e) {
+            Ln.e("InputControlUtils: sendText error: " + e.getMessage());
+            return false;
+        }
+    }
+
 }

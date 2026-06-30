@@ -191,8 +191,7 @@ object VirtualDisplayManager {
                     or VIRTUAL_DISPLAY_FLAG_TOUCH_FEEDBACK_DISABLED)
             if (Build.VERSION.SDK_INT >= AndroidVersions.API_34_ANDROID_14) {
                 flags = flags or (VIRTUAL_DISPLAY_FLAG_OWN_FOCUS
-                        or VIRTUAL_DISPLAY_FLAG_DEVICE_DISPLAY_GROUP
-                        or VIRTUAL_DISPLAY_FLAG_STEAL_TOP_FOCUS_DISABLED)
+                        or VIRTUAL_DISPLAY_FLAG_DEVICE_DISPLAY_GROUP)
             }
         }
         return flags

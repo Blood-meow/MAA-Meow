@@ -114,6 +114,8 @@ import androidx.compose.material.icons.filled.PowerSettingsNew
 import androidx.compose.material.icons.filled.NotificationsPaused
 import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.Screenshot
+import androidx.compose.ui.draw.alpha
+import android.content.Context
 import androidx.compose.material.icons.filled.StayCurrentPortrait
 import androidx.compose.material.icons.filled.TouchApp
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -630,7 +632,9 @@ fun BackgroundTaskView(
                 }
             }
 
-            BackHandler { viewModel.onToggleFullscreenMonitor() }
+            BackHandler {
+                viewModel.onToggleFullscreenMonitor()
+            }
 
             Box(
                 modifier = Modifier

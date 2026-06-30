@@ -241,6 +241,24 @@ class BackgroundTaskViewModel(
         }
     }
 
+
+    fun onInjectText(text: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            runCatching {
+                RemoteServiceManager.getInstanceOrNull()?.sendText(text)
+            }.onFailure { Timber.e(it, "sendText failed") }
+        }
+    }
+
+    fun onSendKeyEvents(keyCode: Int, count: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            runCatching {
+                val svc = RemoteServiceManager.getInstanceOrNull() ?: return@launch
+                repeat(count) { svc.sendKeyEvent(keyCode) }
+            }.onFailure { Timber.e(it, "sendKeyEvent failed") }
+        }
+    }
+
     fun onScreenOff() {
         runCatching {
             hardwareScreenOffManager.activate()

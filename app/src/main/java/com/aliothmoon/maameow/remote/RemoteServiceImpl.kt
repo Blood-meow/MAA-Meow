@@ -126,6 +126,24 @@ class RemoteServiceImpl : RemoteService.Stub() {
     override fun screencap(width: Int, height: Int) {
     }
 
+    override fun sendText(text: String?) {
+        if (text.isNullOrEmpty()) return
+        val displayId = VirtualDisplayManager.getDisplayId()
+        if (displayId == DefaultDisplayConfig.DISPLAY_NONE) { Ln.w("$TAG: sendText - no display"); return }
+        try {
+            InputControlUtils.sendText(text, displayId)
+        } catch (e: Exception) { Ln.e("$TAG: sendText error: ${e.message}") }
+    }
+
+    override fun sendKeyEvent(keyCode: Int) {
+        val displayId = VirtualDisplayManager.getDisplayId()
+        if (displayId == DefaultDisplayConfig.DISPLAY_NONE) { Ln.w("$TAG: sendKeyEvent - no display"); return }
+        try {
+            InputControlUtils.keyDown(keyCode, displayId)
+            InputControlUtils.keyUp(keyCode, displayId)
+        } catch (e: Exception) { Ln.e("$TAG: sendKeyEvent error: ${e.message}") }
+    }
+
     override fun captureFramePng(dirPath: String?): String? {
         if (dirPath.isNullOrBlank()) {
             Ln.w("$TAG: captureFramePng - blank dirPath")

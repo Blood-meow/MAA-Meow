@@ -13,6 +13,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -85,7 +86,7 @@ fun MainScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(bottom = paddingValues.calculateBottomPadding())
+                .padding(bottom = if (fullscreen) 0.dp else paddingValues.calculateBottomPadding())
                 .graphicsLayer {
                     // 隐藏时跳过绘制但保留组合树，避免 HorizontalPager 状态丢失
                     alpha = if (visible) 1f else 0f
