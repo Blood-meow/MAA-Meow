@@ -202,6 +202,7 @@ fun AppNavigation(
                 state = countdown,
                 onCancel = { backgroundTaskViewModel.onScheduledCountdownCancel() },
                 onStartNow = { backgroundTaskViewModel.onScheduledStartNow() },
+                startSequence = countdown.useSequence,
             )
         }
         // 长期公告弹窗：每次公告版本变更后首次启动自动弹出，或从设置中手动打开

@@ -48,8 +48,8 @@
     <string name="settings_startup_backend_title">Startup Mode</string>
     <string name="settings_startup_backend_desc">Choose how the app obtains system permissions</string>
     <!-- settings: monet theme color (system Material You toggle, Android 12+) -->
-    <string name="settings_monet_color_title">Monet Theme Color</string>
-    <string name="settings_monet_color_desc">Generate colors from your wallpaper; off uses the built-in blue theme.</string>
+    <string name="settings_monet_color_title">Wallpaper Dynamic Color</string>
+    <string name="settings_monet_color_desc">Generate theme colors from your custom wallpaper; without one, follow system dynamic color. Off uses the built-in blue theme.</string>
 
     <string name="settings_achievement_title">Achievements</string>
     <string name="settings_achievement_desc">View MaaMeow milestones and hidden easter eggs</string>
@@ -273,6 +273,26 @@
 
     <!-- panel: profile management -->
     <string name="panel_new_profile">New Profile</string>
+    <string name="panel_sequence_title">Task Sequence</string>
+    <string name="panel_sequence_hint">The top dropdown switches sequence configs (not user profiles). When enabled, manual start merges user profiles in the active sequence order. If disabled or empty, the active user profile is used. Swipe to switch pages.</string>
+    <string name="panel_sequence_empty">This sequence has no entries. When disabled or empty, start uses the active user profile. Tap below to edit the sequence.</string>
+    <string name="panel_sequence_add">Edit sequence</string>
+    <string name="panel_sequence_enable">Enable sequence</string>
+    <string name="panel_sequence_config">Sequence config</string>
+    <string name="panel_sequence_config_new">New sequence config</string>
+    <string name="panel_sequence_config_rename">Rename</string>
+    <string name="panel_sequence_config_delete">Delete</string>
+    <string name="panel_sequence_config_rename_title">Rename sequence config</string>
+    <string name="panel_sequence_config_delete_title">Delete sequence config</string>
+    <string name="panel_sequence_config_delete_message">Delete “%1$s”? Keep at least one sequence config.</string>
+    <string name="panel_sequence_disabled_hint">Sequence is off. Start will run only the active user profile.</string>
+    <string name="panel_sequence_pick_title">Edit sequence</string>
+    <string name="panel_sequence_pick_hint">Tap left to append a user profile; right list is the current sequence (synced with the page). Drag to reorder. %1$d slot(s) left.</string>
+    <string name="panel_sequence_pick_source">User profiles</string>
+    <string name="panel_sequence_pick_draft">Sequence order</string>
+    <string name="panel_sequence_pick_draft_empty">Tap a user profile on the left</string>
+    <string name="panel_sequence_pick_done">Done</string>
+    <string name="panel_sequence_missing_profile">(Deleted profile)</string>
 
     <!-- panel: auto battle (Copilot) -->
     <string name="panel_autobattle_read_set">Load Copilot Set</string>
@@ -337,7 +357,12 @@
 
     <!-- task action buttons -->
     <string name="task_btn_start">Start Task</string>
+    <string name="task_btn_start_sequence">Start Sequence</string>
     <string name="task_btn_stop">Stop Task</string>
+    <!-- default profile / sequence naming prefixes (used by TaskChainState) -->
+    <string name="task_profile_name_prefix">Profile-</string>
+    <string name="task_sequence_name_prefix">Sequence-</string>
+    <string name="schedule_external_trigger">External trigger</string>
     <string name="task_more_actions_cd">More actions</string>
     <string name="task_close_preview_cd">Close preview</string>
 
@@ -657,7 +682,7 @@
     <string name="panel_autobattle_tab_paradox">Paradox Simulation</string>
     <string name="panel_autobattle_tab_other">Other Activities</string>
     <string name="panel_autobattle_station_code_label">Copilot Code</string>
-    <string name="panel_autobattle_station_code_placeholder">Enter maa://1234 or 1234</string>
+    <string name="panel_autobattle_station_code_placeholder">Enter prts://1234, prts://s1234 or 1234</string>
     <string name="panel_autobattle_waiting">Waiting for input…</string>
     <string name="panel_autobattle_loading">Loading…</string>
     <string name="panel_autobattle_read_single">Load Copilot</string>
@@ -1150,9 +1175,9 @@
     <string name="panel_roguelike_squad_splendid_blossoms">Blooming Flowers Squad</string>
     <string name="panel_roguelike_squad_risky_gambit">Perilous Game Squad</string>
     <string name="panel_roguelike_squad_echo_of_ages">Sui\'s Shadow Squad</string>
-    <string name="panel_roguelike_squad_agent">Agent Squad (Not Supported)</string>
-    <string name="panel_roguelike_squad_scholarly">Knowledge Squad (知学分队)</string>
-    <string name="panel_roguelike_squad_merchant">Merchant Squad (商贾分队)</string>
+    <string name="panel_roguelike_squad_agent">Proxy Squad (Not Supported)</string>
+    <string name="panel_roguelike_squad_scholarly">Knowledge Squad</string>
+    <string name="panel_roguelike_squad_merchant">Merchant Squad</string>
     <!-- i18n: shared helpers -->
     <string name="common_enumeration_separator">, </string>
 
@@ -1350,8 +1375,13 @@
     <string name="schedule_hours_unit">Hours</string>
     <string name="schedule_total_hours">= %1$d hours</string>
     <string name="schedule_section_task_config">Task configuration</string>
+    <string name="schedule_target_profile">User profile</string>
+    <string name="schedule_target_sequence">Task sequence</string>
     <string name="schedule_no_profiles">Create a task profile in the control panel first</string>
+    <string name="schedule_no_sequence_configs">Create a sequence config in profile management first</string>
     <string name="schedule_enabled_tasks">Enabled: %1$s</string>
+    <string name="schedule_sequence_entries">Order: %1$s</string>
+    <string name="schedule_sequence_start_hint">At trigger time this will “Start sequence” and merge profiles in order</string>
     <string name="schedule_section_advanced">Advanced options</string>
     <string name="schedule_force_start">Force scheduled start</string>
     <string name="schedule_force_start_tip">Stop the current task, restart the game, and start the new tasks</string>
@@ -1367,6 +1397,23 @@
     <string name="schedule_default_name">Schedule-%1$d</string>
     <string name="schedule_error_name_required">Enter a schedule name</string>
     <string name="schedule_error_profile_required">Select a task profile</string>
+    <string name="schedule_error_sequence_required">Select a sequence config</string>
+    <string name="schedule_error_sequence_empty">This sequence has no runnable tasks; add profiles first</string>
+    <string name="schedule_error_profile_empty">This profile has no enabled tasks</string>
+    <string name="schedule_msg_busy">A task is already running</string>
+    <string name="schedule_msg_busy_skip">A task is running; scheduled start skipped</string>
+    <string name="schedule_msg_busy_pending">Another schedule is already in progress</string>
+    <string name="schedule_msg_busy_other">Another schedule is already preparing</string>
+    <string name="schedule_msg_sequence_deleted">The linked sequence config was deleted</string>
+    <string name="schedule_msg_profile_deleted">The linked task profile was deleted</string>
+    <string name="schedule_msg_sequence_no_tasks">The linked sequence has no runnable tasks</string>
+    <string name="schedule_msg_profile_no_tasks">The linked profile has no enabled tasks</string>
+    <string name="schedule_msg_using_sequence">Using sequence: %1$s</string>
+    <string name="schedule_msg_using_profile">Using profile: %1$s</string>
+    <string name="schedule_msg_foreground_mode_blocked">Not in background mode, and “allow foreground scheduled tasks” is off</string>
+    <string name="schedule_msg_feedback">Schedule “%1$s”: %2$s</string>
+    <string name="schedule_countdown_start_sequence">Start sequence</string>
+    <string name="schedule_target_label_sequence">Sequence · %1$s</string>
     <string name="schedule_error_days_required">Select execution days</string>
     <string name="schedule_error_times_required">Add at least one execution time</string>
     <string name="schedule_error_start_time_required">Select a start time</string>
@@ -1800,4 +1847,25 @@
     <string name="runlog_task_stopped">Tasks stopped, status: %1$s</string>
     <string name="runlog_service_terminated">MAA service terminated unexpectedly</string>
     <string name="runlog_game_process_gone">Game process not started or closed unexpectedly (%1$s)</string>
+    <string name="settings_wallpaper_title">Custom Wallpaper</string>
+    <string name="settings_wallpaper_desc">Choose an image as app background</string>
+    <string name="settings_wallpaper_set">Wallpaper set</string>
+    <string name="settings_wallpaper_clear">Clear Wallpaper</string>
+    <string name="settings_wallpaper_alpha">Opacity: %d%%</string>
+    <string name="settings_wallpaper_blur">Blur: %d%%</string>
+    <string name="settings_wallpaper_opacity_label">Opacity</string>
+    <string name="settings_wallpaper_blur_label">Blur</string>
+    <string name="settings_wallpaper_confirm">Confirm</string>
+    <string name="settings_wallpaper_change">Change Wallpaper</string>
+<string name="settings_wallpaper_text_contrast">Dynamic Text</string>
+    <string name="settings_wallpaper_frosted_glass">Frosted Glass</string>
+    <string name="settings_wallpaper_load_failed">Failed to load image. Try another one.</string>
+    <string name="settings_wallpaper_save_failed">Failed to save wallpaper</string>
+    <string name="settings_wallpaper_missing">Wallpaper file is missing. Please choose again.</string>
+    <string name="settings_wallpaper_edit_hint">Tap the preview to recrop</string>
+    <string name="settings_wallpaper_rotate">Rotate</string>
+    <string name="settings_wallpaper_reset_crop">Reset</string>
+    <string name="settings_wallpaper_saving">Saving…</string>
+    <string name="settings_wallpaper_loading">Loading…</string>
+
 </resources>

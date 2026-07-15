@@ -20,6 +20,8 @@ import com.aliothmoon.maameow.presentation.view.panel.FloatingPanelState
 import com.aliothmoon.maameow.presentation.view.panel.PanelDialogConfirmAction
 import com.aliothmoon.maameow.presentation.view.panel.PanelDialogUiState
 import com.aliothmoon.maameow.presentation.view.panel.PanelTab
+import com.aliothmoon.maameow.schedule.data.ScheduleStrategyRepository
+import com.aliothmoon.maameow.schedule.service.ScheduleAlarmManager
 import com.aliothmoon.maameow.utils.i18n.resolve
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -39,6 +41,8 @@ class ExpandedControlPanelViewModel(
     private val overlayController: OverlayController,
     private val sessionLogger: MaaSessionLogger,
     private val achievementReporter: AchievementReporter,
+    private val scheduleRepository: ScheduleStrategyRepository,
+    private val scheduleAlarmManager: ScheduleAlarmManager,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(FloatingPanelState())
@@ -116,6 +120,14 @@ class ExpandedControlPanelViewModel(
     fun onDeleteProfile(profileId: String) {
         viewModelScope.launch {
             chainState.deleteProfile(profileId)
+            val detached = scheduleRepository.detachProfileConfig(profileId)
+            val emptied = scheduleRepository.sanitizeInvalidTargets(
+                profiles = chainState.profiles.value,
+                sequenceConfigs = chainState.sequenceConfigs.value,
+            )
+            (detached + emptied).distinct().forEach { strategyId ->
+                scheduleAlarmManager.cancel(strategyId)
+            }
             _state.update { it.copy(selectedNodeId = null) }
         }
     }
@@ -235,11 +247,69 @@ class ExpandedControlPanelViewModel(
         launchManualStart(TaskStartContext(mode = TaskStartMode.MANUAL))
     }
 
+    fun onAddToSequence(profileId: String) {
+        onAddProfilesToSequence(listOf(profileId))
+    }
+
+    fun onAddProfilesToSequence(profileIds: List<String>) {
+        if (profileIds.isEmpty()) return
+        viewModelScope.launch {
+            chainState.addProfilesToSequence(profileIds)
+        }
+    }
+
+    fun onRemoveSequenceEntry(entryId: String) {
+        viewModelScope.launch {
+            chainState.removeSequenceEntry(entryId)
+        }
+    }
+
+    fun onReorderSequence(fromIndex: Int, toIndex: Int) {
+        viewModelScope.launch {
+            runCatching { chainState.reorderSequence(fromIndex, toIndex) }
+                .onFailure { e -> Timber.e(e, "Failed to reorder sequence: ${e.message}") }
+        }
+    }
+
+    fun onSetProfileSequenceEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            chainState.setProfileSequenceEnabled(enabled)
+        }
+    }
+
+    fun onSwitchSequenceConfig(configId: String) {
+        viewModelScope.launch {
+            chainState.switchSequenceConfig(configId)
+        }
+    }
+
+    fun onCreateSequenceConfig() {
+        viewModelScope.launch {
+            chainState.createSequenceConfig()
+        }
+    }
+
+    fun onRenameSequenceConfig(configId: String, name: String) {
+        viewModelScope.launch {
+            chainState.renameSequenceConfig(configId, name)
+        }
+    }
+
+    fun onDeleteSequenceConfig(configId: String) {
+        viewModelScope.launch {
+            chainState.deleteSequenceConfig(configId)
+            val detached = scheduleRepository.detachSequenceConfig(configId)
+            detached.forEach { strategyId ->
+                scheduleAlarmManager.cancel(strategyId)
+            }
+        }
+    }
+
     private fun launchManualStart(context: TaskStartContext) {
         viewModelScope.launch {
             val plan = when (
                 val decision = prepareTaskStart(
-                    chain = chainState.chain.value,
+                    chain = chainState.resolveExecutableChain(),
                     context = context,
                 )
             ) {

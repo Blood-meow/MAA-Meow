@@ -1,5 +1,8 @@
 package com.aliothmoon.maameow.schedule.service
 
+import android.content.Context
+import com.aliothmoon.maameow.R
+import com.aliothmoon.maameow.data.model.TaskChainNode
 import com.aliothmoon.maameow.data.preferences.AppSettingsManager
 import com.aliothmoon.maameow.domain.models.OverlayControlMode
 import com.aliothmoon.maameow.data.preferences.TaskChainState
@@ -18,9 +21,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import timber.log.Timber
 import java.util.concurrent.atomic.AtomicBoolean
-
-
 class ForegroundScheduleStarter(
+    private val appContext: Context,
     private val overlayController: OverlayController,
     private val prepareTaskStartUseCase: PrepareTaskStartUseCase,
     private val chainState: TaskChainState,
@@ -29,12 +31,14 @@ class ForegroundScheduleStarter(
     private val scheduleRepository: ScheduleStrategyRepository,
     private val appSettingsManager: AppSettingsManager,
 ) {
+    private val appCtx get() = appContext.applicationContext
     private val executing = AtomicBoolean(false)
 
     suspend fun executeSilentStart(request: ScheduledExecutionRequest) {
         if (!executing.compareAndSet(false, true)) {
-            triggerLogger.append("已有定时任务正在准备执行，跳过本次请求")
-            recordResult(request, ExecutionResult.SKIPPED_BUSY, "另一个定时任务正在执行")
+            val busy = appCtx.getString(R.string.schedule_msg_busy_other)
+            triggerLogger.append(busy)
+            recordResult(request, ExecutionResult.SKIPPED_BUSY, busy)
             return
         }
         try {
@@ -45,8 +49,9 @@ class ForegroundScheduleStarter(
                 if (request.forceStart) {
                     triggerLogger.append("强制启动: 停止当前运行任务")
                     compositionService.stop()
+                    compositionService.stopVirtualDisplay()
                 } else {
-                    val busyMsg = "有任务正在运行，跳过定时执行"
+                    val busyMsg = appCtx.getString(R.string.schedule_msg_busy_skip)
                     triggerLogger.append(busyMsg)
                     recordResult(request, ExecutionResult.SKIPPED_BUSY, busyMsg)
                     return
@@ -54,15 +59,21 @@ class ForegroundScheduleStarter(
             }
 
             chainState.isLoaded.first { it }
-            if (chainState.activeProfileId.value != request.profileId) {
-                triggerLogger.append("切换任务配置: ${request.profileId}")
-                chainState.switchProfile(request.profileId)
+            // 倒计时前先做一轮校验，失败则不必等 30s；真正启动前再 re-resolve，
+            // 避免倒计时窗口内改配置/改链仍跑旧快照。
+            when (val pre = resolveEnabledChain(request)) {
+                is ResolveChainResult.Failed -> {
+                    triggerLogger.append(pre.message)
+                    recordResult(request, ExecutionResult.FAILED_VALIDATION, pre.message)
+                    return
+                }
+                is ResolveChainResult.Ok -> {
+                    triggerLogger.append(pre.logLine)
+                }
             }
-
             // 无论哪种模式，都执行倒计时等待到整点
             var isStartingNow = false
             val isFloatBall = appSettingsManager.overlayControlMode.value == OverlayControlMode.FLOAT_BALL
-
             if (isFloatBall) {
                 triggerLogger.append("开始倒计时 (${ScheduledExecutionRequest.COUNTDOWN_SECONDS}s)")
                 try {
@@ -70,11 +81,14 @@ class ForegroundScheduleStarter(
                         isStartingNow = true
                         triggerLogger.append("用户点击立即执行")
                     }
-
                     for (remaining in ScheduledExecutionRequest.COUNTDOWN_SECONDS downTo 1) {
                         if (isStartingNow) break
                         overlayController.updateCountdownState(
-                            CountdownState.Counting(request.strategyName, remaining)
+                            CountdownState.Counting(
+                                strategyName = request.strategyName,
+                                remainingSeconds = remaining,
+                                useSequence = request.useSequence,
+                            )
                         )
                         delay(1000)
                     }
@@ -88,13 +102,37 @@ class ForegroundScheduleStarter(
                 delay(ScheduledExecutionRequest.COUNTDOWN_SECONDS * 1000L)
             }
             triggerLogger.append("倒计时结束，开始准备执行")
-
-            val chain = chainState.chain.value.filter { it.enabled }
+            val chain = when (val resolved = resolveEnabledChain(request)) {
+                is ResolveChainResult.Failed -> {
+                    triggerLogger.append(resolved.message)
+                    recordResult(request, ExecutionResult.FAILED_VALIDATION, resolved.message)
+                    return
+                }
+                is ResolveChainResult.Ok -> {
+                    if (resolved.logLine.isNotEmpty()) {
+                        triggerLogger.append("重新解析: ${resolved.logLine}")
+                    }
+                    resolved.chain
+                }
+            }
             if (chain.isEmpty()) {
-                val emptyMsg = "关联的任务配置中没有启用任务"
+                val emptyMsg = if (request.useSequence) {
+                    appCtx.getString(R.string.schedule_msg_sequence_no_tasks)
+                } else {
+                    appCtx.getString(R.string.schedule_msg_profile_no_tasks)
+                }
                 triggerLogger.append(emptyMsg)
                 recordResult(request, ExecutionResult.FAILED_VALIDATION, emptyMsg)
                 return
+            }
+
+            // Align with BackgroundTaskViewModel.doSwitchProfile: PROFILE schedules activate
+            // the target config so UI state matches execution. SEQUENCE keeps current active.
+            // Pre-check stays read-only; switch only happens on the real start path.
+            if (!request.useSequence && request.profileId.isNotEmpty() &&
+                chainState.activeProfileId.value != request.profileId
+            ) {
+                chainState.switchProfile(request.profileId)
             }
 
             try {
@@ -135,6 +173,67 @@ class ForegroundScheduleStarter(
         } finally {
             executing.set(false)
         }
+    }
+
+    /**
+     * 解析当前时刻可执行的启用节点列表。
+     * 倒计时前后各调一次，避免 30s 窗口内配置变更导致跑旧快照。
+     * 配置缺失或无可执行节点均返回 Failed（空链不进入倒计时）。
+     */
+    private suspend fun resolveEnabledChain(
+        request: ScheduledExecutionRequest,
+    ): ResolveChainResult {
+        return if (request.useSequence) {
+            val seq = chainState.sequenceConfigs.value.find { it.id == request.sequenceConfigId }
+            if (seq == null) {
+                ResolveChainResult.Failed(appCtx.getString(R.string.schedule_msg_sequence_deleted))
+            } else {
+                val chain = chainState.resolveExecutableChain(
+                    sequence = seq.entries,
+                    sequenceEnabled = true,
+                    fallbackToActive = false,
+                ).filter { it.enabled }
+                if (chain.isEmpty()) {
+                    ResolveChainResult.Failed(appCtx.getString(R.string.schedule_msg_sequence_no_tasks))
+                } else {
+                    ResolveChainResult.Ok(
+                        chain = chain,
+                        logLine = appCtx.getString(R.string.schedule_msg_using_sequence, seq.name),
+                    )
+                }
+            }
+        } else {
+            // 预检只读：不 switch，避免失败路径改写 active profile
+            val profile = chainState.profiles.value.find { it.id == request.profileId }
+            if (profile == null) {
+                ResolveChainResult.Failed(appCtx.getString(R.string.schedule_msg_profile_deleted))
+            } else {
+                val sourceChain =
+                    if (request.profileId == chainState.activeProfileId.value) {
+                        chainState.chain.value
+                    } else {
+                        profile.chain
+                    }
+                val chain = sourceChain.filter { it.enabled }
+                if (chain.isEmpty()) {
+                    ResolveChainResult.Failed(appCtx.getString(R.string.schedule_msg_profile_no_tasks))
+                } else {
+                    ResolveChainResult.Ok(
+                        chain = chain,
+                        logLine = appCtx.getString(R.string.schedule_msg_using_profile, profile.name),
+                    )
+                }
+            }
+        }
+    }
+
+    private sealed class ResolveChainResult {
+        data class Ok(
+            val chain: List<TaskChainNode>,
+            val logLine: String,
+        ) : ResolveChainResult()
+
+        data class Failed(val message: String) : ResolveChainResult()
     }
 
     /**

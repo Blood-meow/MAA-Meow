@@ -34,8 +34,9 @@ class AnalyzeTaskChainUseCase(
                 clientTypes = clientTypes,
             )
         }
-
-        val clientType = taskChainState.getClientType()
+        // Prefer WakeUp clientType from the chain being started (task sequence / non-active
+        // profile may differ from the UI-active profile's chain).
+        val clientType = resolveClientType(enabledNodes)
         val creditFightAvailability = resolveMallCreditFightAvailability(enabledNodes)
         val serverDayOfWeek = ServerTimezone.getYjDayOfWeek(clientType)
 
@@ -75,6 +76,20 @@ class AnalyzeTaskChainUseCase(
             return clientTypes
         }
         return null
+    }
+
+    /**
+     * Client type for launch / weekly schedule / mall params must follow the executable chain,
+     * not necessarily the UI-active profile (manual sequence & scheduled SEQUENCE/PROFILE).
+     */
+    private fun resolveClientType(enabledNodes: List<TaskChainNode>): String {
+        val fromChain = enabledNodes
+            .asSequence()
+            .mapNotNull { it.config as? WakeUpConfig }
+            .map { it.clientType }
+            .firstOrNull { it.isNotBlank() }
+        if (fromChain != null) return fromChain
+        return taskChainState.getClientType()
     }
 
     private fun isSkippedByWeeklySchedule(node: TaskChainNode, serverDayOfWeek: DayOfWeek): Boolean {

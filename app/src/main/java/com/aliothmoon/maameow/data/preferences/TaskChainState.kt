@@ -4,17 +4,21 @@ import android.content.Context
 import android.content.res.Configuration
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.aliothmoon.maameow.R
 import com.aliothmoon.maameow.constant.Packages
 import com.aliothmoon.maameow.data.achievement.AchievementEvents
 import com.aliothmoon.maameow.data.achievement.AchievementRepository
 import com.aliothmoon.maameow.data.model.InfrastConfig
 import com.aliothmoon.maameow.data.model.RecruitConfig
+import com.aliothmoon.maameow.data.model.ProfileSequenceEntry
 import com.aliothmoon.maameow.data.model.TaskChainNode
 import com.aliothmoon.maameow.data.model.TaskParamProvider
 import com.aliothmoon.maameow.data.model.TaskProfile
+import com.aliothmoon.maameow.data.model.TaskSequenceConfig
 import com.aliothmoon.maameow.data.model.TaskTypeInfo
 import com.aliothmoon.maameow.data.model.WakeUpConfig
 import com.aliothmoon.maameow.manager.RemoteServiceManager
@@ -32,6 +36,8 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import timber.log.Timber
 import java.util.Locale
 import java.util.UUID
@@ -44,6 +50,8 @@ class TaskChainState(
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val json = JsonUtils.common
+    /** 串行化任务链增删改，避免多协程 read-modify-write 丢项 */
+    private val sequenceMutex = Mutex()
 
     companion object {
         private val Context.store: DataStore<Preferences> by preferencesDataStore(
@@ -52,10 +60,24 @@ class TaskChainState(
         private val CHAIN_KEY = stringPreferencesKey("chain")
         private val PROFILES_KEY = stringPreferencesKey("profiles")
         private val ACTIVE_PROFILE_KEY = stringPreferencesKey("active_profile_id")
+        private val PROFILE_SEQUENCE_KEY = stringPreferencesKey("profile_sequence")
+        private val SEQUENCE_CONFIGS_KEY = stringPreferencesKey("sequence_configs")
+        private val ACTIVE_SEQUENCE_CONFIG_KEY =
+            stringPreferencesKey("active_sequence_config_id")
+        private val PROFILE_SEQUENCE_ENABLED_KEY =
+            booleanPreferencesKey("profile_sequence_enabled")
 
-        private const val PROFILE_NAME_PREFIX = "配置-"
         private const val MAX_PROFILES = 10
-        private const val MAX_PROFILE_NAME_LENGTH = 20
+        /** 用户配置名称长度上限（UI 与持久化共用） */
+        const val MAX_PROFILE_NAME_LENGTH = 20
+        /** 任务节点名称长度上限（UI） */
+        const val MAX_NODE_NAME_LENGTH = 20
+        /** 任务链配置名称长度上限（UI 与持久化共用） */
+        const val MAX_SEQUENCE_NAME_LENGTH = 20
+        /** 任务链配置套数上限（UI 与持久化共用） */
+        const val MAX_SEQUENCE_CONFIGS = 10
+        /** 单套任务链最大条目数（UI 与持久化共用） */
+        const val MAX_SEQUENCE_ENTRIES = 20
     }
 
     private val _chain = MutableStateFlow(buildDefaultChain())
@@ -66,6 +88,24 @@ class TaskChainState(
 
     private val _activeProfileId = MutableStateFlow("")
     val activeProfileId: StateFlow<String> = _activeProfileId.asStateFlow()
+
+    /** 多套任务链配置（与用户 TaskProfile 无关） */
+    private val _sequenceConfigs = MutableStateFlow<List<TaskSequenceConfig>>(emptyList())
+    val sequenceConfigs: StateFlow<List<TaskSequenceConfig>> = _sequenceConfigs.asStateFlow()
+
+    private val _activeSequenceConfigId = MutableStateFlow("")
+    val activeSequenceConfigId: StateFlow<String> = _activeSequenceConfigId.asStateFlow()
+
+    /**
+     * 当前激活任务链配置的条目列表（一级页与弹窗共用）。
+     * 兼容旧代码/备份字段命名。
+     */
+    private val _profileSequence = MutableStateFlow<List<ProfileSequenceEntry>>(emptyList())
+    val profileSequence: StateFlow<List<ProfileSequenceEntry>> = _profileSequence.asStateFlow()
+
+    /** 手动开始是否按任务链拼接；关闭时始终只跑当前激活用户配置 */
+    private val _profileSequenceEnabled = MutableStateFlow(true)
+    val profileSequenceEnabled: StateFlow<Boolean> = _profileSequenceEnabled.asStateFlow()
 
     private val _isLoaded = MutableStateFlow(false)
     val isLoaded: StateFlow<Boolean> = _isLoaded.asStateFlow()
@@ -89,16 +129,24 @@ class TaskChainState(
                     _activeProfileId.value = activeProfile.id
                     _chain.value = activeProfile.chain
                 }
+                val validIds = loadedProfiles.map { it.id }.toSet()
+                loadSequenceConfigsFromPrefs(prefs, validIds)
+                // 缺省 true：兼容旧数据与既有「非空即按链跑」行为
+                _profileSequenceEnabled.value =
+                    prefs[PROFILE_SEQUENCE_ENABLED_KEY] ?: true
             } else {
                 // 迁移: 旧版数据无 profiles key, 将现有 chain 包装为单个 Profile
                 val legacyChain = decodeChain(prefs[CHAIN_KEY])
                 val profile = TaskProfile(
-                    name = "${PROFILE_NAME_PREFIX}1",
+                    name = profileDefaultName(),
                     chain = legacyChain
                 )
                 _profiles.value = listOf(profile)
                 _activeProfileId.value = profile.id
                 _chain.value = legacyChain
+                val defaultSeq = defaultSequenceConfig()
+                applySequenceConfigs(listOf(defaultSeq), defaultSeq.id)
+                _profileSequenceEnabled.value = true
                 // 持久化迁移结果
                 persistProfiles(listOf(profile), profile.id)
             }
@@ -180,11 +228,13 @@ class TaskChainState(
     }
 
     suspend fun renameNode(nodeId: String, newName: String) {
+        val trimmed = newName.trim().take(MAX_NODE_NAME_LENGTH)
+        if (trimmed.isEmpty()) return
         updateChain { current ->
             val idx = current.indexOfFirst { it.id == nodeId }
             if (idx >= 0) {
-                current[idx] = current[idx].copy(name = newName)
-                Timber.d("Renamed node %s to: %s", nodeId, newName)
+                current[idx] = current[idx].copy(name = trimmed)
+                Timber.d("Renamed node %s to: %s", nodeId, trimmed)
             } else {
                 Timber.w("renameNode: node %s not found", nodeId)
             }
@@ -399,6 +449,15 @@ class TaskChainState(
         }
         _activeProfileId.value = newActiveId
         _profiles.value = remaining
+        // 同步清理所有任务链配置中对该用户配置的引用（与序列写路径共用 mutex）
+        sequenceMutex.withLock {
+            val cleanedConfigs = _sequenceConfigs.value.map { cfg ->
+                cfg.copy(entries = cfg.entries.filter { it.profileId != profileId })
+            }
+            if (cleanedConfigs != _sequenceConfigs.value) {
+                applySequenceConfigs(cleanedConfigs, _activeSequenceConfigId.value)
+            }
+        }
         persistProfiles(remaining, newActiveId)
         Timber.d("Deleted profile: %s", profileId)
     }
@@ -468,6 +527,272 @@ class TaskChainState(
         Timber.d("Reordered profile from %d to %d", fromIndex, toIndex)
     }
 
+    // ========== 任务链配置（多套命名序列，与用户 Profile 无关） ==========
+
+    suspend fun switchSequenceConfig(configId: String) = sequenceMutex.withLock {
+        val target = _sequenceConfigs.value.find { it.id == configId }
+        if (target == null) {
+            Timber.w("switchSequenceConfig: %s not found", configId)
+            return@withLock
+        }
+        if (_activeSequenceConfigId.value == configId) return@withLock
+        _activeSequenceConfigId.value = configId
+        _profileSequence.value = target.entries
+        persistSequenceConfigs(_sequenceConfigs.value, configId)
+        Timber.d("Switched sequence config to %s", configId)
+    }
+
+    suspend fun createSequenceConfig(name: String? = null): String? = sequenceMutex.withLock {
+        if (_sequenceConfigs.value.size >= MAX_SEQUENCE_CONFIGS) {
+            Timber.w("createSequenceConfig: max configs reached")
+            return@withLock null
+        }
+        val resolvedName = name?.trim()?.takeIf { it.isNotEmpty() }
+            ?: nextSequenceName(_sequenceConfigs.value)
+        val config = TaskSequenceConfig(name = resolvedName.take(MAX_SEQUENCE_NAME_LENGTH))
+        val updated = _sequenceConfigs.value + config
+        applySequenceConfigs(updated, config.id)
+        persistSequenceConfigs(updated, config.id)
+        Timber.d("Created sequence config %s (%s)", config.id, config.name)
+        config.id
+    }
+
+    suspend fun renameSequenceConfig(configId: String, name: String) = sequenceMutex.withLock {
+        val trimmed = name.trim().take(MAX_SEQUENCE_NAME_LENGTH)
+        if (trimmed.isEmpty()) return@withLock
+        val updated = _sequenceConfigs.value.map {
+            if (it.id == configId) it.copy(name = trimmed) else it
+        }
+        if (updated == _sequenceConfigs.value) return@withLock
+        _sequenceConfigs.value = updated
+        persistSequenceConfigs(updated, _activeSequenceConfigId.value)
+        Timber.d("Renamed sequence config %s to %s", configId, trimmed)
+    }
+
+    suspend fun deleteSequenceConfig(configId: String) = sequenceMutex.withLock {
+        val current = _sequenceConfigs.value
+        if (current.size <= 1) {
+            Timber.w("deleteSequenceConfig: keep at least one")
+            return@withLock
+        }
+        val updated = current.filter { it.id != configId }
+        if (updated.size == current.size) return@withLock
+        val newActive = if (_activeSequenceConfigId.value == configId) {
+            updated.first().id
+        } else {
+            _activeSequenceConfigId.value
+        }
+        applySequenceConfigs(updated, newActive)
+        persistSequenceConfigs(updated, newActive)
+        Timber.d("Deleted sequence config %s, active=%s", configId, newActive)
+    }
+
+    suspend fun addProfileToSequence(profileId: String): Boolean {
+        return addProfilesToSequence(listOf(profileId)) == 1
+    }
+
+    /**
+     * 批量追加当前任务链配置的条目（单次读改写）。
+     * @return 实际成功追加的条数
+     */
+    suspend fun addProfilesToSequence(profileIds: List<String>): Int = sequenceMutex.withLock {
+        if (profileIds.isEmpty()) return@withLock 0
+        val validIds = _profiles.value.map { it.id }.toSet()
+        val current = _profileSequence.value
+        val room = MAX_SEQUENCE_ENTRIES - current.size
+        if (room <= 0) {
+            Timber.w("addProfilesToSequence: max entries (%d) reached", MAX_SEQUENCE_ENTRIES)
+            return@withLock 0
+        }
+        val toAdd = ArrayList<ProfileSequenceEntry>(minOf(profileIds.size, room))
+        for (profileId in profileIds) {
+            if (toAdd.size >= room) break
+            if (profileId !in validIds) {
+                Timber.w("addProfilesToSequence: profile %s not found", profileId)
+                continue
+            }
+            toAdd += ProfileSequenceEntry(profileId = profileId)
+        }
+        if (toAdd.isEmpty()) return@withLock 0
+        val updated = current + toAdd
+        writeActiveSequenceEntries(updated)
+        Timber.d("Added %d profile(s) to sequence (size=%d)", toAdd.size, updated.size)
+        toAdd.size
+    }
+
+    suspend fun removeSequenceEntry(entryId: String) = sequenceMutex.withLock {
+        val updated = _profileSequence.value.filter { it.id != entryId }
+        if (updated.size == _profileSequence.value.size) {
+            Timber.w("removeSequenceEntry: entry %s not found", entryId)
+            return@withLock
+        }
+        writeActiveSequenceEntries(updated)
+        Timber.d("Removed sequence entry %s", entryId)
+    }
+
+    suspend fun reorderSequence(fromIndex: Int, toIndex: Int) = sequenceMutex.withLock {
+        val current = _profileSequence.value.toMutableList()
+        if (fromIndex !in current.indices || toIndex !in current.indices) {
+            Timber.w(
+                "reorderSequence: invalid index from=%d to=%d size=%d",
+                fromIndex, toIndex, current.size
+            )
+            return@withLock
+        }
+        if (fromIndex == toIndex) return@withLock
+        val moved = current.removeAt(fromIndex)
+        current.add(toIndex, moved)
+        writeActiveSequenceEntries(current)
+        Timber.d("Reordered sequence from %d to %d", fromIndex, toIndex)
+    }
+
+    suspend fun clearProfileSequence() = sequenceMutex.withLock {
+        if (_profileSequence.value.isEmpty()) return@withLock
+        writeActiveSequenceEntries(emptyList())
+        Timber.d("Cleared profile sequence")
+    }
+
+    suspend fun setProfileSequenceEnabled(enabled: Boolean) = sequenceMutex.withLock {
+        if (_profileSequenceEnabled.value == enabled) return@withLock
+        _profileSequenceEnabled.value = enabled
+        context.store.edit { prefs ->
+            prefs[PROFILE_SEQUENCE_ENABLED_KEY] = enabled
+        }
+        Timber.d("Profile sequence enabled: %s", enabled)
+    }
+
+    /** 将当前激活配置的 entries 写回 configs 列表并持久化 */
+    private suspend fun writeActiveSequenceEntries(entries: List<ProfileSequenceEntry>) {
+        val activeId = _activeSequenceConfigId.value
+        val configs = _sequenceConfigs.value
+        val updated = if (configs.isEmpty() || configs.none { it.id == activeId }) {
+            val cfg = TaskSequenceConfig(
+                id = activeId.ifEmpty { UUID.randomUUID().toString() },
+                name = nextSequenceName(configs),
+                entries = entries,
+            )
+            listOf(cfg)
+        } else {
+            configs.map { if (it.id == activeId) it.copy(entries = entries) else it }
+        }
+        val resolvedActive = updated.find { it.id == activeId }?.id ?: updated.first().id
+        applySequenceConfigs(updated, resolvedActive)
+        persistSequenceConfigs(updated, resolvedActive)
+    }
+
+    private fun applySequenceConfigs(configs: List<TaskSequenceConfig>, activeId: String) {
+        val resolved = configs.ifEmpty { listOf(defaultSequenceConfig()) }
+        val resolvedActive = resolved.find { it.id == activeId }?.id ?: resolved.first().id
+        _sequenceConfigs.value = resolved
+        _activeSequenceConfigId.value = resolvedActive
+        _profileSequence.value = resolved.find { it.id == resolvedActive }?.entries.orEmpty()
+    }
+
+    /** Localized default name prefixes (follows app language setting). */
+    private fun localizedNamePrefixes(): Pair<String, String> {
+        val tag = resolveSelectedLanguage(appSettings.language.value).tag
+        val localized = context.createConfigurationContext(
+            Configuration(context.resources.configuration).apply {
+                setLocale(Locale.forLanguageTag(tag))
+            }
+        )
+        return localized.getString(R.string.task_profile_name_prefix) to
+            localized.getString(R.string.task_sequence_name_prefix)
+    }
+
+    /** 识别历史/当前语言前缀，避免切语言后 next 编号回退 */
+    private fun allKnownProfilePrefixes(current: String): List<String> =
+        listOf(current, "配置-", "Profile-").distinct()
+
+    private fun allKnownSequencePrefixes(current: String): List<String> =
+        listOf(current, "任务链-", "Sequence-").distinct()
+
+    private fun maxNumericSuffix(names: List<String>, prefixes: List<String>): Int {
+        return names.mapNotNull { name ->
+            prefixes.firstNotNullOfOrNull { prefix ->
+                if (name.startsWith(prefix)) name.removePrefix(prefix).toIntOrNull() else null
+            }
+        }.maxOrNull() ?: 0
+    }
+
+    
+    private fun profileDefaultName(): String {
+        val (profilePrefix, _) = localizedNamePrefixes()
+        return "${profilePrefix}1"
+    }
+
+    private fun sequenceDefaultName(): String {
+        val (_, seqPrefix) = localizedNamePrefixes()
+        return "${seqPrefix}1"
+    }
+
+    private fun defaultSequenceConfig(): TaskSequenceConfig {
+        return TaskSequenceConfig(name = sequenceDefaultName())
+    }
+
+    private fun nextSequenceName(configs: List<TaskSequenceConfig>): String {
+        val (_, seqPrefix) = localizedNamePrefixes()
+        val maxNum = maxNumericSuffix(
+            configs.map { it.name },
+            allKnownSequencePrefixes(seqPrefix),
+        )
+        return "$seqPrefix${maxNum + 1}"
+    }
+
+    private fun loadSequenceConfigsFromPrefs(prefs: Preferences, validIds: Set<String>) {
+        val rawConfigs = prefs[SEQUENCE_CONFIGS_KEY]
+        val configs = if (!rawConfigs.isNullOrEmpty()) {
+            decodeSequenceConfigs(rawConfigs)
+                .map { it.copy(entries = sanitizeSequence(it.entries, validIds)) }
+                .take(MAX_SEQUENCE_CONFIGS)
+        } else {
+            // 旧版：仅有单条 profile_sequence，迁成一套默认任务链配置
+            val legacy = sanitizeSequence(
+                decodeProfileSequence(prefs[PROFILE_SEQUENCE_KEY]),
+                validIds,
+            )
+            listOf(TaskSequenceConfig(name = sequenceDefaultName(), entries = legacy))
+        }
+        val activeId = prefs[ACTIVE_SEQUENCE_CONFIG_KEY]
+            ?: configs.firstOrNull()?.id
+            ?: ""
+        applySequenceConfigs(configs.ifEmpty { listOf(defaultSequenceConfig()) }, activeId)
+    }
+
+    /**
+     * 将任务链中的 profile 按顺序拼接为一条可执行节点列表。
+     * - 关闭任务链 / 序列为空 / 拼接结果为空：
+     *   - [fallbackToActive]=true（手动默认）：回退当前活跃 profile
+     *   - [fallbackToActive]=false（定时任务链）：返回 emptyList，由调用方判失败
+     * - 拼接时为节点生成新 ID，避免重复 profile 导致 nodeId 冲突
+     */
+    fun resolveExecutableChain(
+        sequence: List<ProfileSequenceEntry> = _profileSequence.value,
+        profiles: List<TaskProfile> = _profiles.value,
+        activeChain: List<TaskChainNode> = _chain.value,
+        activeProfileId: String = _activeProfileId.value,
+        sequenceEnabled: Boolean = _profileSequenceEnabled.value,
+        fallbackToActive: Boolean = true,
+    ): List<TaskChainNode> {
+        if (!sequenceEnabled || sequence.isEmpty()) {
+            return if (fallbackToActive) activeChain else emptyList()
+        }
+        val profileMap = profiles.associateBy { it.id }
+        // 活跃 profile 的链以内存态为准（可能尚未写回 profiles 快照）
+        val resolved = sequence.flatMap { entry ->
+            val sourceChain = when {
+                entry.profileId == activeProfileId -> activeChain
+                else -> profileMap[entry.profileId]?.chain.orEmpty()
+            }
+            sourceChain.map { node -> node.copy(id = UUID.randomUUID().toString()) }
+        }
+        // 条目均无效/空链：手动回退；定时任务链返回空避免跑错目标
+        if (resolved.isEmpty()) {
+            return if (fallbackToActive) activeChain else emptyList()
+        }
+        return reindexCopy(resolved)
+    }
+
     // ========== 内部工具方法 ==========
 
     private suspend inline fun updateChain(
@@ -508,13 +833,83 @@ class TaskChainState(
         }
     }
 
-    private suspend fun persistProfiles(profiles: List<TaskProfile>, activeId: String) {
+    private fun decodeProfileSequence(raw: String?): List<ProfileSequenceEntry> {
+        if (raw.isNullOrEmpty()) return emptyList()
+        return runCatching {
+            json.decodeFromString<List<ProfileSequenceEntry>>(raw)
+        }.getOrElse {
+            Timber.w(it, "Failed to decode profile sequence")
+            emptyList()
+        }
+    }
+
+    private fun decodeSequenceConfigs(raw: String): List<TaskSequenceConfig> {
+        return runCatching {
+            json.decodeFromString<List<TaskSequenceConfig>>(raw)
+        }.getOrElse {
+            Timber.w(it, "Failed to decode sequence configs")
+            emptyList()
+        }
+    }
+
+    private fun sanitizeSequence(
+        sequence: List<ProfileSequenceEntry>,
+        validProfileIds: Set<String>,
+    ): List<ProfileSequenceEntry> {
+        return sequence
+            .filter { it.profileId in validProfileIds }
+            .take(MAX_SEQUENCE_ENTRIES)
+    }
+
+    private suspend fun persistProfiles(
+        profiles: List<TaskProfile>,
+        activeId: String,
+        sequenceEnabled: Boolean? = null,
+    ) {
+        val validIds = profiles.map { it.id }.toSet()
+        val cleanedConfigs = _sequenceConfigs.value.map {
+            it.copy(entries = sanitizeSequence(it.entries, validIds))
+        }.ifEmpty { listOf(defaultSequenceConfig()) }
+        val activeSeqId = cleanedConfigs.find { it.id == _activeSequenceConfigId.value }?.id
+            ?: cleanedConfigs.first().id
+        if (cleanedConfigs != _sequenceConfigs.value ||
+            activeSeqId != _activeSequenceConfigId.value ||
+            cleanedConfigs.find { it.id == activeSeqId }?.entries != _profileSequence.value
+        ) {
+            applySequenceConfigs(cleanedConfigs, activeSeqId)
+        }
         context.store.edit { prefs ->
             prefs[PROFILES_KEY] = json.encodeToString<List<TaskProfile>>(profiles)
             prefs[ACTIVE_PROFILE_KEY] = activeId
             // 同步更新 CHAIN_KEY 以保持兼容
             val activeChain = profiles.find { it.id == activeId }?.chain ?: _chain.value
             prefs[CHAIN_KEY] = json.encodeToString<List<TaskChainNode>>(activeChain)
+            // 新格式 + 兼容旧单序列字段
+            prefs[SEQUENCE_CONFIGS_KEY] =
+                json.encodeToString<List<TaskSequenceConfig>>(cleanedConfigs)
+            prefs[ACTIVE_SEQUENCE_CONFIG_KEY] = activeSeqId
+            prefs[PROFILE_SEQUENCE_KEY] =
+                json.encodeToString<List<ProfileSequenceEntry>>(
+                    cleanedConfigs.find { it.id == activeSeqId }?.entries.orEmpty()
+                )
+            if (sequenceEnabled != null) {
+                prefs[PROFILE_SEQUENCE_ENABLED_KEY] = sequenceEnabled
+            }
+        }
+    }
+
+    private suspend fun persistSequenceConfigs(
+        configs: List<TaskSequenceConfig>,
+        activeId: String,
+    ) {
+        context.store.edit { prefs ->
+            prefs[SEQUENCE_CONFIGS_KEY] =
+                json.encodeToString<List<TaskSequenceConfig>>(configs)
+            prefs[ACTIVE_SEQUENCE_CONFIG_KEY] = activeId
+            // 兼容旧备份/读取：仍写入当前激活序列
+            val activeEntries = configs.find { it.id == activeId }?.entries.orEmpty()
+            prefs[PROFILE_SEQUENCE_KEY] =
+                json.encodeToString<List<ProfileSequenceEntry>>(activeEntries)
         }
     }
 
@@ -522,6 +917,10 @@ class TaskChainState(
         for (i in nodes.indices) {
             nodes[i] = nodes[i].copy(order = i)
         }
+    }
+
+    private fun reindexCopy(nodes: List<TaskChainNode>): List<TaskChainNode> {
+        return nodes.mapIndexed { index, node -> node.copy(order = index) }
     }
 
     private fun buildDefaultChain(): List<TaskChainNode> {
@@ -545,25 +944,57 @@ class TaskChainState(
         return typeInfo.defaultName(localizedContext)
     }
 
-    suspend fun importProfiles(profiles: List<TaskProfile>, activeId: String) {
+    suspend fun importProfiles(
+        profiles: List<TaskProfile>,
+        activeId: String,
+        sequence: List<ProfileSequenceEntry> = emptyList(),
+        sequenceEnabled: Boolean = true,
+        sequenceConfigs: List<TaskSequenceConfig> = emptyList(),
+        activeSequenceConfigId: String = "",
+    ) {
         val resolvedActiveId = profiles.find { it.id == activeId }?.id
             ?: profiles.firstOrNull()?.id ?: return
         val activeChain = profiles.find { it.id == resolvedActiveId }?.chain ?: buildDefaultChain()
-        _profiles.value = profiles
-        _activeProfileId.value = resolvedActiveId
-        _chain.value = activeChain
-        persistProfiles(profiles, resolvedActiveId)
-        Timber.d("Imported %d profiles, active: %s", profiles.size, resolvedActiveId)
+        val validIds = profiles.map { it.id }.toSet()
+        val importedConfigs = when {
+            sequenceConfigs.isNotEmpty() -> sequenceConfigs
+                .map { it.copy(entries = sanitizeSequence(it.entries, validIds)) }
+                .take(MAX_SEQUENCE_CONFIGS)
+            else -> listOf(
+                TaskSequenceConfig(
+                    name = sequenceDefaultName(),
+                    entries = sanitizeSequence(sequence, validIds),
+                )
+            )
+        }.ifEmpty { listOf(defaultSequenceConfig()) }
+        val resolvedSeqActive = importedConfigs.find { it.id == activeSequenceConfigId }?.id
+            ?: importedConfigs.first().id
+        // 同一锁内切换 profiles + sequence，避免读到半更新
+        sequenceMutex.withLock {
+            _profiles.value = profiles
+            _activeProfileId.value = resolvedActiveId
+            _chain.value = activeChain
+            applySequenceConfigs(importedConfigs, resolvedSeqActive)
+            _profileSequenceEnabled.value = sequenceEnabled
+        }
+        // 与 enabled 一并写入，避免 import 两次 DataStore edit
+        persistProfiles(profiles, resolvedActiveId, sequenceEnabled = sequenceEnabled)
+        Timber.d(
+            "Imported %d profiles, active: %s, sequenceConfigs: %d, activeSeq: %s, enabled: %s",
+            profiles.size,
+            resolvedActiveId,
+            _sequenceConfigs.value.size,
+            _activeSequenceConfigId.value,
+            sequenceEnabled,
+        )
     }
 
     private fun nextProfileName(profiles: List<TaskProfile>): String {
-        val maxNum = profiles.mapNotNull { p ->
-            if (p.name.startsWith(PROFILE_NAME_PREFIX)) {
-                p.name.removePrefix(PROFILE_NAME_PREFIX).toIntOrNull()
-            } else {
-                null
-            }
-        }.maxOrNull() ?: 0
-        return "$PROFILE_NAME_PREFIX${maxNum + 1}"
+        val (profilePrefix, _) = localizedNamePrefixes()
+        val maxNum = maxNumericSuffix(
+            profiles.map { it.name },
+            allKnownProfilePrefixes(profilePrefix),
+        )
+        return "$profilePrefix${maxNum + 1}"
     }
 }
