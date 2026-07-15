@@ -541,7 +541,12 @@
 
     <!-- task action buttons -->
     <string name="task_btn_start">开始任务</string>
+    <string name="task_btn_start_sequence">开始任务链</string>
     <string name="task_btn_stop">停止任务</string>
+    <!-- default profile / sequence naming prefixes (used by TaskChainState) -->
+    <string name="task_profile_name_prefix">配置-</string>
+    <string name="task_sequence_name_prefix">任务链-</string>
+    <string name="schedule_external_trigger">外部触发</string>
     <string name="task_more_actions_cd">更多操作</string>
     <string name="task_close_preview_cd">关闭预览</string>
 
@@ -679,6 +684,26 @@
     <string name="panel_profile_delete_message">确定要删除配置「%1$s」吗？此操作不可撤销。</string>
     <string name="panel_profile_copy_id">复制 Profile ID</string>
     <string name="panel_profile_id_copied">已复制 Profile ID</string>
+    <string name="panel_sequence_title">任务链</string>
+    <string name="panel_sequence_hint">顶部切换的是任务链配置（可多套）。开启后手动开始按当前任务链拼接执行；关闭或列表为空时使用当前激活的用户配置。可左右滑动切换。</string>
+    <string name="panel_sequence_empty">当前任务链尚无条目。关闭任务链或列表为空时，开始任务将使用当前激活的用户配置；点击下方按钮编辑任务链。</string>
+    <string name="panel_sequence_add">编辑任务链</string>
+    <string name="panel_sequence_enable">启用任务链</string>
+    <string name="panel_sequence_config">任务链配置</string>
+    <string name="panel_sequence_config_new">新建任务链配置</string>
+    <string name="panel_sequence_config_rename">重命名</string>
+    <string name="panel_sequence_config_delete">删除</string>
+    <string name="panel_sequence_config_rename_title">重命名任务链配置</string>
+    <string name="panel_sequence_config_delete_title">删除任务链配置</string>
+    <string name="panel_sequence_config_delete_message">确定删除「%1$s」？至少保留一套任务链配置。</string>
+    <string name="panel_sequence_disabled_hint">任务链已关闭，开始任务将只运行当前激活的用户配置。</string>
+    <string name="panel_sequence_pick_title">编辑任务链</string>
+    <string name="panel_sequence_pick_hint">左侧点一次添加一次用户配置；右侧为当前任务链顺序，可拖动排序。与下方列表同步。还可添加 %1$d 项。</string>
+    <string name="panel_sequence_pick_source">用户配置</string>
+    <string name="panel_sequence_pick_draft">任务链顺序</string>
+    <string name="panel_sequence_pick_draft_empty">点左侧用户配置加入</string>
+    <string name="panel_sequence_pick_done">完成</string>
+    <string name="panel_sequence_missing_profile">（已删除的配置）</string>
 
     <!-- panel: oper box -->
     <string name="panel_operbox_tab_owned">已拥有 (%1$d)</string>
@@ -712,7 +737,7 @@
     <string name="panel_autobattle_tab_paradox">悖论模拟</string>
     <string name="panel_autobattle_tab_other">其他活动</string>
     <string name="panel_autobattle_station_code_label">作业站神秘代码</string>
-    <string name="panel_autobattle_station_code_placeholder">输入 maa://1234、1234</string>
+    <string name="panel_autobattle_station_code_placeholder">输入 prts://1234、prts://s1234 或 1234</string>
     <string name="panel_autobattle_waiting">等待操作…</string>
     <string name="panel_autobattle_loading">读取中…</string>
     <string name="panel_autobattle_read_single">读取作业</string>
@@ -1406,8 +1431,13 @@
     <string name="schedule_hours_unit">小时</string>
     <string name="schedule_total_hours">= %1$d 小时</string>
     <string name="schedule_section_task_config">任务配置</string>
+    <string name="schedule_target_profile">用户配置</string>
+    <string name="schedule_target_sequence">任务链</string>
     <string name="schedule_no_profiles">请先在操作面板中创建任务配置</string>
+    <string name="schedule_no_sequence_configs">请先在配置管理中创建任务链配置</string>
     <string name="schedule_enabled_tasks">已启用: %1$s</string>
+    <string name="schedule_sequence_entries">顺序: %1$s</string>
+    <string name="schedule_sequence_start_hint">到点后将「开始任务链」，按该任务链顺序拼接执行</string>
     <string name="schedule_section_advanced">高级选项</string>
     <string name="schedule_force_start">强制启动</string>
     <string name="schedule_force_start_tip">强制启动任务，会中断正在运行的游戏和任务</string>
@@ -1423,6 +1453,23 @@
     <string name="schedule_default_name">定时任务-%1$d</string>
     <string name="schedule_error_name_required">请输入策略名称</string>
     <string name="schedule_error_profile_required">请选择任务配置</string>
+    <string name="schedule_error_sequence_required">请选择任务链配置</string>
+    <string name="schedule_error_sequence_empty">该任务链没有可执行任务，请先添加配置</string>
+    <string name="schedule_error_profile_empty">该任务配置没有启用任务</string>
+    <string name="schedule_msg_busy">有任务正在运行</string>
+    <string name="schedule_msg_busy_skip">有任务正在运行，跳过定时执行</string>
+    <string name="schedule_msg_busy_pending">已有定时任务正在处理中</string>
+    <string name="schedule_msg_busy_other">另一个定时任务正在执行</string>
+    <string name="schedule_msg_sequence_deleted">关联的任务链配置已被删除</string>
+    <string name="schedule_msg_profile_deleted">关联的任务配置已被删除</string>
+    <string name="schedule_msg_sequence_no_tasks">关联的任务链中没有可执行任务</string>
+    <string name="schedule_msg_profile_no_tasks">关联的任务配置中没有启用任务</string>
+    <string name="schedule_msg_using_sequence">使用任务链配置: %1$s</string>
+    <string name="schedule_msg_using_profile">使用任务配置: %1$s</string>
+    <string name="schedule_msg_foreground_mode_blocked">当前运行模式不是后台模式，且未开启“允许前台定时任务”开关</string>
+    <string name="schedule_msg_feedback">定时任务「%1$s」: %2$s</string>
+    <string name="schedule_countdown_start_sequence">开始任务链</string>
+    <string name="schedule_target_label_sequence">任务链 · %1$s</string>
     <string name="schedule_error_days_required">请选择执行日期</string>
     <string name="schedule_error_times_required">请添加执行时间</string>
     <string name="schedule_error_start_time_required">请选择开始时间</string>

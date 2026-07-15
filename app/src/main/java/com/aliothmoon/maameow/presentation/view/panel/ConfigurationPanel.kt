@@ -52,11 +52,14 @@ import com.aliothmoon.maameow.data.model.MallConfig
 import com.aliothmoon.maameow.data.model.ReclamationConfig
 import com.aliothmoon.maameow.data.model.RecruitConfig
 import com.aliothmoon.maameow.data.model.RoguelikeConfig
+import com.aliothmoon.maameow.data.model.ProfileSequenceEntry
 import com.aliothmoon.maameow.data.model.TaskChainNode
 import com.aliothmoon.maameow.data.model.TaskParamProvider
 import com.aliothmoon.maameow.data.model.TaskProfile
+import com.aliothmoon.maameow.data.model.TaskSequenceConfig
 import com.aliothmoon.maameow.data.model.TaskTypeInfo
 import com.aliothmoon.maameow.data.model.WakeUpConfig
+import com.aliothmoon.maameow.data.preferences.TaskChainState
 import com.aliothmoon.maameow.presentation.components.ITextField
 import com.aliothmoon.maameow.presentation.view.panel.fight.FightConfigPanel
 import com.aliothmoon.maameow.presentation.view.panel.mall.MallConfigPanel
@@ -70,6 +73,10 @@ fun TaskConfigPanel(
     isProfileMode: Boolean,
     profiles: List<TaskProfile>,
     activeProfileId: String,
+    sequenceConfigs: List<TaskSequenceConfig>,
+    activeSequenceConfigId: String,
+    sequence: List<ProfileSequenceEntry>,
+    sequenceEnabled: Boolean,
     onConfigChange: (TaskParamProvider) -> Unit,
     onAddNode: (TaskTypeInfo) -> Unit,
     onRemoveNode: (String) -> Unit,
@@ -81,6 +88,14 @@ fun TaskConfigPanel(
     onDeleteProfile: (String) -> Unit,
     onCreateProfile: () -> Unit,
     onReorderProfile: (Int, Int) -> Unit,
+    onAddProfilesToSequence: (List<String>) -> Unit,
+    onRemoveSequenceEntry: (String) -> Unit,
+    onReorderSequence: (Int, Int) -> Unit,
+    onSwitchSequenceConfig: (String) -> Unit,
+    onCreateSequenceConfig: () -> Unit,
+    onRenameSequenceConfig: (String, String) -> Unit,
+    onDeleteSequenceConfig: (String) -> Unit,
+    onSequenceEnabledChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Box(modifier = modifier) {
@@ -90,12 +105,24 @@ fun TaskConfigPanel(
                 ProfileManagementPanel(
                     profiles = profiles,
                     activeProfileId = activeProfileId,
+                    sequenceConfigs = sequenceConfigs,
+                    activeSequenceConfigId = activeSequenceConfigId,
+                    sequence = sequence,
+                    sequenceEnabled = sequenceEnabled,
                     onSwitch = onSwitchProfile,
                     onRename = onRenameProfile,
                     onDuplicate = onDuplicateProfile,
                     onDelete = onDeleteProfile,
                     onCreate = onCreateProfile,
-                    onReorder = onReorderProfile
+                    onReorder = onReorderProfile,
+                    onAddProfilesToSequence = onAddProfilesToSequence,
+                    onRemoveSequenceEntry = onRemoveSequenceEntry,
+                    onReorderSequence = onReorderSequence,
+                    onSwitchSequenceConfig = onSwitchSequenceConfig,
+                    onCreateSequenceConfig = onCreateSequenceConfig,
+                    onRenameSequenceConfig = onRenameSequenceConfig,
+                    onDeleteSequenceConfig = onDeleteSequenceConfig,
+                    onSequenceEnabledChange = onSequenceEnabledChange,
                 )
             }
             // 编辑模式：正在新增任务
@@ -283,7 +310,7 @@ private fun TaskManagementView(
 
     val trimmedText = text.trim()
     val isError = trimmedText.isEmpty()
-    val isTooLong = text.length > 20
+    val isTooLong = text.length > TaskChainState.MAX_NODE_NAME_LENGTH
 
     Column(
         modifier = Modifier
@@ -321,7 +348,10 @@ private fun TaskManagementView(
             onValueChange = { newText ->
                 text = newText
                 val name = newText.trim()
-                if (name.isNotEmpty() && name.length <= 20 && name != node.name) {
+                if (name.isNotEmpty() &&
+                    name.length <= TaskChainState.MAX_NODE_NAME_LENGTH &&
+                    name != node.name
+                ) {
                     onRename(name)
                 }
             },

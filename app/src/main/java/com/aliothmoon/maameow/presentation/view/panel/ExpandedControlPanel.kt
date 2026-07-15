@@ -72,6 +72,10 @@ fun ExpandedControlPanel(
     val nodes by viewModel.chainState.chain.collectAsStateWithLifecycle()
     val profiles by viewModel.chainState.profiles.collectAsStateWithLifecycle()
     val activeProfileId by viewModel.chainState.activeProfileId.collectAsStateWithLifecycle()
+    val profileSequence by viewModel.chainState.profileSequence.collectAsStateWithLifecycle()
+    val profileSequenceEnabled by viewModel.chainState.profileSequenceEnabled.collectAsStateWithLifecycle()
+    val sequenceConfigs by viewModel.chainState.sequenceConfigs.collectAsStateWithLifecycle()
+    val activeSequenceConfigId by viewModel.chainState.activeSequenceConfigId.collectAsStateWithLifecycle()
     val selectedNode = nodes.find { it.id == uiState.selectedNodeId }
     val focusManager = LocalFocusManager.current
     val context = LocalContext.current
@@ -175,6 +179,10 @@ fun ExpandedControlPanel(
                                     isProfileMode = uiState.isProfileMode,
                                     profiles = profiles,
                                     activeProfileId = activeProfileId,
+                                    sequenceConfigs = sequenceConfigs,
+                                    activeSequenceConfigId = activeSequenceConfigId,
+                                    sequence = profileSequence,
+                                    sequenceEnabled = profileSequenceEnabled,
                                     onConfigChange = { config ->
                                         val nodeId = selectedNode?.id ?: return@TaskConfigPanel
                                         viewModel.onNodeConfigChange(nodeId, config)
@@ -189,6 +197,14 @@ fun ExpandedControlPanel(
                                     onDeleteProfile = viewModel::onDeleteProfile,
                                     onCreateProfile = viewModel::onCreateProfile,
                                     onReorderProfile = viewModel::onReorderProfile,
+                                    onAddProfilesToSequence = viewModel::onAddProfilesToSequence,
+                                    onRemoveSequenceEntry = viewModel::onRemoveSequenceEntry,
+                                    onReorderSequence = viewModel::onReorderSequence,
+                                    onSwitchSequenceConfig = viewModel::onSwitchSequenceConfig,
+                                    onCreateSequenceConfig = viewModel::onCreateSequenceConfig,
+                                    onRenameSequenceConfig = viewModel::onRenameSequenceConfig,
+                                    onDeleteSequenceConfig = viewModel::onDeleteSequenceConfig,
+                                    onSequenceEnabledChange = viewModel::onSetProfileSequenceEnabled,
                                     modifier = Modifier
                                         .weight(1f)
                                         .fillMaxHeight()
@@ -234,7 +250,20 @@ fun ExpandedControlPanel(
                                 else -> viewModel.onStartTasks()
                             }
                         },
-                        isStarting = maaState == MaaExecutionState.STARTING
+                        isStarting = maaState == MaaExecutionState.STARTING,
+                        // 与后台页一致：任务 Tab + 启用且非空，且至少一条引用存在
+                        startLabelRes = if (
+                            uiState.currentTab == PanelTab.TASKS &&
+                            profileSequenceEnabled &&
+                            profileSequence.isNotEmpty() &&
+                            profileSequence.any { entry ->
+                                profiles.any { it.id == entry.profileId }
+                            }
+                        ) {
+                            R.string.task_btn_start_sequence
+                        } else {
+                            R.string.panel_bottom_start
+                        },
                     )
                 }
             }

@@ -469,6 +469,7 @@ fun AppNavigation(
                     state = countdown,
                     onCancel = { backgroundTaskViewModel.onScheduledCountdownCancel() },
                     onStartNow = { backgroundTaskViewModel.onScheduledStartNow() },
+                    startSequence = countdown.useSequence,
                 )
             }
         }

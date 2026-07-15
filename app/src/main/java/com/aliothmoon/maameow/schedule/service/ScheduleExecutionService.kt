@@ -19,6 +19,7 @@ import com.aliothmoon.maameow.manager.RemoteServiceManager
 import com.aliothmoon.maameow.schedule.data.ScheduleStrategyRepository
 import com.aliothmoon.maameow.schedule.model.ExecutionResult
 import com.aliothmoon.maameow.schedule.model.ScheduleStrategy
+import com.aliothmoon.maameow.schedule.model.ScheduleTargetKind
 import com.aliothmoon.maameow.schedule.model.ScheduledExecutionRequest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -92,15 +93,24 @@ class ScheduleExecutionService : Service() {
             shutdownService()
             return
         }
-
+        if (!strategy.enabled) {
+            Timber.i("$TAG: 策略已禁用，跳过触发: %s", strategyId)
+            triggerLogger.append("策略已禁用，跳过本次执行")
+            triggerLogger.end(ExecutionResult.FAILED_VALIDATION, "策略已禁用")
+            // 不 scheduleNext：禁用态不应续闹钟
+            shutdownService()
+            return
+        }
         // 策略加载成功，开启正式的触发日志
         triggerLogger.begin(strategy.id, strategy.name, scheduledTimeMs)
         triggerLogger.append("策略加载完成: ${strategy.name}")
-
+        val useSequence = strategy.targetKind == ScheduleTargetKind.SEQUENCE
         val request = ScheduledExecutionRequest(
             strategyId = strategy.id,
             strategyName = strategy.name,
             profileId = strategy.profileId,
+            sequenceConfigId = strategy.sequenceConfigId,
+            useSequence = useSequence,
             scheduledTimeMs = scheduledTimeMs,
             forceStart = strategy.forceStart,
         )

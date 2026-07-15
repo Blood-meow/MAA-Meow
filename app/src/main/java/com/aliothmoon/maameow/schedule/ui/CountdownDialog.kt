@@ -26,7 +26,9 @@ import com.aliothmoon.maameow.theme.overlayBoardColor
 fun CountdownDialog(
     state: CountdownState.Counting,
     onCancel: () -> Unit,
-    onStartNow: () -> Unit
+    onStartNow: () -> Unit,
+    /** 任务链定时：主按钮文案改为「开始任务链」 */
+    startSequence: Boolean = false,
 ) {
     AlertDialog(
         onDismissRequest = { /* 不可关闭 */ },
@@ -66,7 +68,12 @@ fun CountdownDialog(
         },
         confirmButton = {
             Button(onClick = onStartNow) {
-                Text(stringResource(R.string.schedule_countdown_start_now))
+                Text(
+                    stringResource(
+                        if (startSequence) R.string.schedule_countdown_start_sequence
+                        else R.string.schedule_countdown_start_now
+                    )
+                )
             }
         },
         dismissButton = {

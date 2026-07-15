@@ -30,7 +30,9 @@ import com.aliothmoon.maameow.theme.MaaThemeAlphas
 fun BottomButtons(
     onClose: () -> Unit,
     onStart: () -> Unit,
-    isStarting: Boolean = false
+    isStarting: Boolean = false,
+    /** 开始按钮文案；任务链启用且非空时可传 [R.string.task_btn_start_sequence] */
+    startLabelRes: Int = R.string.panel_bottom_start,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -77,7 +79,7 @@ fun BottomButtons(
                     Text(stringResource(R.string.panel_bottom_starting))
                 }
             } else {
-                Text(stringResource(R.string.panel_bottom_start))
+                Text(stringResource(startLabelRes))
             }
         }
     }

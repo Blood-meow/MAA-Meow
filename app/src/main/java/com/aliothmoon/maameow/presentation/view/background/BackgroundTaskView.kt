@@ -163,6 +163,10 @@ fun BackgroundTaskView(
     val nodes by viewModel.chainState.chain.collectAsStateWithLifecycle()
     val profiles by viewModel.chainState.profiles.collectAsStateWithLifecycle()
     val activeProfileId by viewModel.chainState.activeProfileId.collectAsStateWithLifecycle()
+    val profileSequence by viewModel.chainState.profileSequence.collectAsStateWithLifecycle()
+    val profileSequenceEnabled by viewModel.chainState.profileSequenceEnabled.collectAsStateWithLifecycle()
+    val sequenceConfigs by viewModel.chainState.sequenceConfigs.collectAsStateWithLifecycle()
+    val activeSequenceConfigId by viewModel.chainState.activeSequenceConfigId.collectAsStateWithLifecycle()
     val selectedNode = nodes.find { it.id == state.selectedNodeId }
     val canShowTaskActions = PanelTab.canShowTaskActions(state.current)
 
@@ -383,6 +387,10 @@ fun BackgroundTaskView(
                                                     isProfileMode = state.isProfileMode,
                                                     profiles = profiles,
                                                     activeProfileId = activeProfileId,
+                                                    sequenceConfigs = sequenceConfigs,
+                                                    activeSequenceConfigId = activeSequenceConfigId,
+                                                    sequence = profileSequence,
+                                                    sequenceEnabled = profileSequenceEnabled,
                                                     onConfigChange = { config ->
                                                         val nodeId = selectedNode?.id
                                                             ?: return@TaskConfigPanel
@@ -421,7 +429,30 @@ fun BackgroundTaskView(
                                                     onCreateProfile = { viewModel.onCreateProfile() },
                                                     onReorderProfile = { from, to ->
                                                         viewModel.onReorderProfile(from, to)
-                                                    })
+                                                    },
+                                                    onAddProfilesToSequence = { viewModel.onAddProfilesToSequence(it) },
+                                                    onRemoveSequenceEntry = {
+                                                        viewModel.onRemoveSequenceEntry(it)
+                                                    },
+                                                    onReorderSequence = { from, to ->
+                                                        viewModel.onReorderSequence(from, to)
+                                                    },
+                                                    onSwitchSequenceConfig = {
+                                                        viewModel.onSwitchSequenceConfig(it)
+                                                    },
+                                                    onCreateSequenceConfig = {
+                                                        viewModel.onCreateSequenceConfig()
+                                                    },
+                                                    onRenameSequenceConfig = { id, name ->
+                                                        viewModel.onRenameSequenceConfig(id, name)
+                                                    },
+                                                    onDeleteSequenceConfig = {
+                                                        viewModel.onDeleteSequenceConfig(it)
+                                                    },
+                                                    onSequenceEnabledChange = {
+                                                        viewModel.onSetProfileSequenceEnabled(it)
+                                                    },
+                                                )
                                             }
                                         }
                                     }
@@ -514,7 +545,20 @@ fun BackgroundTaskView(
                                             strokeWidth = 2.dp
                                         )
                                     } else {
-                                        Text(stringResource(R.string.task_btn_start))
+                                        // 与 resolve 可执行语义接近：启用且序列非空，且至少一条引用存在
+                                        val startLabelRes =
+                                            if (state.current == PanelTab.TASKS &&
+                                                profileSequenceEnabled &&
+                                                profileSequence.isNotEmpty() &&
+                                                profileSequence.any { entry ->
+                                                    profiles.any { it.id == entry.profileId }
+                                                }
+                                            ) {
+                                                R.string.task_btn_start_sequence
+                                            } else {
+                                                R.string.task_btn_start
+                                            }
+                                        Text(stringResource(startLabelRes))
                                     }
                                 }
 

@@ -30,6 +30,7 @@ import com.aliothmoon.maameow.presentation.view.panel.PanelDialogUiState
 import com.aliothmoon.maameow.presentation.view.panel.PanelTab
 import com.aliothmoon.maameow.schedule.data.ScheduleStrategyRepository
 import com.aliothmoon.maameow.schedule.model.ScheduledExecutionRequest
+import com.aliothmoon.maameow.schedule.service.ScheduleAlarmManager
 import com.aliothmoon.maameow.schedule.service.ScheduleTriggerLogger
 import com.aliothmoon.maameow.schedule.service.ScheduledLaunchCoordinator
 import com.aliothmoon.maameow.utils.i18n.UiText
@@ -60,11 +61,11 @@ class BackgroundTaskViewModel(
     private val pathConfig: MaaPathConfig,
     private val achievementReporter: AchievementReporter,
     private val gameMuteCoordinator: GameMuteCoordinator,
-    scheduleRepository: ScheduleStrategyRepository,
+    private val scheduleRepository: ScheduleStrategyRepository,
+    private val scheduleAlarmManager: ScheduleAlarmManager,
     triggerLogger: ScheduleTriggerLogger,
     private val application: Context,
 ) : ViewModel() {
-
     val coordinator = ScheduledLaunchCoordinator(
         scope = viewModelScope,
         scheduleRepository = scheduleRepository,
@@ -72,6 +73,7 @@ class BackgroundTaskViewModel(
         appSettingsManager = appSettingsManager,
         chainState = chainState,
         triggerLogger = triggerLogger,
+        appContext = application,
     )
 
     private val _state = MutableStateFlow(BackgroundTaskState())
@@ -323,6 +325,15 @@ class BackgroundTaskViewModel(
     fun onDeleteProfile(profileId: String) {
         viewModelScope.launch {
             chainState.deleteProfile(profileId)
+            // PROFILE 定时解绑 + 可能因此变空的 SEQUENCE 定时一并消毒
+            val detached = scheduleRepository.detachProfileConfig(profileId)
+            val emptied = scheduleRepository.sanitizeInvalidTargets(
+                profiles = chainState.profiles.value,
+                sequenceConfigs = chainState.sequenceConfigs.value,
+            )
+            (detached + emptied).distinct().forEach { strategyId ->
+                scheduleAlarmManager.cancel(strategyId)
+            }
             _state.update { it.copy(selectedNodeId = null) }
         }
     }
@@ -343,6 +354,65 @@ class BackgroundTaskViewModel(
         viewModelScope.launch {
             runCatching { chainState.reorderProfiles(fromIndex, toIndex) }
                 .onFailure { e -> Timber.e(e, "Failed to reorder profile: ${e.message}") }
+        }
+    }
+
+    fun onAddToSequence(profileId: String) {
+        onAddProfilesToSequence(listOf(profileId))
+    }
+
+    fun onAddProfilesToSequence(profileIds: List<String>) {
+        if (profileIds.isEmpty()) return
+        viewModelScope.launch {
+            chainState.addProfilesToSequence(profileIds)
+        }
+    }
+
+    fun onRemoveSequenceEntry(entryId: String) {
+        viewModelScope.launch {
+            chainState.removeSequenceEntry(entryId)
+        }
+    }
+
+    fun onReorderSequence(fromIndex: Int, toIndex: Int) {
+        viewModelScope.launch {
+            runCatching { chainState.reorderSequence(fromIndex, toIndex) }
+                .onFailure { e -> Timber.e(e, "Failed to reorder sequence: ${e.message}") }
+        }
+    }
+
+    fun onSetProfileSequenceEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            chainState.setProfileSequenceEnabled(enabled)
+        }
+    }
+
+    fun onSwitchSequenceConfig(configId: String) {
+        viewModelScope.launch {
+            chainState.switchSequenceConfig(configId)
+        }
+    }
+
+    fun onCreateSequenceConfig() {
+        viewModelScope.launch {
+            chainState.createSequenceConfig()
+        }
+    }
+
+    fun onRenameSequenceConfig(configId: String, name: String) {
+        viewModelScope.launch {
+            chainState.renameSequenceConfig(configId, name)
+        }
+    }
+
+    fun onDeleteSequenceConfig(configId: String) {
+        viewModelScope.launch {
+            chainState.deleteSequenceConfig(configId)
+            // 删除任务链后：禁用并解绑引用它的定时策略，同时取消已注册闹钟
+            val detached = scheduleRepository.detachSequenceConfig(configId)
+            detached.forEach { strategyId ->
+                scheduleAlarmManager.cancel(strategyId)
+            }
         }
     }
 
@@ -414,7 +484,8 @@ class BackgroundTaskViewModel(
     }
 
     private suspend fun doSwitchProfile(request: ScheduledExecutionRequest?) {
-        if (request != null && chainState.activeProfileId.value != request.profileId) {
+        if (request == null || request.useSequence) return
+        if (chainState.activeProfileId.value != request.profileId) {
             chainState.switchProfile(request.profileId)
         }
     }
@@ -425,9 +496,25 @@ class BackgroundTaskViewModel(
     ): UiText? {
         doSwitchProfile(request)
 
+        // 手动：按当前启用状态 resolve；定时任务链：强制按绑定配置拼接；定时 profile：单链
+        val executableChain = when {
+            request == null -> chainState.resolveExecutableChain()
+            request.useSequence -> {
+                val seq = chainState.sequenceConfigs.value
+                    .find { it.id == request.sequenceConfigId }
+                if (seq == null) emptyList()
+                else chainState.resolveExecutableChain(
+                    sequence = seq.entries,
+                    sequenceEnabled = true,
+                    fallbackToActive = false,
+                )
+            }
+            else -> chainState.chain.value
+        }
+
         val plan = when (
             val decision = prepareTaskStart(
-                chain = chainState.chain.value,
+                chain = executableChain,
                 context = context,
             )
         ) {

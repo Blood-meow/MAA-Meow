@@ -104,7 +104,10 @@ class MainActivity : AppCompatActivity() {
 
     private fun dispatchScheduledLaunchIntent(intent: Intent?) {
         val request = ScheduledExecutionRequest.fromIntent(intent)
-            ?: ScheduledExecutionRequest.fromExternalIntent(intent)
+            ?: ScheduledExecutionRequest.fromExternalIntent(
+                intent = intent,
+                strategyName = getString(R.string.schedule_external_trigger),
+            )
         request?.let { backgroundTaskViewModel.onScheduledLaunch(it) }
     }
 
