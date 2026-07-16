@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -76,13 +77,16 @@ fun NotificationSettingsView(
                 title = stringResource(R.string.notification_settings_title),
                 navigationIcon = Icons.AutoMirrored.Filled.ArrowBack,
                 onNavigationClick = { navController.navigateUp() })
-        }) { paddingValues ->
+        },
+        // Match Settings/Wallpaper secondary pages: fill edge-to-edge; only topBar height is padded.
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
+    ) { paddingValues ->
         val contentColor = MaterialTheme.colorScheme.onSurface
 
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = paddingValues.calculateTopPadding()),
+                .padding(paddingValues),
             contentPadding = PaddingValues(
                 horizontal = MaaDesignTokens.Spacing.listHorizontal,
                 vertical = MaaDesignTokens.Spacing.sm
