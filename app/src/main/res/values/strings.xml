@@ -354,7 +354,7 @@
     <string name="achievement_midnight_launch_desc">深夜也在照看罗德岛。</string>
     <string name="achievement_midnight_launch_condition">0 点至 4 点启动 MaaMeow</string>
     <string name="achievement_debug_title">成就调试</string>
-    <string name="achievement_debug_desc">用于调试成就数据。入口：连续点击设置页版本号 20 次。</string>
+    <string name="achievement_debug_desc">用于调试成就数据。可手动解锁、全解锁或清空成就记录。</string>
     <string name="achievement_debug_select_label">指定成就</string>
     <string name="achievement_debug_unlock">获得指定成就</string>
     <string name="achievement_debug_unlock_done">已获得指定成就</string>

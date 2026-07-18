@@ -151,7 +151,7 @@
     <string name="achievement_midnight_launch_desc">Still watching over Rhodes Island at midnight.</string>
     <string name="achievement_midnight_launch_condition">Launch MaaMeow between 00:00 and 04:00</string>
     <string name="achievement_debug_title">Achievement Debug</string>
-    <string name="achievement_debug_desc">Debug achievement data. Entry: tap the version number on the Settings page 20 times.</string>
+    <string name="achievement_debug_desc">Debug achievement data. Manually unlock, unlock all, or clear achievement records.</string>
     <string name="achievement_debug_select_label">Achievement</string>
     <string name="achievement_debug_unlock">Unlock Selected Achievement</string>
     <string name="achievement_debug_unlock_done">Achievement unlocked</string>
