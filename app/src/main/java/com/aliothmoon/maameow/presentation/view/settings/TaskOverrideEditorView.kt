@@ -196,6 +196,7 @@ fun TaskOverrideEditorView(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
             )
 
             HorizontalDivider()
