@@ -149,12 +149,14 @@ private fun ProfileListPage(
             .fillMaxSize()
             .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
-        // 顶部标题
+        // 顶部标题（EN 长文案单行省略，对齐上游 b75b75c5）
         Text(
             text = stringResource(R.string.panel_profile_title),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface
+            color = MaterialTheme.colorScheme.onSurface,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
         )
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -220,7 +222,9 @@ private fun ProfileListPage(
                     Text(
                         text = stringResource(R.string.panel_new_profile),
                         color = MaterialTheme.colorScheme.primary,
-                        style = MaterialTheme.typography.bodyMedium
+                        style = MaterialTheme.typography.bodyMedium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                     )
                 }
             }
