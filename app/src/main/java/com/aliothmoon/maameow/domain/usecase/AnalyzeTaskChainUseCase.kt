@@ -50,7 +50,7 @@ class AnalyzeTaskChainUseCase(
      * Split enabled nodes into contiguous same-client segments.
      *
      * Rules (user requirement):
-     * - Same client types must be grouped together (e.g. Official… then Bilibili…).
+     * - Same client types must form contiguous blocks (any length/order of blocks; not fixed indices).
      * - Interleaving (Official → Bilibili → Official) is rejected (returns null).
      * - Nodes without WakeUp inherit the current segment client; leading nodes before any
      *   WakeUp use [TaskChainState.getClientType] as the initial client.
