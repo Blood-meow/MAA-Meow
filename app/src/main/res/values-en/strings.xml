@@ -1308,7 +1308,7 @@
     <string name="task_start_warning_game_not_installed">The game package for the current client type was not detected. Check the client type in Wake Up. Start anyway?</string>
     <string name="task_start_error_no_task_selected">Please select the tasks to run first</string>
     <string name="task_start_error_conflicting_client_types">Conflicting client types in the task chain (%1$s)</string>
-    <string name="task_start_error_interleaved_client_types">Same client types are not contiguous (%1$s). Group tasks by client (e.g. Official 1–3, then Bilibili 4–6); contiguous groups run as sequential segments</string>
+    <string name="task_start_error_interleaved_client_types">Same client types are not contiguous (%1$s). Group the same client together as any contiguous block (order/length unrestricted); contiguous groups run as sequential segments</string>
     <string name="task_start_toast_next_client_segment">Previous segment finished; starting next (%1$s)</string>
     <string name="task_start_toast_multi_client_segments">Split into %1$d client segments; running sequentially</string>
     <string name="task_start_error_no_executable_tasks">There are no executable tasks in the current task chain</string>
