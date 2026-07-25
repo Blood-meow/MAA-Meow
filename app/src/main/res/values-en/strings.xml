@@ -1307,10 +1307,10 @@
     <string name="task_start_warning_game_not_running">The game is not running. Continuing may fail immediately. Start anyway?</string>
     <string name="task_start_warning_game_not_installed">The game package for the current client type was not detected. Check the client type in Wake Up. Start anyway?</string>
     <string name="task_start_error_no_task_selected">Please select the tasks to run first</string>
-    <string name="task_start_error_conflicting_client_types">The task chain contains different client types (%1$s). Please keep them consistent</string>
-    <string name="task_start_error_interleaved_client_types">Same client types are not contiguous in the task chain (%1$s). Group the same client together (e.g. Official 1–3, Bilibili 4–6); segments will run in order</string>
-    <string name="task_start_toast_next_client_segment">Previous segment finished; starting next client segment (%1$s)</string>
-    <string name="task_start_toast_multi_client_segments">Split into %1$d client segments; running in order</string>
+    <string name="task_start_error_conflicting_client_types">Conflicting client types in the task chain (%1$s)</string>
+    <string name="task_start_error_interleaved_client_types">Same client types are not contiguous (%1$s). Group tasks by client (e.g. Official 1–3, then Bilibili 4–6); contiguous groups run as sequential segments</string>
+    <string name="task_start_toast_next_client_segment">Previous segment finished; starting next (%1$s)</string>
+    <string name="task_start_toast_multi_client_segments">Split into %1$d client segments; running sequentially</string>
     <string name="task_start_error_no_executable_tasks">There are no executable tasks in the current task chain</string>
     <string name="task_start_error_scheduled_no_wakeup">Wake Up is not configured and the game is not running. This scheduled run was cancelled</string>
     <string name="task_start_error_scheduled_game_not_installed">The game package for the current client type was not detected. Check the client type in Wake Up. This scheduled run was cancelled</string>
@@ -1836,8 +1836,13 @@
     <string name="achievement_SlackingOff_condition">Launch a mini-game once</string>
 
     <!-- runtime session log (shown in log panel / history) -->
-    <string name="runlog_task_start">Starting tasks (%1$d total)</string>
-    <string name="runlog_task_started">Tasks started</string>
+    <string name="runlog_task_start">Starting tasks (%2$s), %1$d total</string>
+    <string name="runlog_task_started">Tasks started (%1$s)</string>
+    <string name="runlog_client_segments_plan">Multi-client chain: split into %1$d contiguous segments (%2$s); running in order</string>
+    <string name="runlog_client_segment_start">Starting segment %1$d/%2$d: client %3$s, %4$d tasks</string>
+    <string name="runlog_client_segment_next">Segment %1$d finished; preparing next client %2$s</string>
+    <string name="runlog_client_segment_done_all">All client segments finished</string>
+    <string name="runlog_client_segment_aborted">Segment run aborted (%1$s); remaining segments canceled</string>
     <string name="runlog_copilot_start">Starting auto-battle</string>
     <string name="runlog_copilot_started">Auto-battle started</string>
     <string name="runlog_service_connecting">Service is starting, please try again later</string>

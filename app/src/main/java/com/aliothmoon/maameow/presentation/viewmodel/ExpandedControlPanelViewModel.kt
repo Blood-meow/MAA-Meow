@@ -58,6 +58,7 @@ class ExpandedControlPanelViewModel(
     private var pendingStartContext: TaskStartContext? = null
 
     private var pendingClientPlans: List<TaskChainPlan> = emptyList()
+    private var clientSegmentTotal: Int = 0
 
     init {
         observeTaskEndForClientQueue()
@@ -322,6 +323,7 @@ class ExpandedControlPanelViewModel(
                 is TaskStartDecision.Ready -> {
                     pendingStartContext = null
                     pendingClientPlans = decision.plans.drop(1)
+                    clientSegmentTotal = decision.plans.size
                     if (decision.plans.size > 1) {
                         Timber.i(
                             "Multi-client chain split into %d segments: %s",
@@ -343,6 +345,7 @@ class ExpandedControlPanelViewModel(
                 is TaskStartDecision.Blocked -> {
                     pendingStartContext = null
                     pendingClientPlans = emptyList()
+                    clientSegmentTotal = 0
                     val message = application.resolveTaskStartDecisionMessage(decision)
                     Timber.w("Validation failed: %s", message.resolve(application))
                     showDialog(application.createStartBlockedDialog(message))
@@ -367,10 +370,30 @@ class ExpandedControlPanelViewModel(
             }
             Timber.i("=== End Task JSON List ===")
 
+            val allPlans = listOf(plan) + pendingClientPlans
             val result = compositionService.start(
                 tasks = plan.params,
                 clientType = plan.clientType,
-            )
+            ) {
+                if (allPlans.size > 1) {
+                    sessionLogger.appendAndWait(
+                        application.getString(
+                            R.string.runlog_client_segments_plan,
+                            allPlans.size,
+                            allPlans.joinToString { it.clientType },
+                        ),
+                    )
+                }
+                sessionLogger.appendAndWait(
+                    application.getString(
+                        R.string.runlog_client_segment_start,
+                        1,
+                        allPlans.size.coerceAtLeast(1),
+                        plan.clientType,
+                        plan.params.size,
+                    ),
+                )
+            }
             val message = application.formatStartResult(result)
             if (result is MaaCompositionService.StartResult.Success) {
                 achievementReporter.reportTaskStarted(
@@ -410,6 +433,15 @@ class ExpandedControlPanelViewModel(
     private suspend fun continueClientSegmentQueue(remaining: List<TaskChainPlan>) {
         val next = remaining.firstOrNull() ?: return
         val rest = remaining.drop(1)
+        val finishedSegment = (clientSegmentTotal - remaining.size).coerceAtLeast(1)
+        val segmentIndex = (finishedSegment + 1).coerceAtMost(clientSegmentTotal.coerceAtLeast(1))
+        sessionLogger.appendAndWait(
+            application.getString(
+                R.string.runlog_client_segment_next,
+                finishedSegment,
+                next.clientType,
+            ),
+        )
         _effects.send(
             UiEffect.toast(
                 application.getString(R.string.task_start_toast_next_client_segment, next.clientType),
@@ -419,7 +451,17 @@ class ExpandedControlPanelViewModel(
         val result = compositionService.start(
             tasks = next.params,
             clientType = next.clientType,
-        )
+        ) {
+            sessionLogger.appendAndWait(
+                application.getString(
+                    R.string.runlog_client_segment_start,
+                    segmentIndex,
+                    clientSegmentTotal.coerceAtLeast(1),
+                    next.clientType,
+                    next.params.size,
+                ),
+            )
+        }
         if (result is MaaCompositionService.StartResult.Success) {
             pendingClientPlans = rest
             achievementReporter.reportTaskStarted(
@@ -427,11 +469,23 @@ class ExpandedControlPanelViewModel(
                 launchesGame = next.launchesGame,
                 gameAliveBeforeStart = next.gameAliveBeforeStart,
             )
+            if (rest.isEmpty()) {
+                sessionLogger.appendAndWait(application.getString(R.string.runlog_client_segment_done_all))
+                clientSegmentTotal = 0
+            }
         } else {
             pendingClientPlans = emptyList()
+            clientSegmentTotal = 0
             val message = application.formatStartResult(result)
+            sessionLogger.appendAndWait(
+                application.getString(
+                    R.string.runlog_client_segment_aborted,
+                    message.resolve(application),
+                ),
+            )
             showDialog(application.createStartFailedDialog(message))
         }
     }
+
 
 }

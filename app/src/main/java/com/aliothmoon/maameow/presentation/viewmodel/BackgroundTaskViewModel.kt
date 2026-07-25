@@ -99,6 +99,9 @@ class BackgroundTaskViewModel(
     /** Remaining single-client plans after the current segment (contiguous multi-client split). */
     private var pendingClientPlans: List<TaskChainPlan> = emptyList()
 
+    /** Total segments for the active multi-client run (for run-log ordinals). */
+    private var clientSegmentTotal: Int = 0
+
     private data class PendingStart(
         val context: TaskStartContext,
         val request: ScheduledExecutionRequest? = null,
@@ -166,6 +169,15 @@ class BackgroundTaskViewModel(
                     } else if (remaining.isNotEmpty() && current == MaaExecutionState.ERROR) {
                         Timber.w("Segment ended in ERROR; dropping %d remaining client segment(s)", remaining.size)
                         pendingClientPlans = emptyList()
+                        clientSegmentTotal = 0
+                        viewModelScope.launch {
+                            sessionLogger.appendAndWait(
+                                application.getString(
+                                    R.string.runlog_client_segment_aborted,
+                                    current.name,
+                                ),
+                            )
+                        }
                     } else if (appSettingsManager.closeAppOnTaskEnd.value) {
                         // 仅在任务自然结束且无后续客户端段时关闭游戏
                         Timber.i("Task ended (%s), auto closing app", current)
@@ -188,6 +200,15 @@ class BackgroundTaskViewModel(
             next.params.size,
             rest.size,
         )
+        val finishedSegment = (clientSegmentTotal - remaining.size).coerceAtLeast(1)
+        val segmentIndex = (finishedSegment + 1).coerceAtMost(clientSegmentTotal.coerceAtLeast(1))
+        sessionLogger.appendAndWait(
+            application.getString(
+                R.string.runlog_client_segment_next,
+                finishedSegment,
+                next.clientType,
+            ),
+        )
         _effects.send(
             UiEffect.toast(
                 application.getString(
@@ -196,7 +217,6 @@ class BackgroundTaskViewModel(
                 ),
             ),
         )
-        // Between clients: tear down virtual display so the next WakeUp can relaunch cleanly.
         runCatching { compositionService.stopVirtualDisplay() }
             .onFailure { Timber.w(it, "stopVirtualDisplay before next client segment failed") }
 
@@ -209,7 +229,17 @@ class BackgroundTaskViewModel(
             tasks = next.params,
             clientType = next.clientType,
             isScheduled = false,
-        )
+        ) {
+            sessionLogger.appendAndWait(
+                application.getString(
+                    R.string.runlog_client_segment_start,
+                    segmentIndex,
+                    clientSegmentTotal,
+                    next.clientType,
+                    next.params.size,
+                ),
+            )
+        }
         if (result is MaaCompositionService.StartResult.Success) {
             pendingClientPlans = rest
             chainState.grantGameBatteryExemption(next.clientType)
@@ -218,9 +248,22 @@ class BackgroundTaskViewModel(
                 launchesGame = next.launchesGame,
                 gameAliveBeforeStart = next.gameAliveBeforeStart,
             )
+            if (rest.isEmpty()) {
+                sessionLogger.appendAndWait(
+                    application.getString(R.string.runlog_client_segment_done_all),
+                )
+                clientSegmentTotal = 0
+            }
         } else {
             pendingClientPlans = emptyList()
+            clientSegmentTotal = 0
             val message = application.resolveTaskStartFailureMessage(result)
+            sessionLogger.appendAndWait(
+                application.getString(
+                    R.string.runlog_client_segment_aborted,
+                    message?.resolve(application) ?: result.toString(),
+                ),
+            )
             if (message != null) {
                 Timber.w("Next client segment start failed: %s", message.resolve(application))
                 showStartFailedDialog(message)
@@ -586,11 +629,13 @@ class BackgroundTaskViewModel(
                 pendingStart = null
                 // Queue trailing single-client segments (if any) for sequential execution.
                 pendingClientPlans = decision.plans.drop(1)
+                clientSegmentTotal = decision.plans.size
                 if (decision.plans.size > 1) {
+                    val clients = decision.plans.joinToString { it.clientType }
                     Timber.i(
                         "Multi-client chain split into %d segments: %s",
                         decision.plans.size,
-                        decision.plans.joinToString { it.clientType },
+                        clients,
                     )
                     _effects.send(
                         UiEffect.toast(
@@ -607,6 +652,7 @@ class BackgroundTaskViewModel(
             is TaskStartDecision.Blocked -> {
                 pendingStart = null
                 pendingClientPlans = emptyList()
+                clientSegmentTotal = 0
                 val message = application.resolveTaskStartDecisionMessage(decision)
                 Timber.w("Validation failed: %s", message.resolve(application))
                 if (request != null) {
@@ -631,6 +677,7 @@ class BackgroundTaskViewModel(
             _effects.send(UiEffect.toast(R.string.bg_toast_mute_failed))
         }
 
+        val allPlans = listOf(plan) + pendingClientPlans
         val result = compositionService.start(
             tasks = plan.params,
             clientType = plan.clientType,
@@ -644,6 +691,24 @@ class BackgroundTaskViewModel(
                     ),
                 )
             }
+            if (allPlans.size > 1) {
+                sessionLogger.appendAndWait(
+                    application.getString(
+                        R.string.runlog_client_segments_plan,
+                        allPlans.size,
+                        allPlans.joinToString { it.clientType },
+                    ),
+                )
+            }
+            sessionLogger.appendAndWait(
+                application.getString(
+                    R.string.runlog_client_segment_start,
+                    1,
+                    allPlans.size,
+                    plan.clientType,
+                    plan.params.size,
+                ),
+            )
         }
         if (result is MaaCompositionService.StartResult.Success) {
             achievementReporter.reportTaskStarted(
@@ -668,6 +733,7 @@ class BackgroundTaskViewModel(
     fun onStopTasks() {
         achievementReporter.reportTaskStopped()
         pendingClientPlans = emptyList()
+        clientSegmentTotal = 0
         viewModelScope.launch {
             compositionService.stop()
         }

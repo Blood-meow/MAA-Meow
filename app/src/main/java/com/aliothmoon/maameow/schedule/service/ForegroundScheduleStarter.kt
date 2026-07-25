@@ -141,15 +141,28 @@ class ForegroundScheduleStarter(
                 when (val decision = prepareTaskStartUseCase.invoke(chain, startContext)) {
                     is TaskStartDecision.Ready -> {
                         val plans = decision.plans
+                        if (plans.size > 1) {
+                            triggerLogger.append(
+                                appCtx.getString(
+                                    R.string.runlog_client_segments_plan,
+                                    plans.size,
+                                    plans.joinToString { it.clientType },
+                                ),
+                            )
+                        }
                         triggerLogger.append(
-                            "前置条件通过，启用任务 ${chain.size} 项，按客户端拆成 ${plans.size} 段，正在启动 MAA 核心服务...",
+                            appCtx.getString(R.string.runlog_task_start, chain.size, plans.first().clientType),
                         )
 
                         var failed: String? = null
                         for ((index, plan) in plans.withIndex()) {
                             if (index > 0) {
                                 triggerLogger.append(
-                                    "上一段结束，启动下一段客户端 ${plan.clientType}（${plan.params.size} 项）",
+                                    appCtx.getString(
+                                        R.string.runlog_client_segment_next,
+                                        index,
+                                        plan.clientType,
+                                    ),
                                 )
                                 runCatching { compositionService.stopVirtualDisplay() }
                             }
@@ -159,12 +172,21 @@ class ForegroundScheduleStarter(
                                 isScheduled = true,
                             )
                             if (result !is MaaCompositionService.StartResult.Success) {
-                                failed = "MaaCore 启动失败(段 ${index + 1}/${plans.size} ${plan.clientType}): $result"
+                                failed = appCtx.getString(
+                                    R.string.runlog_client_segment_aborted,
+                                    "${plan.clientType}: $result",
+                                )
                                 triggerLogger.append(failed)
                                 break
                             }
                             triggerLogger.append(
-                                "段 ${index + 1}/${plans.size}（${plan.clientType}）启动成功，MAA版本: ${result.version}",
+                                appCtx.getString(
+                                    R.string.runlog_client_segment_start,
+                                    index + 1,
+                                    plans.size,
+                                    plan.clientType,
+                                    plan.params.size,
+                                ) + " (v${result.version})",
                             )
                             if (index < plans.lastIndex) {
                                 // Wait for this segment to finish before switching client.
@@ -173,13 +195,19 @@ class ForegroundScheduleStarter(
                                     it == MaaExecutionState.IDLE || it == MaaExecutionState.ERROR
                                 }
                                 if (endState == MaaExecutionState.ERROR) {
-                                    failed = "段 ${index + 1}（${plan.clientType}）以 ERROR 结束，中止后续客户端段"
+                                    failed = appCtx.getString(
+                                        R.string.runlog_client_segment_aborted,
+                                        "${plan.clientType} ERROR",
+                                    )
                                     triggerLogger.append(failed)
                                     break
                                 }
                             }
                         }
                         if (failed == null) {
+                            if (plans.size > 1) {
+                                triggerLogger.append(appCtx.getString(R.string.runlog_client_segment_done_all))
+                            }
                             recordResult(request, ExecutionResult.STARTED)
                         } else {
                             recordResult(request, ExecutionResult.FAILED_START, failed)

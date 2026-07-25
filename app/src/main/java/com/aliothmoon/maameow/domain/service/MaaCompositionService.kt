@@ -202,8 +202,8 @@ class MaaCompositionService(
         tasks = tasks,
         clientType = clientType,
         isScheduled = isScheduled,
-        startMessage = context.getString(R.string.runlog_task_start, tasks.size),
-        successMessage = context.getString(R.string.runlog_task_started),
+        startMessage = context.getString(R.string.runlog_task_start, tasks.size, clientType),
+        successMessage = context.getString(R.string.runlog_task_started, clientType),
         onSessionStarted = onSessionStarted,
     )
 
