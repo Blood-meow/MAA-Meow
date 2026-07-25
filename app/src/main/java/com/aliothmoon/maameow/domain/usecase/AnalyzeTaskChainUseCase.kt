@@ -28,15 +28,81 @@ class AnalyzeTaskChainUseCase(
             )
         }
 
-        validateClientTypeConsistency(enabledNodes)?.let { clientTypes ->
+        val partition = partitionByContiguousClient(enabledNodes)
+            ?: return AnalyzeTaskChainResult.Blocked(
+                reason = AnalyzeTaskChainFailureReason.INTERLEAVED_CLIENT_TYPES,
+                clientTypes = enabledNodes
+                    .mapNotNull { (it.config as? WakeUpConfig)?.clientType }
+                    .filter { it.isNotBlank() }
+                    .distinct(),
+            )
+
+        val plans = partition.mapNotNull { segment -> buildPlan(segment) }
+        if (plans.isEmpty()) {
             return AnalyzeTaskChainResult.Blocked(
-                reason = AnalyzeTaskChainFailureReason.CONFLICTING_CLIENT_TYPES,
-                clientTypes = clientTypes,
+                reason = AnalyzeTaskChainFailureReason.NO_EXECUTABLE_TASKS,
             )
         }
-        // Prefer WakeUp clientType from the chain being started (task sequence / non-active
-        // profile may differ from the UI-active profile's chain).
-        val clientType = resolveClientType(enabledNodes)
+        return AnalyzeTaskChainResult.Ready(plans = plans)
+    }
+
+    /**
+     * Split enabled nodes into contiguous same-client segments.
+     *
+     * Rules (user requirement):
+     * - Same client types must be grouped together (e.g. Official… then Bilibili…).
+     * - Interleaving (Official → Bilibili → Official) is rejected (returns null).
+     * - Nodes without WakeUp inherit the current segment client; leading nodes before any
+     *   WakeUp use [TaskChainState.getClientType] as the initial client.
+     */
+    internal fun partitionByContiguousClient(
+        enabledNodes: List<TaskChainNode>,
+    ): List<ClientSegment>? {
+        if (enabledNodes.isEmpty()) return emptyList()
+
+        val fallbackClient = taskChainState.getClientType().ifBlank { "Official" }
+        val segments = mutableListOf<ClientSegment>()
+        var currentNodes = mutableListOf<TaskChainNode>()
+        var currentClient: String? = null
+        val seenClients = linkedSetOf<String>()
+
+        fun flush() {
+            if (currentNodes.isEmpty()) return
+            val client = currentClient ?: fallbackClient
+            segments += ClientSegment(clientType = client, nodes = currentNodes.toList())
+            currentNodes = mutableListOf()
+        }
+
+        for (node in enabledNodes) {
+            val wakeClient = (node.config as? WakeUpConfig)?.clientType
+                ?.takeIf { it.isNotBlank() }
+            if (wakeClient != null) {
+                when {
+                    currentClient == null -> {
+                        currentClient = wakeClient
+                        seenClients += wakeClient
+                    }
+                    wakeClient == currentClient -> Unit
+                    wakeClient in seenClients -> {
+                        // Switched back to a client that already finished a run → interleaved.
+                        return null
+                    }
+                    else -> {
+                        flush()
+                        currentClient = wakeClient
+                        seenClients += wakeClient
+                    }
+                }
+            }
+            currentNodes += node
+        }
+        flush()
+        return segments
+    }
+
+    private fun buildPlan(segment: ClientSegment): TaskChainPlan? {
+        val enabledNodes = segment.nodes
+        val clientType = segment.clientType
         val creditFightAvailability = resolveMallCreditFightAvailability(enabledNodes)
         val serverDayOfWeek = ServerTimezone.getYjDayOfWeek(clientType)
 
@@ -48,55 +114,24 @@ class AnalyzeTaskChainUseCase(
             }
             buildNodeParams(node, creditFightAvailability, clientType)
         }
+        if (params.isEmpty()) return null
 
-        if (params.isEmpty()) {
-            return AnalyzeTaskChainResult.Blocked(
-                reason = AnalyzeTaskChainFailureReason.NO_EXECUTABLE_TASKS,
-            )
-        }
-
-        return AnalyzeTaskChainResult.Ready(
-            TaskChainPlan(
-                enabledNodes = enabledNodes,
-                params = params,
-                clientType = clientType,
-                gamePackageName = Packages[clientType],
-                launchesGame = enabledNodes
-                    .mapNotNull { it.config as? WakeUpConfig }
-                    .any { it.startGameEnabled },
-            )
+        return TaskChainPlan(
+            enabledNodes = enabledNodes,
+            params = params,
+            clientType = clientType,
+            gamePackageName = Packages[clientType],
+            launchesGame = enabledNodes
+                .mapNotNull { it.config as? WakeUpConfig }
+                .any { it.startGameEnabled },
         )
-    }
-
-    private fun validateClientTypeConsistency(nodes: List<TaskChainNode>): List<String>? {
-        val clientTypes = nodes
-            .mapNotNull { (it.config as? WakeUpConfig)?.clientType }
-            .distinct()
-        if (clientTypes.size > 1) {
-            return clientTypes
-        }
-        return null
-    }
-
-    /**
-     * Client type for launch / weekly schedule / mall params must follow the executable chain,
-     * not necessarily the UI-active profile (manual sequence & scheduled SEQUENCE/PROFILE).
-     */
-    private fun resolveClientType(enabledNodes: List<TaskChainNode>): String {
-        val fromChain = enabledNodes
-            .asSequence()
-            .mapNotNull { it.config as? WakeUpConfig }
-            .map { it.clientType }
-            .firstOrNull { it.isNotBlank() }
-        if (fromChain != null) return fromChain
-        return taskChainState.getClientType()
     }
 
     private fun isSkippedByWeeklySchedule(node: TaskChainNode, serverDayOfWeek: DayOfWeek): Boolean {
         val config = node.config
         if (config is FightConfig && config.useWeeklySchedule) {
             if (config.weeklySchedule[serverDayOfWeek.name] == false) {
-                Timber.d("WeeklySchedule: skip node '%s' on %s", node.name, serverDayOfWeek)
+                Timber.d("WeeklySchedule: skip node \'%s\' on %s", node.name, serverDayOfWeek)
                 return true
             }
         }
@@ -141,6 +176,12 @@ class AnalyzeTaskChainUseCase(
     }
 }
 
+/** One contiguous same-client slice of an enabled task chain. */
+internal data class ClientSegment(
+    val clientType: String,
+    val nodes: List<TaskChainNode>,
+)
+
 data class TaskChainPlan(
     val enabledNodes: List<TaskChainNode>,
     val params: List<MaaTaskParams>,
@@ -152,12 +193,26 @@ data class TaskChainPlan(
 
 enum class AnalyzeTaskChainFailureReason {
     NO_TASK_SELECTED,
+    /** Same client appears in more than one non-adjacent run (e.g. Official…Bilibili…Official). */
+    INTERLEAVED_CLIENT_TYPES,
+    /** @deprecated kept for string/compat; no longer emitted — multi-client contiguous chains split. */
     CONFLICTING_CLIENT_TYPES,
     NO_EXECUTABLE_TASKS,
 }
 
 sealed interface AnalyzeTaskChainResult {
-    data class Ready(val plan: TaskChainPlan) : AnalyzeTaskChainResult
+    /**
+     * One or more single-client plans in execution order.
+     * Contiguous multi-client chains become multiple plans; callers run them sequentially.
+     */
+    data class Ready(val plans: List<TaskChainPlan>) : AnalyzeTaskChainResult {
+        init {
+            require(plans.isNotEmpty()) { "Ready.plans must not be empty" }
+        }
+
+        /** First plan (backward-compatible accessor for single-segment callers). */
+        val plan: TaskChainPlan get() = plans.first()
+    }
 
     data class Blocked(
         val reason: AnalyzeTaskChainFailureReason,

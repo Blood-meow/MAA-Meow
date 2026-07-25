@@ -21,6 +21,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import timber.log.Timber
 import java.util.concurrent.atomic.AtomicBoolean
+
 class ForegroundScheduleStarter(
     private val appContext: Context,
     private val overlayController: OverlayController,
@@ -139,21 +140,49 @@ class ForegroundScheduleStarter(
                 val startContext = TaskStartContext(mode = TaskStartMode.SCHEDULED)
                 when (val decision = prepareTaskStartUseCase.invoke(chain, startContext)) {
                     is TaskStartDecision.Ready -> {
-                        triggerLogger.append("前置条件通过，启用任务 ${chain.size} 项，正在启动 MAA 核心服务...")
-
-                        val result = compositionService.start(
-                            tasks = decision.plan.params,
-                            clientType = decision.plan.clientType,
-                            isScheduled = true
+                        val plans = decision.plans
+                        triggerLogger.append(
+                            "前置条件通过，启用任务 ${chain.size} 项，按客户端拆成 ${plans.size} 段，正在启动 MAA 核心服务...",
                         )
 
-                        if (result is MaaCompositionService.StartResult.Success) {
-                            triggerLogger.append("任务启动成功，MAA版本: ${result.version}")
+                        var failed: String? = null
+                        for ((index, plan) in plans.withIndex()) {
+                            if (index > 0) {
+                                triggerLogger.append(
+                                    "上一段结束，启动下一段客户端 ${plan.clientType}（${plan.params.size} 项）",
+                                )
+                                runCatching { compositionService.stopVirtualDisplay() }
+                            }
+                            val result = compositionService.start(
+                                tasks = plan.params,
+                                clientType = plan.clientType,
+                                isScheduled = true,
+                            )
+                            if (result !is MaaCompositionService.StartResult.Success) {
+                                failed = "MaaCore 启动失败(段 ${index + 1}/${plans.size} ${plan.clientType}): $result"
+                                triggerLogger.append(failed)
+                                break
+                            }
+                            triggerLogger.append(
+                                "段 ${index + 1}/${plans.size}（${plan.clientType}）启动成功，MAA版本: ${result.version}",
+                            )
+                            if (index < plans.lastIndex) {
+                                // Wait for this segment to finish before switching client.
+                                compositionService.state.first { it == MaaExecutionState.RUNNING }
+                                val endState = compositionService.state.first {
+                                    it == MaaExecutionState.IDLE || it == MaaExecutionState.ERROR
+                                }
+                                if (endState == MaaExecutionState.ERROR) {
+                                    failed = "段 ${index + 1}（${plan.clientType}）以 ERROR 结束，中止后续客户端段"
+                                    triggerLogger.append(failed)
+                                    break
+                                }
+                            }
+                        }
+                        if (failed == null) {
                             recordResult(request, ExecutionResult.STARTED)
                         } else {
-                            val failMsg = "MaaCore 启动失败: $result"
-                            triggerLogger.append(failMsg)
-                            recordResult(request, ExecutionResult.FAILED_START, failMsg)
+                            recordResult(request, ExecutionResult.FAILED_START, failed)
                         }
                     }
                     is TaskStartDecision.Blocked -> {

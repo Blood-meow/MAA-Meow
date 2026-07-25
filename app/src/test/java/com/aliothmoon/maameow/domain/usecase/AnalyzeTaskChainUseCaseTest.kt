@@ -43,7 +43,48 @@ class AnalyzeTaskChainUseCaseTest {
     }
 
     @Test
-    fun returnsBlocked_whenWakeUpClientTypesConflict() {
+    fun returnsReady_withTwoPlans_whenContiguousClientsDiffer() {
+        val result = useCase(
+            listOf(
+                TaskChainNode(
+                    name = "开始唤醒1",
+                    order = 1,
+                    enabled = true,
+                    config = WakeUpConfig(clientType = "Official", startGameEnabled = true),
+                ),
+                TaskChainNode(
+                    name = "领取奖励",
+                    order = 2,
+                    enabled = true,
+                    config = AwardConfig(),
+                ),
+                TaskChainNode(
+                    name = "开始唤醒2",
+                    order = 3,
+                    enabled = true,
+                    config = WakeUpConfig(clientType = "Bilibili", startGameEnabled = true),
+                ),
+                TaskChainNode(
+                    name = "领取奖励2",
+                    order = 4,
+                    enabled = true,
+                    config = AwardConfig(),
+                ),
+            )
+        )
+
+        val ready = result as AnalyzeTaskChainResult.Ready
+        assertEquals(2, ready.plans.size)
+        assertEquals("Official", ready.plans[0].clientType)
+        assertEquals(2, ready.plans[0].params.size)
+        assertEquals("Bilibili", ready.plans[1].clientType)
+        assertEquals(2, ready.plans[1].params.size)
+        assertEquals(Packages["Official"], ready.plans[0].gamePackageName)
+        assertEquals(Packages["Bilibili"], ready.plans[1].gamePackageName)
+    }
+
+    @Test
+    fun returnsBlocked_whenClientTypesAreInterleaved() {
         val result = useCase(
             listOf(
                 TaskChainNode(
@@ -58,12 +99,18 @@ class AnalyzeTaskChainUseCaseTest {
                     enabled = true,
                     config = WakeUpConfig(clientType = "Bilibili"),
                 ),
+                TaskChainNode(
+                    name = "开始唤醒3",
+                    order = 3,
+                    enabled = true,
+                    config = WakeUpConfig(clientType = "Official"),
+                ),
             )
         )
 
         assertEquals(
             AnalyzeTaskChainResult.Blocked(
-                reason = AnalyzeTaskChainFailureReason.CONFLICTING_CLIENT_TYPES,
+                reason = AnalyzeTaskChainFailureReason.INTERLEAVED_CLIENT_TYPES,
                 clientTypes = listOf("Official", "Bilibili"),
             ),
             result
@@ -126,6 +173,7 @@ class AnalyzeTaskChainUseCaseTest {
         )
 
         val ready = result as AnalyzeTaskChainResult.Ready
+        assertEquals(1, ready.plans.size)
         assertEquals("Official", ready.plan.clientType)
         assertEquals(Packages["Official"], ready.plan.gamePackageName)
         assertTrue(ready.plan.launchesGame)

@@ -33,9 +33,10 @@ internal fun Context.resolveTaskStartBlockedMessage(
     TaskStartDecisionReason.NO_TASK_SELECTED ->
         uiTextOf(R.string.task_start_error_no_task_selected)
 
-    TaskStartDecisionReason.CONFLICTING_CLIENT_TYPES ->
+    TaskStartDecisionReason.CONFLICTING_CLIENT_TYPES,
+    TaskStartDecisionReason.INTERLEAVED_CLIENT_TYPES ->
         uiTextOf(
-            R.string.task_start_error_conflicting_client_types,
+            R.string.task_start_error_interleaved_client_types,
             uiTextJoin(
                 *clientTypes.map(::uiTextDynamic).toTypedArray(),
                 separator = uiTextOf(R.string.common_enumeration_separator),

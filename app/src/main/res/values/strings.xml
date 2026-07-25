@@ -1364,6 +1364,9 @@
     <string name="task_start_warning_game_not_installed">未检测到当前客户端类型对应的游戏安装包，请检查「开始唤醒」中的客户端类型设置是否正确。是否仍要启动？</string>
     <string name="task_start_error_no_task_selected">请先选择要执行的任务</string>
     <string name="task_start_error_conflicting_client_types">任务链中存在多个不同的客户端类型（%1$s），请保持一致</string>
+    <string name="task_start_error_interleaved_client_types">任务链中相同客户端未连续排列（%1$s）。请把同一客户端的任务放在一起（例如官服 1～3，B服 4～6），将按客户端分段依次执行</string>
+    <string name="task_start_toast_next_client_segment">上一段已结束，开始下一段客户端任务（%1$s）</string>
+    <string name="task_start_toast_multi_client_segments">已按客户端拆成 %1$d 段，将依次执行</string>
     <string name="task_start_error_no_executable_tasks">当前没有可执行的任务（可能被周计划过滤）</string>
     <string name="task_start_error_scheduled_no_wakeup">未配置开始唤醒且游戏未运行，已取消本次定时执行</string>
     <string name="task_start_error_scheduled_game_not_installed">未检测到当前客户端类型对应的游戏安装包，请检查「开始唤醒」中的客户端类型设置，已取消本次定时执行</string>
