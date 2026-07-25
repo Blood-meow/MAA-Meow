@@ -11,6 +11,9 @@ import com.aliothmoon.maameow.domain.service.MaaCompositionService
 import com.aliothmoon.maameow.domain.service.MaaSessionLogger
 import com.aliothmoon.maameow.domain.service.AchievementReporter
 import com.aliothmoon.maameow.domain.usecase.PrepareTaskStartUseCase
+import com.aliothmoon.maameow.domain.usecase.TaskChainPlan
+import com.aliothmoon.maameow.domain.state.MaaExecutionState
+import com.aliothmoon.maameow.R
 import com.aliothmoon.maameow.domain.usecase.TaskStartContext
 import com.aliothmoon.maameow.domain.usecase.TaskStartDecision
 import com.aliothmoon.maameow.domain.usecase.TaskStartMode
@@ -54,7 +57,10 @@ class ExpandedControlPanelViewModel(
 
     private var pendingStartContext: TaskStartContext? = null
 
+    private var pendingClientPlans: List<TaskChainPlan> = emptyList()
+
     init {
+        observeTaskEndForClientQueue()
         viewModelScope.launch {
             overlayController.signal.collect { endState ->
                 Timber.d("Overlay result received: $endState")
@@ -315,11 +321,28 @@ class ExpandedControlPanelViewModel(
             ) {
                 is TaskStartDecision.Ready -> {
                     pendingStartContext = null
+                    pendingClientPlans = decision.plans.drop(1)
+                    if (decision.plans.size > 1) {
+                        Timber.i(
+                            "Multi-client chain split into %d segments: %s",
+                            decision.plans.size,
+                            decision.plans.joinToString { it.clientType },
+                        )
+                        _effects.send(
+                            UiEffect.toast(
+                                application.getString(
+                                    R.string.task_start_toast_multi_client_segments,
+                                    decision.plans.size,
+                                ),
+                            ),
+                        )
+                    }
                     decision.plan
                 }
 
                 is TaskStartDecision.Blocked -> {
                     pendingStartContext = null
+                    pendingClientPlans = emptyList()
                     val message = application.resolveTaskStartDecisionMessage(decision)
                     Timber.w("Validation failed: %s", message.resolve(application))
                     showDialog(application.createStartBlockedDialog(message))
@@ -364,4 +387,51 @@ class ExpandedControlPanelViewModel(
             }
         }
     }
+
+    private fun observeTaskEndForClientQueue() {
+        viewModelScope.launch {
+            var prev = compositionService.state.value
+            compositionService.state.collect { current ->
+                val naturalIdle = prev == MaaExecutionState.RUNNING && current == MaaExecutionState.IDLE
+                val naturalError = prev == MaaExecutionState.RUNNING && current == MaaExecutionState.ERROR
+                if (naturalIdle && pendingClientPlans.isNotEmpty()) {
+                    val remaining = pendingClientPlans
+                    pendingClientPlans = emptyList()
+                    continueClientSegmentQueue(remaining)
+                } else if (naturalError && pendingClientPlans.isNotEmpty()) {
+                    Timber.w("Overlay segment ERROR; drop %d remaining", pendingClientPlans.size)
+                    pendingClientPlans = emptyList()
+                }
+                prev = current
+            }
+        }
+    }
+
+    private suspend fun continueClientSegmentQueue(remaining: List<TaskChainPlan>) {
+        val next = remaining.firstOrNull() ?: return
+        val rest = remaining.drop(1)
+        _effects.send(
+            UiEffect.toast(
+                application.getString(R.string.task_start_toast_next_client_segment, next.clientType),
+            ),
+        )
+        runCatching { compositionService.stopVirtualDisplay() }
+        val result = compositionService.start(
+            tasks = next.params,
+            clientType = next.clientType,
+        )
+        if (result is MaaCompositionService.StartResult.Success) {
+            pendingClientPlans = rest
+            achievementReporter.reportTaskStarted(
+                taskCount = next.params.size,
+                launchesGame = next.launchesGame,
+                gameAliveBeforeStart = next.gameAliveBeforeStart,
+            )
+        } else {
+            pendingClientPlans = emptyList()
+            val message = application.formatStartResult(result)
+            showDialog(application.createStartFailedDialog(message))
+        }
+    }
+
 }

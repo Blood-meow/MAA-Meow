@@ -18,6 +18,7 @@ import com.aliothmoon.maameow.domain.service.MaaSessionLogger
 import com.aliothmoon.maameow.domain.service.AchievementReporter
 import com.aliothmoon.maameow.domain.state.MaaExecutionState
 import com.aliothmoon.maameow.domain.usecase.PrepareTaskStartUseCase
+import com.aliothmoon.maameow.domain.usecase.TaskChainPlan
 import com.aliothmoon.maameow.domain.usecase.TaskStartContext
 import com.aliothmoon.maameow.domain.usecase.TaskStartDecision
 import com.aliothmoon.maameow.domain.usecase.TaskStartMode
@@ -95,6 +96,9 @@ class BackgroundTaskViewModel(
     val markers: StateFlow<List<PreviewTouchMarker>> = touchPreviewController.markers
     private var pendingStart: PendingStart? = null
 
+    /** Remaining single-client plans after the current segment (contiguous multi-client split). */
+    private var pendingClientPlans: List<TaskChainPlan> = emptyList()
+
     private data class PendingStart(
         val context: TaskStartContext,
         val request: ScheduledExecutionRequest? = null,
@@ -148,18 +152,78 @@ class BackgroundTaskViewModel(
         viewModelScope.launch {
             var prev = compositionService.state.value
             compositionService.state.collect { current ->
-                // 仅在任务自然结束（RUNNING → IDLE/ERROR）时关闭游戏；
-                // 手动停止走 RUNNING → STOPPING → IDLE，prev 为 STOPPING 不会匹配，
-                // 这是预期行为：手动停止说明用户可能还要继续操作，不应自动关闭游戏。
-                if (prev == MaaExecutionState.RUNNING
-                    && (current == MaaExecutionState.IDLE || current == MaaExecutionState.ERROR)
-                    && appSettingsManager.closeAppOnTaskEnd.value
-                ) {
-                    Timber.i("Task ended (%s), auto closing app", current)
-                    _effects.send(UiEffect.toast(R.string.bg_toast_auto_closed_on_end))
-                    compositionService.stopVirtualDisplay()
+                val naturalEnd = prev == MaaExecutionState.RUNNING &&
+                    (current == MaaExecutionState.IDLE || current == MaaExecutionState.ERROR)
+                // 手动停止走 RUNNING → STOPPING → IDLE，prev 为 STOPPING 不会匹配。
+                if (naturalEnd) {
+                    val remaining = pendingClientPlans
+                    if (remaining.isNotEmpty() && current == MaaExecutionState.IDLE) {
+                        // Contiguous multi-client: start next single-client segment.
+                        pendingClientPlans = emptyList()
+                        viewModelScope.launch {
+                            continueClientSegmentQueue(remaining)
+                        }
+                    } else if (remaining.isNotEmpty() && current == MaaExecutionState.ERROR) {
+                        Timber.w("Segment ended in ERROR; dropping %d remaining client segment(s)", remaining.size)
+                        pendingClientPlans = emptyList()
+                    } else if (appSettingsManager.closeAppOnTaskEnd.value) {
+                        // 仅在任务自然结束且无后续客户端段时关闭游戏
+                        Timber.i("Task ended (%s), auto closing app", current)
+                        _effects.send(UiEffect.toast(R.string.bg_toast_auto_closed_on_end))
+                        compositionService.stopVirtualDisplay()
+                    }
                 }
                 prev = current
+            }
+        }
+    }
+
+    /** Run the next queued single-client plan after a natural IDLE end. */
+    private suspend fun continueClientSegmentQueue(remaining: List<TaskChainPlan>) {
+        val next = remaining.firstOrNull() ?: return
+        val rest = remaining.drop(1)
+        Timber.i(
+            "Starting next client segment %s (%d task(s)); %d segment(s) after this",
+            next.clientType,
+            next.params.size,
+            rest.size,
+        )
+        _effects.send(
+            UiEffect.toast(
+                application.getString(
+                    R.string.task_start_toast_next_client_segment,
+                    next.clientType,
+                ),
+            ),
+        )
+        // Between clients: tear down virtual display so the next WakeUp can relaunch cleanly.
+        runCatching { compositionService.stopVirtualDisplay() }
+            .onFailure { Timber.w(it, "stopVirtualDisplay before next client segment failed") }
+
+        val muteRequested = appSettingsManager.muteOnGameLaunch.value
+        if (muteRequested && !gameMuteCoordinator.mute(next.clientType)) {
+            _effects.send(UiEffect.toast(R.string.bg_toast_mute_failed))
+        }
+
+        val result = compositionService.start(
+            tasks = next.params,
+            clientType = next.clientType,
+            isScheduled = false,
+        )
+        if (result is MaaCompositionService.StartResult.Success) {
+            pendingClientPlans = rest
+            chainState.grantGameBatteryExemption(next.clientType)
+            achievementReporter.reportTaskStarted(
+                taskCount = next.params.size,
+                launchesGame = next.launchesGame,
+                gameAliveBeforeStart = next.gameAliveBeforeStart,
+            )
+        } else {
+            pendingClientPlans = emptyList()
+            val message = application.resolveTaskStartFailureMessage(result)
+            if (message != null) {
+                Timber.w("Next client segment start failed: %s", message.resolve(application))
+                showStartFailedDialog(message)
             }
         }
     }
@@ -520,11 +584,29 @@ class BackgroundTaskViewModel(
         ) {
             is TaskStartDecision.Ready -> {
                 pendingStart = null
+                // Queue trailing single-client segments (if any) for sequential execution.
+                pendingClientPlans = decision.plans.drop(1)
+                if (decision.plans.size > 1) {
+                    Timber.i(
+                        "Multi-client chain split into %d segments: %s",
+                        decision.plans.size,
+                        decision.plans.joinToString { it.clientType },
+                    )
+                    _effects.send(
+                        UiEffect.toast(
+                            application.getString(
+                                R.string.task_start_toast_multi_client_segments,
+                                decision.plans.size,
+                            ),
+                        ),
+                    )
+                }
                 decision.plan
             }
 
             is TaskStartDecision.Blocked -> {
                 pendingStart = null
+                pendingClientPlans = emptyList()
                 val message = application.resolveTaskStartDecisionMessage(decision)
                 Timber.w("Validation failed: %s", message.resolve(application))
                 if (request != null) {
@@ -585,6 +667,7 @@ class BackgroundTaskViewModel(
 
     fun onStopTasks() {
         achievementReporter.reportTaskStopped()
+        pendingClientPlans = emptyList()
         viewModelScope.launch {
             compositionService.stop()
         }
@@ -637,6 +720,13 @@ class BackgroundTaskViewModel(
 
     fun onDialogDismiss() {
         pendingStart = null
+        // Keep pendingClientPlans only if a multi-segment run is already in flight;
+        // dismiss before start should not leave a stale queue.
+        if (compositionService.state.value == MaaExecutionState.IDLE ||
+            compositionService.state.value == MaaExecutionState.ERROR
+        ) {
+            pendingClientPlans = emptyList()
+        }
         _state.update { it.copy(dialog = null) }
     }
 
