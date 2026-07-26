@@ -155,6 +155,13 @@ class BackgroundTaskViewModel(
         viewModelScope.launch {
             var prev = compositionService.state.value
             compositionService.state.collect { current ->
+                // Clear queued multi-client segments on user/external stop so a conflated
+                // RUNNING→IDLE (skipped STOPPING) cannot auto-start the next segment.
+                // Covers float-ball / volume-key stops that only call compositionService.stop().
+                if (current == MaaExecutionState.STOPPING) {
+                    pendingClientPlans = emptyList()
+                    clientSegmentTotal = 0
+                }
                 val naturalEnd = prev == MaaExecutionState.RUNNING &&
                     (current == MaaExecutionState.IDLE || current == MaaExecutionState.ERROR)
                 // 手动停止走 RUNNING → STOPPING → IDLE，prev 为 STOPPING 不会匹配。
