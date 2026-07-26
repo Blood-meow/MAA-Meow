@@ -28,14 +28,9 @@ class AnalyzeTaskChainUseCase(
             )
         }
 
+        // Always split by contiguous same-client runs (Official→Bilibili→Official = 3 segments).
+        // Interleaving is allowed; callers may soft-hint that grouping same clients reduces switches.
         val partition = partitionByContiguousClient(enabledNodes)
-            ?: return AnalyzeTaskChainResult.Blocked(
-                reason = AnalyzeTaskChainFailureReason.INTERLEAVED_CLIENT_TYPES,
-                clientTypes = enabledNodes
-                    .mapNotNull { (it.config as? WakeUpConfig)?.clientType }
-                    .filter { it.isNotBlank() }
-                    .distinct(),
-            )
 
         val plans = partition.mapNotNull { segment -> buildPlan(segment) }
         if (plans.isEmpty()) {
@@ -49,22 +44,22 @@ class AnalyzeTaskChainUseCase(
     /**
      * Split enabled nodes into contiguous same-client segments.
      *
-     * Rules (user requirement):
-     * - Same client types must form contiguous blocks (any length/order of blocks; not fixed indices).
-     * - Interleaving (Official → Bilibili → Official) is rejected (returns null).
+     * Rules:
+     * - A new segment starts whenever WakeUp switches to a different clientType.
+     * - Interleaving is allowed (Official → Bilibili → Official → 3 segments, run in order).
+     * - Grouping the same client together is only a UX tip (fewer client switches), not a hard gate.
      * - Nodes without WakeUp inherit the current segment client; leading nodes before any
      *   WakeUp use [TaskChainState.getClientType] as the initial client.
      */
     internal fun partitionByContiguousClient(
         enabledNodes: List<TaskChainNode>,
-    ): List<ClientSegment>? {
+    ): List<ClientSegment> {
         if (enabledNodes.isEmpty()) return emptyList()
 
         val fallbackClient = taskChainState.getClientType().ifBlank { "Official" }
         val segments = mutableListOf<ClientSegment>()
         var currentNodes = mutableListOf<TaskChainNode>()
         var currentClient: String? = null
-        val seenClients = linkedSetOf<String>()
 
         fun flush() {
             if (currentNodes.isEmpty()) return
@@ -78,19 +73,11 @@ class AnalyzeTaskChainUseCase(
                 ?.takeIf { it.isNotBlank() }
             if (wakeClient != null) {
                 when {
-                    currentClient == null -> {
-                        currentClient = wakeClient
-                        seenClients += wakeClient
-                    }
+                    currentClient == null -> currentClient = wakeClient
                     wakeClient == currentClient -> Unit
-                    wakeClient in seenClients -> {
-                        // Switched back to a client that already finished a run → interleaved.
-                        return null
-                    }
                     else -> {
                         flush()
                         currentClient = wakeClient
-                        seenClients += wakeClient
                     }
                 }
             }
@@ -193,9 +180,9 @@ data class TaskChainPlan(
 
 enum class AnalyzeTaskChainFailureReason {
     NO_TASK_SELECTED,
-    /** Same client appears in more than one non-adjacent run (e.g. Official…Bilibili…Official). */
+    /** @deprecated no longer emitted — interleaving auto-splits into multiple segments. */
     INTERLEAVED_CLIENT_TYPES,
-    /** @deprecated kept for string/compat; no longer emitted — multi-client contiguous chains split. */
+    /** @deprecated kept for string/compat; no longer emitted — multi-client chains split. */
     CONFLICTING_CLIENT_TYPES,
     NO_EXECUTABLE_TASKS,
 }
@@ -212,6 +199,13 @@ sealed interface AnalyzeTaskChainResult {
 
         /** First plan (backward-compatible accessor for single-segment callers). */
         val plan: TaskChainPlan get() = plans.first()
+
+        /**
+         * True when the same clientType appears in more than one segment
+         * (e.g. Official → Bilibili → Official). Not an error; soft-hint only.
+         */
+        val revisitsClientAcrossSegments: Boolean
+            get() = plans.groupingBy { it.clientType }.eachCount().any { it.value > 1 }
     }
 
     data class Blocked(
