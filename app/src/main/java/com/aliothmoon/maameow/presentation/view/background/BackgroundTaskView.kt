@@ -164,6 +164,7 @@ fun BackgroundTaskView(
     val profiles by viewModel.chainState.profiles.collectAsStateWithLifecycle()
     val activeProfileId by viewModel.chainState.activeProfileId.collectAsStateWithLifecycle()
     val selectedNode = nodes.find { it.id == state.selectedNodeId }
+    val clientType = remember(nodes) { viewModel.chainState.getClientType() }
     val canShowTaskActions = PanelTab.canShowTaskActions(state.current)
 
     val pagerState = rememberPagerState(
@@ -383,6 +384,7 @@ fun BackgroundTaskView(
                                                     isProfileMode = state.isProfileMode,
                                                     profiles = profiles,
                                                     activeProfileId = activeProfileId,
+                                                    clientType = clientType,
                                                     onConfigChange = { config ->
                                                         val nodeId = selectedNode?.id
                                                             ?: return@TaskConfigPanel
