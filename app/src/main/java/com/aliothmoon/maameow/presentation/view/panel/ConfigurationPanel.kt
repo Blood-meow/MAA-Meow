@@ -77,6 +77,7 @@ fun TaskConfigPanel(
     activeSequenceConfigId: String,
     sequence: List<ProfileSequenceEntry>,
     sequenceEnabled: Boolean,
+    clientType: String,
     onConfigChange: (TaskParamProvider) -> Unit,
     onAddNode: (TaskTypeInfo) -> Unit,
     onRemoveNode: (String) -> Unit,
@@ -170,7 +171,7 @@ fun TaskConfigPanel(
                         )
 
                         is FightConfig -> FightConfigPanel(
-                            config = cfg, onConfigChange = onConfigChange
+                            config = cfg, clientType = clientType, onConfigChange = onConfigChange
                         )
 
                         is MallConfig -> MallConfigPanel(
