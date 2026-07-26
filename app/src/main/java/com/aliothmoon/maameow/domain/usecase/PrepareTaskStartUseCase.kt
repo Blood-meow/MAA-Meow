@@ -65,9 +65,9 @@ enum class TaskStartAcknowledgement {
 
 enum class TaskStartDecisionReason {
     NO_TASK_SELECTED,
-    /** Contiguous multi-client is OK (auto-split); this is for interleaved order only. */
+    /** @deprecated no longer emitted — interleaving auto-splits into multiple segments. */
     INTERLEAVED_CLIENT_TYPES,
-    /** Legacy alias — no longer emitted by analyze after auto-split. */
+    /** @deprecated no longer emitted by analyze after auto-split. */
     CONFLICTING_CLIENT_TYPES,
     NO_EXECUTABLE_TASKS,
     GAME_NOT_RUNNING_WITHOUT_WAKE_UP,

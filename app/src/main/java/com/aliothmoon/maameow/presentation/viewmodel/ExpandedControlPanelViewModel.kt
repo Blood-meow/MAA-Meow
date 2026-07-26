@@ -353,6 +353,13 @@ class ExpandedControlPanelViewModel(
                                 ),
                             ),
                         )
+                        if (decision.plans.groupingBy { it.clientType }.eachCount().any { it.value > 1 }) {
+                            _effects.send(
+                                UiEffect.toast(
+                                    application.getString(R.string.task_start_toast_client_revisit_hint),
+                                ),
+                            )
+                        }
                     }
                     decision.plan
                 }
@@ -398,6 +405,11 @@ class ExpandedControlPanelViewModel(
                             allPlans.joinToString { it.clientType },
                         ),
                     )
+                    if (allPlans.groupingBy { it.clientType }.eachCount().any { it.value > 1 }) {
+                        sessionLogger.appendAndWait(
+                            application.getString(R.string.runlog_client_segments_revisit_hint),
+                        )
+                    }
                 }
                 sessionLogger.appendAndWait(
                     application.getString(

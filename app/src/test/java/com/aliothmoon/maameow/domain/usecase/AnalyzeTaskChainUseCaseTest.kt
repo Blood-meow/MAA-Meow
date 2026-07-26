@@ -84,7 +84,7 @@ class AnalyzeTaskChainUseCaseTest {
     }
 
     @Test
-    fun returnsBlocked_whenClientTypesAreInterleaved() {
+    fun returnsReady_withThreePlans_whenClientTypesAreInterleaved() {
         val result = useCase(
             listOf(
                 TaskChainNode(
@@ -108,13 +108,12 @@ class AnalyzeTaskChainUseCaseTest {
             )
         )
 
-        assertEquals(
-            AnalyzeTaskChainResult.Blocked(
-                reason = AnalyzeTaskChainFailureReason.INTERLEAVED_CLIENT_TYPES,
-                clientTypes = listOf("Official", "Bilibili"),
-            ),
-            result
-        )
+        val ready = result as AnalyzeTaskChainResult.Ready
+        assertEquals(3, ready.plans.size)
+        assertEquals("Official", ready.plans[0].clientType)
+        assertEquals("Bilibili", ready.plans[1].clientType)
+        assertEquals("Official", ready.plans[2].clientType)
+        assertTrue(ready.revisitsClientAcrossSegments)
     }
 
     @Test
