@@ -167,6 +167,7 @@ fun BackgroundTaskView(
     val sequenceConfigs by viewModel.chainState.sequenceConfigs.collectAsStateWithLifecycle()
     val activeSequenceConfigId by viewModel.chainState.activeSequenceConfigId.collectAsStateWithLifecycle()
     val selectedNode = nodes.find { it.id == state.selectedNodeId }
+    val clientType = remember(nodes) { viewModel.chainState.getClientType() }
     val canShowTaskActions = PanelTab.canShowTaskActions(state.current)
 
     val pagerState = rememberPagerState(
@@ -390,6 +391,7 @@ fun BackgroundTaskView(
                                                     activeSequenceConfigId = activeSequenceConfigId,
                                                     sequence = profileSequence,
                                                     sequenceEnabled = profileSequenceEnabled,
+                                                    clientType = clientType,
                                                     onConfigChange = { config ->
                                                         val nodeId = selectedNode?.id
                                                             ?: return@TaskConfigPanel

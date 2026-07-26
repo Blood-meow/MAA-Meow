@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -77,6 +78,7 @@ fun ExpandedControlPanel(
     val sequenceConfigs by viewModel.chainState.sequenceConfigs.collectAsStateWithLifecycle()
     val activeSequenceConfigId by viewModel.chainState.activeSequenceConfigId.collectAsStateWithLifecycle()
     val selectedNode = nodes.find { it.id == uiState.selectedNodeId }
+    val clientType = remember(nodes) { viewModel.chainState.getClientType() }
     val focusManager = LocalFocusManager.current
     val context = LocalContext.current
 
@@ -183,6 +185,7 @@ fun ExpandedControlPanel(
                                     activeSequenceConfigId = activeSequenceConfigId,
                                     sequence = profileSequence,
                                     sequenceEnabled = profileSequenceEnabled,
+clientType = clientType,
                                     onConfigChange = { config ->
                                         val nodeId = selectedNode?.id ?: return@TaskConfigPanel
                                         viewModel.onNodeConfigChange(nodeId, config)

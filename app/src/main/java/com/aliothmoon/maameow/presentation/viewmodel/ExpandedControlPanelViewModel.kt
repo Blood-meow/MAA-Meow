@@ -407,6 +407,7 @@ class ExpandedControlPanelViewModel(
             val result = compositionService.start(
                 tasks = plan.params,
                 clientType = plan.clientType,
+                preflightLogs = plan.preflightLogs,
             ) {
                 if (allPlans.size > 1) {
                     sessionLogger.appendAndWait(

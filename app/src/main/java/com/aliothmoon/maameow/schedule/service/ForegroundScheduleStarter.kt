@@ -181,6 +181,7 @@ class ForegroundScheduleStarter(
                                 tasks = plan.params,
                                 clientType = plan.clientType,
                                 isScheduled = true,
+                                preflightLogs = plan.preflightLogs,
                             )
                             if (result !is MaaCompositionService.StartResult.Success) {
                                 failed = appCtx.getString(
