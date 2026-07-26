@@ -237,9 +237,7 @@ class ExpandedControlPanelViewModel(
             PanelDialogConfirmAction.GO_LOG_AND_STOP -> {
                 onTabChange(PanelTab.LOG)
                 onDialogDismiss()
-                viewModelScope.launch {
-                    compositionService.stop()
-                }
+                onStopTasks()
             }
 
             null -> Unit
@@ -248,6 +246,23 @@ class ExpandedControlPanelViewModel(
 
     fun onClearLogs() {
         sessionLogger.clearRuntimeLogs()
+    }
+
+    /**
+     * User-initiated stop: drop any queued multi-client segments before stop(),
+     * so a RUNNING→IDLE transition (or conflated StateFlow skip of STOPPING) cannot
+     * auto-start the next client segment.
+     */
+    fun onStopTasks() {
+        clearPendingClientSegments()
+        viewModelScope.launch {
+            compositionService.stop()
+        }
+    }
+
+    private fun clearPendingClientSegments() {
+        pendingClientPlans = emptyList()
+        clientSegmentTotal = 0
     }
 
     fun onStartTasks() {
@@ -415,6 +430,15 @@ class ExpandedControlPanelViewModel(
         viewModelScope.launch {
             var prev = compositionService.state.value
             compositionService.state.collect { current ->
+                // Any stop path enters STOPPING first; clear queue so a later IDLE
+                // cannot be mistaken for a natural segment end. Also covers float-ball /
+                // volume-key stops that call compositionService.stop() outside this VM.
+                if (current == MaaExecutionState.STOPPING) {
+                    clearPendingClientSegments()
+                }
+                // Manual stop: RUNNING → STOPPING → IDLE (prev is STOPPING, no match).
+                // StateFlow may conflate and skip STOPPING; clear-on-STOPPING + onStopTasks
+                // still protect that race.
                 val naturalIdle = prev == MaaExecutionState.RUNNING && current == MaaExecutionState.IDLE
                 val naturalError = prev == MaaExecutionState.RUNNING && current == MaaExecutionState.ERROR
                 if (naturalIdle && pendingClientPlans.isNotEmpty()) {
@@ -423,7 +447,15 @@ class ExpandedControlPanelViewModel(
                     continueClientSegmentQueue(remaining)
                 } else if (naturalError && pendingClientPlans.isNotEmpty()) {
                     Timber.w("Overlay segment ERROR; drop %d remaining", pendingClientPlans.size)
-                    pendingClientPlans = emptyList()
+                    clearPendingClientSegments()
+                    viewModelScope.launch {
+                        sessionLogger.appendAndWait(
+                            application.getString(
+                                R.string.runlog_client_segment_aborted,
+                                current.name,
+                            ),
+                        )
+                    }
                 }
                 prev = current
             }
