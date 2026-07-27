@@ -6,6 +6,7 @@ import com.aliothmoon.maameow.data.model.TaskChainNode
 import com.aliothmoon.maameow.data.preferences.AppSettingsManager
 import com.aliothmoon.maameow.domain.models.OverlayControlMode
 import com.aliothmoon.maameow.data.preferences.TaskChainState
+import com.aliothmoon.maameow.domain.service.GameMuteCoordinator
 import com.aliothmoon.maameow.domain.service.MaaCompositionService
 import com.aliothmoon.maameow.domain.state.MaaExecutionState
 import com.aliothmoon.maameow.domain.usecase.PrepareTaskStartUseCase
@@ -31,6 +32,7 @@ class ForegroundScheduleStarter(
     private val triggerLogger: ScheduleTriggerLogger,
     private val scheduleRepository: ScheduleStrategyRepository,
     private val appSettingsManager: AppSettingsManager,
+    private val gameMuteCoordinator: GameMuteCoordinator,
 ) {
     private val appCtx get() = appContext.applicationContext
     private val executing = AtomicBoolean(false)
@@ -170,6 +172,10 @@ class ForegroundScheduleStarter(
                                     ),
                                 )
                                 runCatching { compositionService.stopVirtualDisplay() }
+                            }
+                            val muteRequested = appSettingsManager.muteOnGameLaunch.value
+                            if (muteRequested && !gameMuteCoordinator.mute(plan.clientType)) {
+                                triggerLogger.append(appCtx.getString(R.string.bg_toast_mute_failed))
                             }
                             val result = compositionService.start(
                                 tasks = plan.params,

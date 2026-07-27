@@ -35,6 +35,10 @@ class MaaResourceLoader(
 ) {
     private val fullReloadInProgress = AtomicBoolean(false)
 
+    /** Client type last successfully loaded into MaaCore (for multi-segment reloads). */
+    @Volatile
+    private var loadedClientType: String? = null
+
     sealed class State {
         data object NotLoaded : State()
         data class Loading(val message: String = "") : State()
@@ -114,6 +118,7 @@ class MaaResourceLoader(
                         loadResIfExists(maa, pathConfig.overridesDir)
                     }
 
+                    loadedClientType = clientType
                     _state.value = State.Ready
                     Result.success(Unit)
                 }
@@ -152,23 +157,45 @@ class MaaResourceLoader(
         }
     }
 
-    suspend fun ensureLoaded(): Result<Unit> {
+    /**
+     * Ensure resources are ready for [clientType].
+     * If already Ready for a different client (e.g. Official → YoStarEN), force reload.
+     */
+    suspend fun ensureLoaded(clientType: String = chainState.getClientType()): Result<Unit> {
         return when (val s = _state.value) {
-            is State.Ready -> Result.success(Unit)
+            is State.Ready -> {
+                if (loadedClientType == null || loadedClientType == clientType) {
+                    Result.success(Unit)
+                } else {
+                    Timber.i(
+                        "MaaResourceLoader: client changed %s → %s, reloading",
+                        loadedClientType,
+                        clientType,
+                    )
+                    load(clientType)
+                }
+            }
             is State.Failed -> if (s.permanent) {
                 // 资源文件缺失，重试无意义
                 Result.failure(Exception(s.message))
             } else {
                 // 临时失败（IPC/IO），重新尝试加载
-                load()
+                load(clientType)
             }
             is State.Loading, is State.Reloading -> {
                 // 等待当前加载结束，避免并发启动时误报失败
                 val terminal = _state.first { it is State.Ready || it is State.Failed }
-                if (terminal is State.Ready) Result.success(Unit)
-                else Result.failure(Exception((terminal as State.Failed).message))
+                if (terminal is State.Ready) {
+                    if (loadedClientType == null || loadedClientType == clientType) {
+                        Result.success(Unit)
+                    } else {
+                        load(clientType)
+                    }
+                } else {
+                    Result.failure(Exception((terminal as State.Failed).message))
+                }
             }
-            else -> load()
+            else -> load(clientType)
         }
     }
 
@@ -177,6 +204,7 @@ class MaaResourceLoader(
             Timber.i("Skip resource reset while full reload is in progress")
             return
         }
+        loadedClientType = null
         _state.value = State.NotLoaded
     }
 
