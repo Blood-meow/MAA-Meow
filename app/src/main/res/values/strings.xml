@@ -1861,10 +1861,10 @@
     <string name="runlog_task_stopped">任务停止，状态: %1$s</string>
     <string name="runlog_service_terminated">MAA服务异常终止</string>
     <string name="runlog_game_process_gone">游戏进程未启动或被异常关闭(%1$s)</string>
-    <string name="settings_wallpaper_title">自定义壁纸</string>
+    <string name="settings_wallpaper_title">壁纸</string>
     <string name="settings_wallpaper_desc">选择一张图片作为应用背景</string>
     <string name="settings_wallpaper_set">已设置壁纸</string>
-    <string name="settings_wallpaper_clear">清除壁纸</string>
+    <string name="settings_wallpaper_clear">取消</string>
     <string name="settings_wallpaper_alpha">不透明度: %d%%</string>
     <string name="settings_wallpaper_blur">模糊度: %d%%</string>
     <string name="settings_wallpaper_scrim">遮罩强度: %d%%</string>

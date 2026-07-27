@@ -1805,10 +1805,10 @@
     <string name="runlog_task_stopped">Tasks stopped, status: %1$s</string>
     <string name="runlog_service_terminated">MAA service terminated unexpectedly</string>
     <string name="runlog_game_process_gone">Game process not started or closed unexpectedly (%1$s)</string>
-    <string name="settings_wallpaper_title">Custom Wallpaper</string>
+    <string name="settings_wallpaper_title">Wallpaper</string>
     <string name="settings_wallpaper_desc">Choose an image as app background</string>
     <string name="settings_wallpaper_set">Wallpaper set</string>
-    <string name="settings_wallpaper_clear">Clear Wallpaper</string>
+    <string name="settings_wallpaper_clear">Cancel</string>
     <string name="settings_wallpaper_alpha">Opacity: %d%%</string>
     <string name="settings_wallpaper_blur">Blur: %d%%</string>
     <string name="settings_wallpaper_scrim">Scrim: %d%%</string>
