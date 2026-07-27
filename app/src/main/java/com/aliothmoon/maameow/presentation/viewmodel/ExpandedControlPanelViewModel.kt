@@ -408,6 +408,7 @@ class ExpandedControlPanelViewModel(
                 tasks = plan.params,
                 clientType = plan.clientType,
                 preflightLogs = plan.preflightLogs,
+                expectDoubleSync = plan.unlockDoubleSync,
             ) {
                 if (allPlans.size > 1) {
                     sessionLogger.appendAndWait(
@@ -439,7 +440,6 @@ class ExpandedControlPanelViewModel(
                     taskCount = plan.params.size,
                     launchesGame = plan.launchesGame,
                     gameAliveBeforeStart = plan.gameAliveBeforeStart,
-                    unlockDoubleSync = plan.unlockDoubleSync,
                 )
                 // 成功时用 Toast 简短提示
                 _effects.send(UiEffect.toast(message))
@@ -514,6 +514,8 @@ class ExpandedControlPanelViewModel(
         val result = compositionService.start(
             tasks = next.params,
             clientType = next.clientType,
+            preflightLogs = next.preflightLogs,
+            expectDoubleSync = next.unlockDoubleSync,
         ) {
             sessionLogger.appendAndWait(
                 application.getString(
