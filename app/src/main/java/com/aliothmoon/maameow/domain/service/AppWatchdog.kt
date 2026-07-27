@@ -1,7 +1,6 @@
 package com.aliothmoon.maameow.domain.service
 
 import com.aliothmoon.maameow.constant.Packages
-import com.aliothmoon.maameow.data.preferences.TaskChainState
 import com.aliothmoon.maameow.remote.AppAliveStatus
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -19,7 +18,6 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 
 class AppWatchdog(
-    private val chainState: TaskChainState,
     private val appAliveChecker: AppAliveChecker,
 ) {
     enum class WatchdogState {
@@ -42,10 +40,9 @@ class AppWatchdog(
 
     private var watchJob: Job? = null
 
-    fun startWatching() {
+    fun startWatching(clientType: String) {
         stopWatching()
 
-        val clientType = chainState.getClientType()
         val packageName = Packages[clientType]
         if (packageName == null) {
             Timber.w(

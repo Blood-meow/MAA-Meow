@@ -360,6 +360,7 @@ class MaaCompositionService(
         tasks: List<MaaTaskParams>,
         successMessage: String,
         mode: RunMode,
+        clientType: String,
     ): StartResult {
         taskChainStatusTracker.clear()
         tasks.forEach { t ->
@@ -378,7 +379,8 @@ class MaaCompositionService(
         }
         setRunState(MaaExecutionState.RUNNING)
         if (mode == RunMode.BACKGROUND) {
-            appWatchdog.startWatching()
+            // Watch the segment's client package (not chainState, which may still be previous segment).
+            appWatchdog.startWatching(clientType)
         }
         sessionLogger.appendAndWait(successMessage, LogLevel.SUCCESS)
         return StartResult.Success(maa.GetVersion())
@@ -414,7 +416,7 @@ class MaaCompositionService(
                         mode,
                         clientType
                     )?.let { return@useRemoteService it }
-                    val result = appendTasksAndStart(maa, tasks, successMessage, mode)
+                    val result = appendTasksAndStart(maa, tasks, successMessage, mode, clientType)
                     if (result is StartResult.Success) {
                         taskChainState.saveLastUsedClientType(clientType)
                     }
