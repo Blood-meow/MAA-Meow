@@ -6,6 +6,7 @@ import com.aliothmoon.maameow.data.model.TaskChainNode
 import com.aliothmoon.maameow.data.preferences.AppSettingsManager
 import com.aliothmoon.maameow.domain.models.OverlayControlMode
 import com.aliothmoon.maameow.data.preferences.TaskChainState
+import com.aliothmoon.maameow.domain.service.AchievementReporter
 import com.aliothmoon.maameow.domain.service.GameMuteCoordinator
 import com.aliothmoon.maameow.domain.service.MaaCompositionService
 import com.aliothmoon.maameow.domain.state.MaaExecutionState
@@ -33,6 +34,7 @@ class ForegroundScheduleStarter(
     private val scheduleRepository: ScheduleStrategyRepository,
     private val appSettingsManager: AppSettingsManager,
     private val gameMuteCoordinator: GameMuteCoordinator,
+    private val achievementReporter: AchievementReporter,
 ) {
     private val appCtx get() = appContext.applicationContext
     private val executing = AtomicBoolean(false)
@@ -190,6 +192,9 @@ class ForegroundScheduleStarter(
                                 )
                                 triggerLogger.append(failed)
                                 break
+                            }
+                            if (plan.unlockDoubleSync) {
+                                achievementReporter.unlockDoubleSync()
                             }
                             triggerLogger.append(
                                 appCtx.getString(

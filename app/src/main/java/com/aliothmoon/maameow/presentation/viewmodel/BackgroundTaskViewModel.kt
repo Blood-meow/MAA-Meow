@@ -736,6 +736,7 @@ class BackgroundTaskViewModel(
                 taskCount = plan.params.size,
                 launchesGame = plan.launchesGame,
                 gameAliveBeforeStart = plan.gameAliveBeforeStart,
+                unlockDoubleSync = plan.unlockDoubleSync,
             )
             chainState.grantGameBatteryExemption(plan.clientType)
         }
