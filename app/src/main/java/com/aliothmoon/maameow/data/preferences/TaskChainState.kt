@@ -112,6 +112,9 @@ class TaskChainState(
 
     private val _lastUsedClientType = MutableStateFlow<String?>(null)
 
+    /** Client of the segment currently running (or last successfully started in this process). */
+    private val _activeClientType = MutableStateFlow<String?>(null)
+
     init {
         scope.launch {
             val prefs = context.store.data.first()
@@ -339,15 +342,27 @@ class TaskChainState(
         return getClientTypeOrNull() ?: "Official"
     }
 
+    /**
+     * Prefer the client of the active/last-started segment so multi-client sequential runs
+     * do not keep resolving the chain's first WakeUp (e.g. Official while Bilibili is running).
+     */
     fun getClientTypeOrNull(): String? {
-        return findFirstEnabledConfig<WakeUpConfig>()?.clientType
+        return _activeClientType.value
+            ?: findFirstEnabledConfig<WakeUpConfig>()?.clientType
             ?: _lastUsedClientType.value
     }
 
     fun getLastUsedClientType(): String? = _lastUsedClientType.value
 
+    fun getActiveClientType(): String? = _activeClientType.value
+
     fun saveLastUsedClientType(clientType: String) {
         _lastUsedClientType.value = clientType
+        _activeClientType.value = clientType
+    }
+
+    fun clearActiveClientType() {
+        _activeClientType.value = null
     }
 
     inline fun <reified T : TaskParamProvider> findFirstEnabledConfig(): T? {

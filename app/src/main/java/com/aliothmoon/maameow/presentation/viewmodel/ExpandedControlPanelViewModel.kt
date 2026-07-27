@@ -7,7 +7,9 @@ import com.aliothmoon.maameow.data.model.LogItem
 import com.aliothmoon.maameow.data.model.TaskParamProvider
 import com.aliothmoon.maameow.data.model.TaskTypeInfo
 import com.aliothmoon.maameow.data.preferences.TaskChainState
+import com.aliothmoon.maameow.domain.service.GameMuteCoordinator
 import com.aliothmoon.maameow.domain.service.MaaCompositionService
+import com.aliothmoon.maameow.data.preferences.AppSettingsManager
 import com.aliothmoon.maameow.domain.service.MaaSessionLogger
 import com.aliothmoon.maameow.domain.service.AchievementReporter
 import com.aliothmoon.maameow.domain.usecase.PrepareTaskStartUseCase
@@ -46,6 +48,8 @@ class ExpandedControlPanelViewModel(
     private val achievementReporter: AchievementReporter,
     private val scheduleRepository: ScheduleStrategyRepository,
     private val scheduleAlarmManager: ScheduleAlarmManager,
+    private val appSettingsManager: AppSettingsManager,
+    private val gameMuteCoordinator: GameMuteCoordinator,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(FloatingPanelState())
@@ -392,6 +396,13 @@ class ExpandedControlPanelViewModel(
             }
             Timber.i("=== End Task JSON List ===")
 
+            val muteRequested = appSettingsManager.muteOnGameLaunch.value
+            if (muteRequested && !gameMuteCoordinator.mute(plan.clientType)) {
+                _effects.send(
+                    UiEffect.toast(R.string.bg_toast_mute_failed),
+                )
+            }
+
             val allPlans = listOf(plan) + pendingClientPlans
             val result = compositionService.start(
                 tasks = plan.params,
@@ -492,6 +503,12 @@ class ExpandedControlPanelViewModel(
             ),
         )
         runCatching { compositionService.stopVirtualDisplay() }
+        val muteRequested = appSettingsManager.muteOnGameLaunch.value
+        if (muteRequested && !gameMuteCoordinator.mute(next.clientType)) {
+            _effects.send(
+                UiEffect.toast(R.string.bg_toast_mute_failed),
+            )
+        }
         val result = compositionService.start(
             tasks = next.params,
             clientType = next.clientType,

@@ -151,6 +151,7 @@ class MaaCompositionService(
         scope.launch {
             unifiedStateDispatcher.serviceDiedEvent.collect {
                 appWatchdog.stopWatching()
+                taskChainState.clearActiveClientType()
                 setRunState(MaaExecutionState.ERROR)
                 sessionLogger.completeSessionAndWait(
                     "SERVICE_DIED",
@@ -238,7 +239,8 @@ class MaaCompositionService(
 
     private suspend fun checkPreconditions(
         mode: RunMode,
-        isScheduled: Boolean = false
+        isScheduled: Boolean = false,
+        clientType: String,
     ): StartResult? {
         // 服务连接中时直接拒绝，避免与后台自动 load() 并发触发 LoadResource
         val serviceState = RemoteServiceManager.state.value
@@ -260,8 +262,9 @@ class MaaCompositionService(
             )
         }
 
-        activityManager.runIfDirty { resourceLoader.load() }
-        val loaded = resourceLoader.ensureLoaded()
+        // Load/reload for this segment's client (Official→global etc. must not keep old packs).
+        activityManager.runIfDirty { resourceLoader.load(clientType) }
+        val loaded = resourceLoader.ensureLoaded(clientType)
         if (loaded.isFailure) {
             return failStart(
                 context.getString(R.string.runlog_resource_load_failed), "RESOURCE_ERROR",
@@ -403,7 +406,7 @@ class MaaCompositionService(
 
         val mode = appSettings.runMode.value
         return withContext(Dispatchers.IO) {
-            checkPreconditions(mode, isScheduled)?.let { return@withContext it }
+            checkPreconditions(mode, isScheduled, clientType)?.let { return@withContext it }
 
             try {
                 useRemoteService { service ->
@@ -520,6 +523,7 @@ class MaaCompositionService(
 
     private fun finishStop(result: StopResult): StopResult {
         appWatchdog.stopWatching()
+        taskChainState.clearActiveClientType()
         setRunState(MaaExecutionState.IDLE)
         val status = if (result is StopResult.Success) "STOPPED" else "STOP_FAILED"
         sessionLogger.append(
