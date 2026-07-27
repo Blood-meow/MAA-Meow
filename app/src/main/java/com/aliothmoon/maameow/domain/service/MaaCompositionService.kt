@@ -23,6 +23,7 @@ import com.aliothmoon.maameow.maa.callback.MaaCallbackDispatcher
 import com.aliothmoon.maameow.maa.callback.MaaExecutionStateHolder
 import com.aliothmoon.maameow.maa.callback.SubTaskHandler
 import com.aliothmoon.maameow.maa.callback.TaskChainStatusTracker
+import com.aliothmoon.maameow.maa.callback.ToolboxResultCollector
 import com.aliothmoon.maameow.maa.task.MaaTaskParams
 import com.aliothmoon.maameow.manager.RemoteAccessCoordinator
 import com.aliothmoon.maameow.manager.RemoteServiceManager
@@ -63,6 +64,7 @@ class MaaCompositionService(
     private val taskChainStatusTracker: TaskChainStatusTracker,
     private val notificationCenter: MaaNotificationCenter,
     private val dropsRefresher: FightDropsRefresher,
+    private val toolboxResultCollector: ToolboxResultCollector,
 ) : MaaExecutionStateHolder {
 
     private val _state = MutableStateFlow(MaaExecutionState.IDLE)
@@ -202,6 +204,8 @@ class MaaCompositionService(
         clientType: String,
         isScheduled: Boolean = false,
         preflightLogs: List<Pair<UiText, LogLevel>> = emptyList(),
+        /** 更新数据双识别到期：启动成功后 arm，两侧识别成功再报 DoubleSync */
+        expectDoubleSync: Boolean = false,
         onSessionStarted: (suspend () -> Unit)? = null
     ): StartResult = executeStart(
         tasks = tasks,
@@ -210,6 +214,7 @@ class MaaCompositionService(
         startMessage = context.getString(R.string.runlog_task_start, tasks.size, clientType),
         successMessage = context.getString(R.string.runlog_task_started, clientType),
         preflightLogs = preflightLogs,
+        expectDoubleSync = expectDoubleSync,
         onSessionStarted = onSessionStarted,
     )
 
@@ -420,11 +425,13 @@ class MaaCompositionService(
         successMessage: String,
         isScheduled: Boolean = false,
         preflightLogs: List<Pair<UiText, LogLevel>> = emptyList(),
+        expectDoubleSync: Boolean = false,
         onSessionStarted: (suspend () -> Unit)? = null,
     ): StartResult {
         setRunState(MaaExecutionState.STARTING)
         sessionLogger.startSession(tasks.map { it.type.value })
         subTaskHandler.resetSessionState()
+        toolboxResultCollector.clearDoubleSyncSession()
         onSessionStarted?.invoke()
         sessionLogger.appendAndWait(startMessage, LogLevel.INFO)
         preflightLogs.forEach { (text, level) ->
@@ -450,6 +457,9 @@ class MaaCompositionService(
                     val result = appendTasksAndStart(maa, tasks, successMessage, mode, clientType)
                     if (result is StartResult.Success) {
                         taskChainState.saveLastUsedClientType(clientType)
+                        if (expectDoubleSync) {
+                            toolboxResultCollector.armDoubleSyncSession()
+                        }
                     }
                     result
                 }
