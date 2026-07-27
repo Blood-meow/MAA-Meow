@@ -185,7 +185,7 @@ fun ExpandedControlPanel(
                                     activeSequenceConfigId = activeSequenceConfigId,
                                     sequence = profileSequence,
                                     sequenceEnabled = profileSequenceEnabled,
-clientType = clientType,
+                                    clientType = clientType,
                                     onConfigChange = { config ->
                                         val nodeId = selectedNode?.id ?: return@TaskConfigPanel
                                         viewModel.onNodeConfigChange(nodeId, config)
