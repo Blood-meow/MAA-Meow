@@ -694,7 +694,6 @@ class BackgroundTaskViewModel(
             depotAccountTag = plan.depotAccountTag,
             isScheduled = context.mode == TaskStartMode.SCHEDULED,
             preflightLogs = plan.preflightLogs,
-            expectDoubleSync = plan.unlockDoubleSync,
         ) {
             if (request != null) {
                 sessionLogger.appendAndWait(
