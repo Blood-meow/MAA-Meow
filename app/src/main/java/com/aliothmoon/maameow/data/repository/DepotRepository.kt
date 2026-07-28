@@ -190,6 +190,24 @@ class DepotRepository(
         }
     }
 
+    /** 指定账号标签下的仓库识别时间；空账号视为从未识别。 */
+    fun syncTimeMillis(accountTag: String?): Long {
+        val profileId = taskChainState.activeProfileId.value
+        if (profileId.isEmpty()) return 0L
+        val tag = normalizeAccountTagOrNull(accountTag) ?: return 0L
+        val key = shardKey(profileId, tag)
+        return synchronized(memoryLock) {
+            val cached = shards[key]
+            if (cached != null) {
+                cached.syncTimeMillis
+            } else {
+                val diskSnap = decode(latestPrefs[keyOf(key)] ?: legacyRawIfDefault(profileId, tag, latestPrefs))
+                shards[key] = diskSnap
+                diskSnap.syncTimeMillis
+            }
+        }
+    }
+
     /** 设置页查看：列出当前配置档下所有已绑定账号的库存分片。空账号不会出现在这里。 */
     suspend fun listAccountSnapshotsForActiveProfile(): List<DepotAccountSnapshot> {
         taskChainState.isLoaded.first { it }
