@@ -42,7 +42,7 @@ import com.aliothmoon.maameow.presentation.components.TopAppBar
 import com.aliothmoon.maameow.presentation.view.panel.DepotItemCell
 import com.aliothmoon.maameow.presentation.viewmodel.DepotInventoryItemUi
 import com.aliothmoon.maameow.presentation.viewmodel.DepotInventoryViewModel
-import com.aliothmoon.maameow.presentation.viewmodel.availableDraws
+import com.aliothmoon.maameow.presentation.viewmodel.drawSummary
 import com.aliothmoon.maameow.theme.MaaAnimations
 import com.aliothmoon.maameow.theme.MaaDesignTokens
 import org.koin.androidx.compose.koinViewModel
@@ -135,6 +135,7 @@ private fun DepotAccountListView(
 
 @Composable
 private fun DepotAccountCard(account: DepotAccountSnapshot, onClick: () -> Unit) {
+    val draws = account.drawSummary()
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -155,7 +156,9 @@ private fun DepotAccountCard(account: DepotAccountSnapshot, onClick: () -> Unit)
             Text(
                 text = stringResource(
                     R.string.depot_inventory_available_draws,
-                    account.availableDraws(),
+                    draws.total,
+                    draws.orundum,
+                    draws.permits,
                 ),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,

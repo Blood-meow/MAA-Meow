@@ -96,7 +96,7 @@ class AnalyzeTaskChainUseCaseTest {
     }
 
     @Test
-    fun returnsReady_withTwoPlans_whenSameClientSwitchesAccount() {
+    fun returnsReady_withOnePlan_whenSameClientSwitchesAccount() {
         val result = useCase(
             listOf(
                 TaskChainNode(
@@ -106,22 +106,39 @@ class AnalyzeTaskChainUseCaseTest {
                     config = WakeUpConfig(clientType = "Official", accountName = "1"),
                 ),
                 TaskChainNode(
-                    name = "账号2",
+                    name = "更新数据1",
                     order = 2,
                     enabled = true,
+                    config = UserDataUpdateConfig(updateDepot = true, updateOperBox = false),
+                ),
+                TaskChainNode(
+                    name = "账号2",
+                    order = 3,
+                    enabled = true,
                     config = WakeUpConfig(clientType = "Official", accountName = "2"),
+                ),
+                TaskChainNode(
+                    name = "更新数据2",
+                    order = 4,
+                    enabled = true,
+                    config = UserDataUpdateConfig(updateDepot = true, updateOperBox = false),
                 ),
             )
         )
 
         val ready = result as AnalyzeTaskChainResult.Ready
-        assertEquals(2, ready.plans.size)
-        assertEquals("Official:1", ready.plans[0].depotAccountTag)
-        assertEquals("Official:2", ready.plans[1].depotAccountTag)
+        assertEquals(1, ready.plans.size)
+        assertEquals("Official", ready.plan.clientType)
+        assertEquals("Official:1", ready.plan.depotAccountTag)
+        assertEquals(listOf("账号1", "更新数据1", "账号2", "更新数据2"), ready.plan.enabledNodes.map { it.name })
+        assertEquals(
+            listOf("Official:1", "Official:2"),
+            ready.plan.params.filter { it.type == MaaTaskType.DEPOT }.map { it.accountTag },
+        )
     }
 
     @Test
-    fun returnsReady_withTwoPlans_whenSameRuntimeIdentityIsInterleaved() {
+    fun returnsBlocked_whenClientBlocksAreInterleaved() {
         val result = useCase(
             listOf(
                 TaskChainNode(
@@ -145,15 +162,13 @@ class AnalyzeTaskChainUseCaseTest {
             )
         )
 
-        val ready = result as AnalyzeTaskChainResult.Ready
-        assertEquals(2, ready.plans.size)
-        assertEquals("Official:1", ready.plans[0].depotAccountTag)
-        assertEquals(listOf("官服账号1-A", "官服账号1-B"), ready.plans[0].enabledNodes.map { it.name })
-        assertEquals("Bilibili:2", ready.plans[1].depotAccountTag)
+        val blocked = result as AnalyzeTaskChainResult.Blocked
+        assertEquals(AnalyzeTaskChainFailureReason.INTERLEAVED_CLIENT_TYPES, blocked.reason)
+        assertEquals(listOf("Official", "Bilibili"), blocked.clientTypes)
     }
 
     @Test
-    fun returnsReady_withThreePlans_whenSameClientUsesDifferentAccounts() {
+    fun returnsBlocked_whenSameClientAppearsAfterAnotherClient() {
         val result = useCase(
             listOf(
                 TaskChainNode(
@@ -177,11 +192,9 @@ class AnalyzeTaskChainUseCaseTest {
             )
         )
 
-        val ready = result as AnalyzeTaskChainResult.Ready
-        assertEquals(
-            listOf("Official:1", "Bilibili:2", "Official:3"),
-            ready.plans.map { it.depotAccountTag },
-        )
+        val blocked = result as AnalyzeTaskChainResult.Blocked
+        assertEquals(AnalyzeTaskChainFailureReason.INTERLEAVED_CLIENT_TYPES, blocked.reason)
+        assertEquals(listOf("Official", "Bilibili"), blocked.clientTypes)
     }
 
     @Test

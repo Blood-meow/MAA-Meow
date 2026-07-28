@@ -63,15 +63,27 @@ data class DepotInventoryItemUi(
     val sortId: Int,
 )
 
-fun DepotAccountSnapshot.availableDraws(): Int =
-    snapshot.items[ORUNDUM_ID].orZero() / ORUNDUM_PER_DRAW +
-        snapshot.items[HEADHUNTING_PERMIT_ID].orZero() +
+fun DepotAccountSnapshot.drawSummary(): DepotDrawSummary {
+    val orundumDraws = snapshot.items[ORUNDUM_ID].orZero() / ORUNDUM_PER_DRAW
+    val permitDraws = snapshot.items[HEADHUNTING_PERMIT_ID].orZero() +
         snapshot.items[TEN_ROLL_HEADHUNTING_PERMIT_ID].orZero() * TEN_ROLL_DRAW_COUNT
+    return DepotDrawSummary(
+        total = orundumDraws + permitDraws,
+        orundum = orundumDraws,
+        permits = permitDraws,
+    )
+}
+
+data class DepotDrawSummary(
+    val total: Int,
+    val orundum: Int,
+    val permits: Int,
+)
 
 private fun Int?.orZero(): Int = this ?: 0
 
 private const val ORUNDUM_ID = "4003"
-private const val HEADHUNTING_PERMIT_ID = "4004"
-private const val TEN_ROLL_HEADHUNTING_PERMIT_ID = "4005"
+private const val HEADHUNTING_PERMIT_ID = "7003"
+private const val TEN_ROLL_HEADHUNTING_PERMIT_ID = "7004"
 private const val ORUNDUM_PER_DRAW = 600
 private const val TEN_ROLL_DRAW_COUNT = 10

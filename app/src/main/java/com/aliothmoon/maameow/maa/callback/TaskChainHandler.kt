@@ -57,6 +57,8 @@ class TaskChainHandler(
         when (msg) {
             AsstMsg.TaskChainStart -> {
                 statusTracker.updateStatus(taskId, TaskRunStatus.IN_PROGRESS)
+                val accountTag = statusTracker.getAccountTag(taskId)
+                compositionService.activateAccountTag(accountTag)
                 // 在 core 进入关卡前同步重算目标库存缺口；必须先于 handleTaskChainStart，且不得切线程
                 refreshDropsIfNeeded(taskId)
                 handleTaskChainStart(details)
