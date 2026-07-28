@@ -148,7 +148,7 @@ val appModule = module {
     singleOf(::MaaEventNotifier)
     singleOf(::MaaNotificationCenter)
 
-    // 仓库 / 干员箱持久化（按配置档分片）
+    // 仓库 / 干员箱持久化（按配置档 + 账号标签分片）
     single { DepotRepository.create(get(), get()) }
     single { OperBoxRepository.create(get(), get()) }
 

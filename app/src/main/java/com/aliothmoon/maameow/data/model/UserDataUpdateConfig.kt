@@ -25,16 +25,21 @@ data class UserDataUpdateConfig(
             return TaskParamResult(emptyList())
         }
 
+        // 账号切换为空时不绑定任何账号数据，更新数据也不生成识别任务，避免白跑且不落盘。
+        if (ctx.depotAccountTag.isBlank()) {
+            return TaskParamResult(emptyList())
+        }
+
         val yjToday = ServerTimezone.getYjDate(ctx.clientType)
         val yjZone = ServerTimezone.getServerZone(ctx.clientType)
         val operDue = updateOperBox && isUserDataUpdateDue(
-            lastSyncMillis = ctx.operBoxRepository.snapshot.value.syncTimeMillis,
+            lastSyncMillis = ctx.operBoxRepository.syncTimeMillis(ctx.depotAccountTag),
             interval = triggerInterval,
             yjToday = yjToday,
             yjZone = yjZone,
         )
         val depotDue = updateDepot && isUserDataUpdateDue(
-            lastSyncMillis = ctx.depotRepository.snapshot.value.syncTimeMillis,
+            lastSyncMillis = ctx.depotRepository.syncTimeMillis(ctx.depotAccountTag),
             interval = triggerInterval,
             yjToday = yjToday,
             yjZone = yjZone,
