@@ -76,6 +76,10 @@ fun TaskListPanel(
             colors = CardDefaults.cardColors(
                 containerColor = if (isProfileMode) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface
             ),
+            border = BorderStroke(
+                1.dp,
+                if (isProfileMode) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant
+            ),
             elevation = CardDefaults.cardElevation(defaultElevation = if (isProfileMode) 2.dp else 0.dp)
         ) {
             Row(
