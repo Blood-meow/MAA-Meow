@@ -96,7 +96,7 @@ fun ProfileManagementPanel(
             )
             OutlinedButton(
                 onClick = onCreate,
-                enabled = profiles.size < 10,
+                enabled = true,
                 shape = RoundedCornerShape(4.dp),
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
             ) {
