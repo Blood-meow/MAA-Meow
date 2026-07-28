@@ -108,6 +108,11 @@ class MaaCompositionService(
 
     private val connectDeferred = AtomicReference<CompletableDeferred<Boolean>?>()
 
+    fun activateAccountTag(accountTag: String?) {
+        depotRepository.activateAccountTag(accountTag)
+        operBoxRepository.activateAccountTag(accountTag)
+    }
+
     sealed class StartResult {
         data class Success(val version: String) : StartResult()
 
@@ -405,7 +410,7 @@ class MaaCompositionService(
             sessionLogger.appendToFileOnly("[TaskParams] ${t.type.value}: ${t.params}")
             val taskId = maa.AppendTask(t.type.value, t.params)
             if (taskId > 0) {
-                taskChainStatusTracker.register(taskId, t.type.value, t.nodeId)
+                taskChainStatusTracker.register(taskId, t.type.value, t.nodeId, t.accountTag)
                 t.dropTarget?.let { dropsRefresher.register(taskId, it) }
             }
         }
@@ -448,8 +453,14 @@ class MaaCompositionService(
         sessionLogger.appendAndWait(fetchDeviceMemoryInfo(), LogLevel.INFO)
 
         val mode = appSettings.runMode.value
-        depotRepository.activateAccountTagAndAwait(depotAccountTag)
-        operBoxRepository.activateAccountTagAndAwait(depotAccountTag)
+        val accountTags = tasks.mapNotNull { it.accountTag?.takeIf(String::isNotBlank) }.distinct()
+        for (accountTag in accountTags) {
+            depotRepository.activateAccountTagAndAwait(accountTag)
+            operBoxRepository.activateAccountTagAndAwait(accountTag)
+        }
+        val initialAccountTag = tasks.firstOrNull()?.accountTag ?: depotAccountTag
+        depotRepository.activateAccountTagAndAwait(initialAccountTag)
+        operBoxRepository.activateAccountTagAndAwait(initialAccountTag)
         return withContext(Dispatchers.IO) {
             checkPreconditions(mode, isScheduled, clientType)?.let { return@withContext it }
 

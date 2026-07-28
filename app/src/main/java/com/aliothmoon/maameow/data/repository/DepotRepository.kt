@@ -131,7 +131,23 @@ class DepotRepository(
     }
     /** 切换当前库存分桶。空白账号不绑定库存；同 profile 下不同账号库存互不污染。 */
     fun activateAccountTag(accountTag: String?) {
-        activeAccountTag.value = normalizeAccountTagOrNull(accountTag)
+        val tag = normalizeAccountTagOrNull(accountTag)
+        activeAccountTag.value = tag
+        val profileId = taskChainState.activeProfileId.value
+        synchronized(memoryLock) {
+            if (profileId.isEmpty() || tag == null) {
+                _snapshot.value = DepotSnapshot()
+                return
+            }
+            val key = shardKey(profileId, tag)
+            val snap = if (key in dirty) {
+                shards[key] ?: DepotSnapshot()
+            } else {
+                decode(latestPrefs[keyOf(key)] ?: legacyRawIfDefault(profileId, tag, latestPrefs))
+                    .also { shards[key] = it }
+            }
+            _snapshot.value = snap
+        }
     }
 
     /** 启动任务前同步绑定并 hydrate 目标账号，避免回调先于 Flow 收集器写入空快照。 */
@@ -163,9 +179,17 @@ class DepotRepository(
      * 不过滤排除集 —— 识别结果就是仓库事实。
      */
     fun replaceAllSync(items: List<DepotItem>) {
+        val counts = items.associate { it.id to it.count }
+        Timber.i(
+            "DepotRecognition: replace all kinds=%d orundum=%d headhuntingPermit=%d tenRollPermit=%d",
+            counts.size,
+            counts["4003"] ?: 0,
+            counts["7003"] ?: 0,
+            counts["7004"] ?: 0,
+        )
         mutateActive { _ ->
             DepotSnapshot(
-                items = items.associate { it.id to it.count },
+                items = counts,
                 syncTimeMillis = System.currentTimeMillis(),
             )
         }

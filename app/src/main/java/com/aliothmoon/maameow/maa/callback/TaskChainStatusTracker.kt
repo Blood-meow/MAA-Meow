@@ -22,6 +22,7 @@ data class TaskRunInfo(
     val taskChain: String,
     val status: TaskRunStatus,
     val nodeId: String? = null,
+    val accountTag: String? = null,
 )
 
 /**
@@ -40,8 +41,8 @@ class TaskChainStatusTracker {
 
     private val taskMap = LinkedHashMap<Int, TaskRunInfo>()
 
-    fun register(taskId: Int, taskChain: String, nodeId: String? = null) {
-        taskMap[taskId] = TaskRunInfo(taskId, taskChain, TaskRunStatus.PENDING, nodeId)
+    fun register(taskId: Int, taskChain: String, nodeId: String? = null, accountTag: String? = null) {
+        taskMap[taskId] = TaskRunInfo(taskId, taskChain, TaskRunStatus.PENDING, nodeId, accountTag)
         emit()
     }
 
@@ -51,6 +52,8 @@ class TaskChainStatusTracker {
     }
 
     fun getNodeId(taskId: Int): String? = taskMap[taskId]?.nodeId
+
+    fun getAccountTag(taskId: Int): String? = taskMap[taskId]?.accountTag
 
     fun clear() {
         taskMap.clear()

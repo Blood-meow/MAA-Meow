@@ -7,28 +7,33 @@ import org.junit.Test
 
 class DepotInventoryViewModelTest {
     @Test
-    fun availableDraws_combinesOrundumAndPermits() {
+    fun drawSummary_combinesOrundumAndPermits() {
         val account = DepotAccountSnapshot(
             accountTag = "Official:1",
             snapshot = DepotSnapshot(
                 items = mapOf(
                     "4003" to 1_259,
-                    "4004" to 3,
-                    "4005" to 2,
+                    "7003" to 3,
+                    "7004" to 2,
+                    "4004" to 99,
+                    "4005" to 88,
                 ),
             ),
         )
 
-        assertEquals(25, account.availableDraws())
+        val summary = account.drawSummary()
+        assertEquals(25, summary.total)
+        assertEquals(2, summary.orundum)
+        assertEquals(23, summary.permits)
     }
 
     @Test
-    fun availableDraws_ignoresIncompleteOrundumDraw() {
+    fun drawSummary_ignoresIncompleteOrundumDraw() {
         val account = DepotAccountSnapshot(
             accountTag = "Official:1",
             snapshot = DepotSnapshot(items = mapOf("4003" to 599)),
         )
 
-        assertEquals(0, account.availableDraws())
+        assertEquals(0, account.drawSummary().total)
     }
 }

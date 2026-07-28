@@ -41,9 +41,16 @@ class AnalyzeTaskChainUseCase(
             )
         }
 
-        // Group the whole chain by runtime identity while preserving first-seen group order.
-        // Same client/account runs once even when interleaved; different accounts remain isolated.
-        val partition = partitionByRuntimeIdentity(enabledNodes)
+        // Restore the original contract: each client occupies one contiguous block.
+        // Account switching does not split a client block; interleaved clients are rejected.
+        val partition = partitionByContiguousClient(enabledNodes)
+            ?: return AnalyzeTaskChainResult.Blocked(
+                reason = AnalyzeTaskChainFailureReason.INTERLEAVED_CLIENT_TYPES,
+                clientTypes = enabledNodes
+                    .mapNotNull { (it.config as? WakeUpConfig)?.clientType }
+                    .filter { it.isNotBlank() }
+                    .distinct(),
+            )
 
         val plans = partition.mapNotNull { segment -> buildPlan(segment) }
         if (plans.isEmpty()) {
@@ -54,63 +61,64 @@ class AnalyzeTaskChainUseCase(
         return AnalyzeTaskChainResult.Ready(plans = plans)
     }
 
-    /**
-     * Group enabled nodes by runtime identity across the whole chain.
-     *
-     * The first occurrence of each client/account determines group order, while nodes inside each
-     * group retain their original order. Nodes without WakeUp inherit the latest identity; leading
-     * nodes use the configured fallback client with a blank account tag.
-     */
-    internal fun partitionByRuntimeIdentity(
+    /** Same clients must form one contiguous block; account switching stays inside that block. */
+    internal fun partitionByContiguousClient(
         enabledNodes: List<TaskChainNode>,
-    ): List<ClientSegment> {
+    ): List<ClientSegment>? {
         if (enabledNodes.isEmpty()) return emptyList()
 
         val fallbackClient = taskChainState.getClientType().ifBlank { "Official" }
-        val grouped = linkedMapOf<RuntimeIdentity, MutableList<TaskChainNode>>()
-        var currentIdentity = RuntimeIdentity(fallbackClient, "")
+        val segments = mutableListOf<ClientSegment>()
+        var currentNodes = mutableListOf<AccountBoundNode>()
+        var currentClient: String? = null
+        var currentAccountTag = ""
+        val seenClients = linkedSetOf<String>()
+
+        fun flush() {
+            if (currentNodes.isEmpty()) return
+            segments += ClientSegment(
+                clientType = currentClient ?: fallbackClient,
+                nodes = currentNodes.toList(),
+            )
+            currentNodes = mutableListOf()
+        }
 
         for (node in enabledNodes) {
             val wake = node.config as? WakeUpConfig
             if (wake != null) {
-                val client = wake.clientType.takeIf { it.isNotBlank() } ?: currentIdentity.clientType
-                currentIdentity = RuntimeIdentity(
-                    clientType = client,
-                    depotAccountTag = depotAccountTag(client, wake.accountName),
-                )
+                val wakeClient = wake.clientType.takeIf { it.isNotBlank() }
+                    ?: currentClient
+                    ?: fallbackClient
+                when {
+                    currentClient == null -> {
+                        currentClient = wakeClient
+                        seenClients += wakeClient
+                    }
+                    wakeClient == currentClient -> Unit
+                    wakeClient in seenClients -> return null
+                    else -> {
+                        flush()
+                        currentClient = wakeClient
+                        seenClients += wakeClient
+                    }
+                }
+                currentAccountTag = depotAccountTag(wakeClient, wake.accountName)
             }
-            grouped.getOrPut(currentIdentity) { mutableListOf() } += node
+            currentNodes += AccountBoundNode(node, currentAccountTag)
         }
-
-        return grouped.map { (identity, nodes) ->
-            ClientSegment(
-                clientType = identity.clientType,
-                depotAccountTag = identity.depotAccountTag,
-                nodes = nodes,
-            )
-        }
+        flush()
+        return segments
     }
 
     private fun buildPlan(segment: ClientSegment): TaskChainPlan? {
-        val enabledNodes = segment.nodes
+        val enabledNodes = segment.nodes.map { it.node }
         val clientType = segment.clientType
-        val depotAccountTag = segment.depotAccountTag
+        val initialAccountTag = segment.nodes.firstOrNull()?.accountTag.orEmpty()
         val creditFightAvailability =
             resolveMallCreditFightAvailability(enabledNodes, activityManager)
         val serverDayOfWeek = ServerTimezone.getYjDayOfWeek(clientType)
 
         logCreditFightWarning(enabledNodes, creditFightAvailability)
-
-        val ctx = TaskParamContext(
-            clientType = clientType,
-            depotAccountTag = depotAccountTag,
-            chainAllowsCreditFight = creditFightAvailability.isAvailable,
-            activityManager = activityManager,
-            depotRepository = depotRepository,
-            operBoxRepository = operBoxRepository,
-            itemHelper = itemHelper,
-            resourceDataManager = resourceDataManager,
-        )
 
         val preflightLogs = mutableListOf<Pair<UiText, LogLevel>>()
         // TODO: MaaCore 适配代理倍率 7~10 后删除
@@ -121,15 +129,26 @@ class AnalyzeTaskChainUseCase(
         }
 
         var unlockDoubleSync = false
-        val params = enabledNodes.flatMap { node ->
+        val params = segment.nodes.flatMap { boundNode ->
+            val node = boundNode.node
             if (isSkippedByWeeklySchedule(node, serverDayOfWeek)) {
                 return@flatMap emptyList()
             }
+            val ctx = TaskParamContext(
+                clientType = clientType,
+                depotAccountTag = boundNode.accountTag,
+                chainAllowsCreditFight = creditFightAvailability.isAvailable,
+                activityManager = activityManager,
+                depotRepository = depotRepository,
+                operBoxRepository = operBoxRepository,
+                itemHelper = itemHelper,
+                resourceDataManager = resourceDataManager,
+            )
             val result = node.config.toTaskParams(ctx)
             preflightLogs += result.logs
             if (result.unlockDoubleSync) unlockDoubleSync = true
             result.params.map { taskParams ->
-                val withNode = taskParams.copy(nodeId = node.id)
+                val withNode = taskParams.copy(nodeId = node.id, accountTag = boundNode.accountTag)
                 // 理智作战的目标库存日志标签用节点名（用户可重命名），比固定 "Fight" 更可读
                 val target = withNode.dropTarget
                 if (node.config is FightConfig && target != null) {
@@ -145,7 +164,7 @@ class AnalyzeTaskChainUseCase(
             enabledNodes = enabledNodes,
             params = params,
             clientType = clientType,
-            depotAccountTag = depotAccountTag,
+            depotAccountTag = initialAccountTag,
             gamePackageName = Packages[clientType],
             launchesGame = enabledNodes
                 .mapNotNull { it.config as? WakeUpConfig }
@@ -188,16 +207,15 @@ class AnalyzeTaskChainUseCase(
     }
 }
 
-private data class RuntimeIdentity(
-    val clientType: String,
-    val depotAccountTag: String,
+internal data class AccountBoundNode(
+    val node: TaskChainNode,
+    val accountTag: String,
 )
 
-/** One same-client/account group of an enabled task chain. */
+/** One contiguous same-client block; each node retains its inherited account tag. */
 internal data class ClientSegment(
     val clientType: String,
-    val depotAccountTag: String,
-    val nodes: List<TaskChainNode>,
+    val nodes: List<AccountBoundNode>,
 )
 
 data class TaskChainPlan(
@@ -224,17 +242,17 @@ data class TaskChainPlan(
 
 enum class AnalyzeTaskChainFailureReason {
     NO_TASK_SELECTED,
-    /** @deprecated no longer emitted — interleaving auto-splits into multiple segments. */
+    /** A client appears again after a different client block; reorder the chain before starting. */
     INTERLEAVED_CLIENT_TYPES,
-    /** @deprecated kept for string/compat; no longer emitted — multi-client chains split. */
+    /** @deprecated kept for serialized/string compatibility. */
     CONFLICTING_CLIENT_TYPES,
     NO_EXECUTABLE_TASKS,
 }
 
 sealed interface AnalyzeTaskChainResult {
     /**
-     * One or more single-client plans in execution order.
-     * Contiguous multi-client chains become multiple plans; callers run them sequentially.
+     * One or more contiguous single-client plans in execution order.
+     * Each client may occupy only one block; callers run valid blocks sequentially.
      */
     data class Ready(val plans: List<TaskChainPlan>) : AnalyzeTaskChainResult {
         init {

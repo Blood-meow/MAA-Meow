@@ -313,7 +313,7 @@
     <string name="depot_inventory_detail_title">库存明细</string>
     <string name="depot_inventory_empty_accounts">暂无账号库存数据。请在“开始唤醒”的账号切换中填写账号数字/文本，并执行一次更新数据。</string>
     <string name="depot_inventory_empty_items">该账号暂无库存明细</string>
-    <string name="depot_inventory_available_draws">可抽 %1$d 次</string>
+    <string name="depot_inventory_available_draws">有 %1$d 抽（其中合成玉 %2$d 抽，凭证 %3$d 抽）</string>
     <string name="depot_inventory_sync_time">更新时间：%1$s</string>
     <string name="settings_export_config_title">导出配置</string>
     <string name="settings_export_config_desc">将所有设置和任务配置导出为文件</string>
