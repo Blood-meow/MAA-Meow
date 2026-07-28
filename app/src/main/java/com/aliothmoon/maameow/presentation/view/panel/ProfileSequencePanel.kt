@@ -1,7 +1,6 @@
 package com.aliothmoon.maameow.presentation.view.panel
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -40,7 +39,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -55,8 +53,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -160,47 +156,26 @@ fun ProfileSequencePanel(
                         .menuAnchor(MenuAnchorType.PrimaryNotEditable)
                         .fillMaxWidth(),
                     textStyle = MaterialTheme.typography.bodyMedium,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-                        focusedBorderColor = Color.Transparent,
-                        unfocusedBorderColor = Color.Transparent,
-                        disabledBorderColor = Color.Transparent,
-                        errorBorderColor = Color.Transparent,
-                    ),
-                    shape = RoundedCornerShape(4.dp),
                 )
                 ExposedDropdownMenu(
                     expanded = configMenuExpanded,
                     onDismissRequest = { configMenuExpanded = false },
-                    shape = RoundedCornerShape(4.dp),
+                    // 与“快捷操作”完全一致：surfaceContainerHighest @ 0.96，额外模糊度为 0。
                     containerColor = overlayBoardColor(),
-                    tonalElevation = 0.dp,
-                    shadowElevation = 6.dp,
                 ) {
                     sequenceConfigs.forEach { config ->
-                        val selected = config.id == activeSequenceConfigId
                         DropdownMenuItem(
                             text = {
                                 Text(
                                     text = config.name,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
-                                    color = if (selected) MaterialTheme.colorScheme.onPrimary
-                                    else MaterialTheme.colorScheme.onSurface,
                                 )
                             },
                             onClick = {
                                 onSwitchSequenceConfig(config.id)
                                 configMenuExpanded = false
                             },
-                            modifier = Modifier
-                                .padding(horizontal = 8.dp, vertical = 2.dp)
-                                .clip(RoundedCornerShape(4.dp))
-                                .background(
-                                    if (selected) MaterialTheme.colorScheme.primary
-                                    else MaterialTheme.colorScheme.surfaceContainerLowest
-                                ),
                         )
                     }
                     HorizontalDivider()
