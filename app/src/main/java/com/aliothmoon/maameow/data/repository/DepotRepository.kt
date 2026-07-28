@@ -42,6 +42,14 @@ data class DepotSnapshot(
     val syncTimeMillis: Long = 0L,
 )
 
+data class DepotAccountSnapshot(
+    val accountTag: String,
+    val snapshot: DepotSnapshot,
+) {
+    val itemKinds: Int get() = snapshot.items.size
+    val totalCount: Int get() = snapshot.items.values.sum()
+}
+
 /**
  * 仓库数据：按「用户配置档 + 游戏账号标签」分片持久化，运行时以**内存快照**为权威读取源。
  *
@@ -74,8 +82,8 @@ class DepotRepository(
     /** shardKey(profileId, accountTag) → 最新已知快照（含尚未落盘的变更） */
     private val shards = ConcurrentHashMap<String, DepotSnapshot>()
 
-    /** 当前激活账号库存标签；由任务段 WakeUp.accountName 驱动，空/未配置为默认桶。 */
-    private val activeAccountTag = MutableStateFlow(DEFAULT_ACCOUNT_TAG)
+    /** 当前激活账号库存标签；由任务段 WakeUp.accountName 驱动。空/未配置表示不读写任何库存桶。 */
+    private val activeAccountTag = MutableStateFlow<String?>(null)
 
     /** 有未确认落盘的分片；落盘成功且内存未再变时清除 */
     private val dirty = ConcurrentHashMap.newKeySet<String>()
@@ -96,7 +104,7 @@ class DepotRepository(
                 .catch { e ->
                     if (e is IOException) {
                         Timber.e(e, "读取仓库数据失败")
-                        emit(Triple("", DEFAULT_ACCOUNT_TAG, emptyPreferences()))
+                        emit(Triple("", null, emptyPreferences()))
                     } else {
                         throw e
                     }
@@ -115,9 +123,9 @@ class DepotRepository(
         }
     }
 
-    /** 切换当前库存分桶。空白账号走默认桶；同 profile 下不同账号库存互不污染。 */
+    /** 切换当前库存分桶。空白账号不绑定库存；同 profile 下不同账号库存互不污染。 */
     fun activateAccountTag(accountTag: String?) {
-        activeAccountTag.value = normalizeAccountTag(accountTag)
+        activeAccountTag.value = normalizeAccountTagOrNull(accountTag)
     }
 
     /**
@@ -168,7 +176,7 @@ class DepotRepository(
     fun countOf(itemId: String, accountTag: String?): Int {
         val profileId = taskChainState.activeProfileId.value
         if (profileId.isEmpty()) return 0
-        val tag = normalizeAccountTag(accountTag)
+        val tag = normalizeAccountTagOrNull(accountTag) ?: return 0
         val key = shardKey(profileId, tag)
         return synchronized(memoryLock) {
             val cached = shards[key]
@@ -180,6 +188,40 @@ class DepotRepository(
                 diskSnap.items[itemId] ?: 0
             }
         }
+    }
+
+    /** 设置页查看：列出当前配置档下所有已绑定账号的库存分片。空账号不会出现在这里。 */
+    suspend fun listAccountSnapshotsForActiveProfile(): List<DepotAccountSnapshot> {
+        taskChainState.isLoaded.first { it }
+        val profileId = taskChainState.activeProfileId.value
+        if (profileId.isEmpty()) return emptyList()
+        val prefix = "depot_${profileId}_"
+        val prefs = store.data.first()
+        latestPrefs = prefs
+        val fromDisk = prefs.asMap().entries.mapNotNull { (prefKey, rawValue) ->
+            val name = prefKey.name
+            if (!name.startsWith(prefix)) return@mapNotNull null
+            val encodedTag = name.removePrefix(prefix)
+            val tag = decodeTag(encodedTag)?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
+            val raw = rawValue as? String ?: return@mapNotNull null
+            val snap = decode(raw)
+            val key = shardKey(profileId, tag)
+            synchronized(memoryLock) { shards.putIfAbsent(key, snap) }
+            DepotAccountSnapshot(accountTag = tag, snapshot = synchronized(memoryLock) { shards[key] } ?: snap)
+        }
+        val fromMemory = synchronized(memoryLock) {
+            shards.entries.mapNotNull { (key, snap) ->
+                if (!key.startsWith(shardKeyPrefix(profileId))) return@mapNotNull null
+                val encodedTag = key.removePrefix(shardKeyPrefix(profileId))
+                val tag = decodeTag(encodedTag)?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
+                DepotAccountSnapshot(accountTag = tag, snapshot = snap)
+            }
+        }
+        return (fromDisk + fromMemory)
+            .groupBy { it.accountTag }
+            .map { (_, rows) -> rows.last() }
+            .filter { it.snapshot.items.isNotEmpty() || it.snapshot.syncTimeMillis > 0L }
+            .sortedBy { it.accountTag }
     }
 
     /** 配置档被删除时清理其分片（内存 + 磁盘）。 */
@@ -204,8 +246,8 @@ class DepotRepository(
         }
     }
 
-    private fun onDiskOrProfileChanged(profileId: String, accountTag: String, prefs: Preferences) {
-        if (profileId.isEmpty()) {
+    private fun onDiskOrProfileChanged(profileId: String, accountTag: String?, prefs: Preferences) {
+        if (profileId.isEmpty() || accountTag == null) {
             synchronized(memoryLock) {
                 _snapshot.value = DepotSnapshot()
             }
@@ -233,6 +275,11 @@ class DepotRepository(
             return
         }
         val accountTag = activeAccountTag.value
+        if (accountTag == null) {
+            Timber.w("账号切换为空，跳过仓库写入")
+            synchronized(memoryLock) { _snapshot.value = DepotSnapshot() }
+            return
+        }
         val key = shardKey(profileId, accountTag)
         val next: DepotSnapshot
         synchronized(memoryLock) {
@@ -249,7 +296,8 @@ class DepotRepository(
         taskChainState.isLoaded.first { it }
         val profileId = taskChainState.activeProfileId.value
         if (profileId.isEmpty()) return
-        val key = shardKey(profileId, activeAccountTag.value)
+        val accountTag = activeAccountTag.value ?: return
+        val key = shardKey(profileId, accountTag)
         // 有限次推进落盘；IO 失败时保留 dirty/内存，避免死等
         repeat(8) {
             if (key !in dirty) return
@@ -307,8 +355,8 @@ class DepotRepository(
 
         const val DEFAULT_ACCOUNT_TAG = "default"
 
-        fun normalizeAccountTag(accountTag: String?): String =
-            accountTag?.trim()?.takeIf { it.isNotEmpty() } ?: DEFAULT_ACCOUNT_TAG
+        fun normalizeAccountTagOrNull(accountTag: String?): String? =
+            accountTag?.trim()?.takeIf { it.isNotEmpty() }
 
         fun shardKey(profileId: String, accountTag: String): String =
             "${profileId}_${encodeTag(accountTag)}"
@@ -324,9 +372,14 @@ class DepotRepository(
                 null
             }
 
+
         private fun encodeTag(tag: String): String = Base64.getUrlEncoder()
             .withoutPadding()
             .encodeToString(tag.toByteArray(Charsets.UTF_8))
+
+        private fun decodeTag(encoded: String): String? = runCatching {
+            String(Base64.getUrlDecoder().decode(encoded), Charsets.UTF_8)
+        }.getOrNull()
 
         /**
          * 掉落累加排除集，对齐上游 ToolboxViewModel.ExcludedItemIds。

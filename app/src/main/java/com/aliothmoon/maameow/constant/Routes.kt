@@ -14,4 +14,5 @@ object Routes {
     const val NOTIFICATION = "notification"
     const val TASK_OVERRIDE_EDITOR = "task_override_editor"
     const val WALLPAPER_SETTINGS = "wallpaper_settings"
+    const val DEPOT_INVENTORY = "depot_inventory"
 }
