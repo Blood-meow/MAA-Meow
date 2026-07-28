@@ -356,7 +356,7 @@ data class FightConfig(
         // 目标库存：append 即按内存库存算缺口（SetTaskParams 失败时也不劣于满目标）；
         // TaskChainStart 时 FightDropsRefresher 再用最新库存收窄。
         val inventoryNeed = if (isSpecifiedDrops && isInventoryTarget && dropsItemId.isNotBlank()) {
-            (dropsQuantity - ctx.depotRepository.countOf(dropsItemId)).coerceAtLeast(0)
+            (dropsQuantity - ctx.depotRepository.countOf(dropsItemId, ctx.depotAccountTag)).coerceAtLeast(0)
         } else {
             null
         }

@@ -235,6 +235,7 @@ class BackgroundTaskViewModel(
         val result = compositionService.start(
             tasks = next.params,
             clientType = next.clientType,
+            depotAccountTag = next.depotAccountTag,
             isScheduled = false,
             preflightLogs = next.preflightLogs,
             expectDoubleSync = next.unlockDoubleSync,
@@ -697,6 +698,7 @@ class BackgroundTaskViewModel(
         val result = compositionService.start(
             tasks = plan.params,
             clientType = plan.clientType,
+            depotAccountTag = plan.depotAccountTag,
             isScheduled = context.mode == TaskStartMode.SCHEDULED,
             preflightLogs = plan.preflightLogs,
             expectDoubleSync = plan.unlockDoubleSync,

@@ -11,6 +11,7 @@ import com.aliothmoon.maameow.data.model.LogLevel
 
 import com.aliothmoon.maameow.data.preferences.AppSettingsManager
 import com.aliothmoon.maameow.data.preferences.TaskChainState
+import com.aliothmoon.maameow.data.repository.DepotRepository
 import com.aliothmoon.maameow.data.resource.ActivityManager
 import com.aliothmoon.maameow.domain.models.RemoteBackend
 import com.aliothmoon.maameow.domain.models.RunMode
@@ -58,6 +59,7 @@ class MaaCompositionService(
     private val unifiedStateDispatcher: UnifiedStateDispatcher,
     private val sessionLogger: MaaSessionLogger,
     private val activityManager: ActivityManager,
+    private val depotRepository: DepotRepository,
     private val appWatchdog: AppWatchdog,
     private val taskChainState: TaskChainState,
     private val subTaskHandler: SubTaskHandler,
@@ -202,6 +204,7 @@ class MaaCompositionService(
     suspend fun start(
         tasks: List<MaaTaskParams>,
         clientType: String,
+        depotAccountTag: String? = null,
         isScheduled: Boolean = false,
         preflightLogs: List<Pair<UiText, LogLevel>> = emptyList(),
         /** 更新数据双识别到期：启动成功后 arm，两侧识别成功再报 DoubleSync */
@@ -210,6 +213,7 @@ class MaaCompositionService(
     ): StartResult = executeStart(
         tasks = tasks,
         clientType = clientType,
+        depotAccountTag = depotAccountTag,
         isScheduled = isScheduled,
         startMessage = context.getString(R.string.runlog_task_start, tasks.size, clientType),
         successMessage = context.getString(R.string.runlog_task_started, clientType),
@@ -224,6 +228,7 @@ class MaaCompositionService(
     ): StartResult = executeStart(
         tasks = tasks,
         clientType = clientType,
+        depotAccountTag = null,
         startMessage = context.getString(R.string.runlog_copilot_start),
         successMessage = context.getString(R.string.runlog_copilot_started),
     )
@@ -421,6 +426,7 @@ class MaaCompositionService(
     private suspend fun executeStart(
         tasks: List<MaaTaskParams>,
         clientType: String,
+        depotAccountTag: String? = null,
         startMessage: String,
         successMessage: String,
         isScheduled: Boolean = false,
@@ -440,6 +446,7 @@ class MaaCompositionService(
         sessionLogger.appendAndWait(fetchDeviceMemoryInfo(), LogLevel.INFO)
 
         val mode = appSettings.runMode.value
+        depotRepository.activateAccountTag(depotAccountTag)
         return withContext(Dispatchers.IO) {
             checkPreconditions(mode, isScheduled, clientType)?.let { return@withContext it }
 
