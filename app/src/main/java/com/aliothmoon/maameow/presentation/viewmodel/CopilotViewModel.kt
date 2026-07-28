@@ -15,6 +15,7 @@ import com.aliothmoon.maameow.data.preferences.TaskChainState
 import com.aliothmoon.maameow.data.repository.CopilotRepository
 import com.aliothmoon.maameow.data.resource.CopilotResourceProvider
 import com.aliothmoon.maameow.data.resource.ResourceDataManager
+import com.aliothmoon.maameow.domain.service.CopilotCodeType
 import com.aliothmoon.maameow.domain.service.CopilotManager
 import com.aliothmoon.maameow.domain.service.CopilotRequestException
 import com.aliothmoon.maameow.domain.service.MaaCompositionService
@@ -360,7 +361,14 @@ class CopilotViewModel(
 
         viewModelScope.launch {
             _state.update { it.startingParse() }
-            if (forceSet || copilotManager.isSetId(input)) {
+            // New-format codes carry their own type; ambiguous legacy codes keep the button context.
+            val code = copilotManager.parseCopilotCode(input)
+            val asSet = if (code != null && !code.ambiguous) {
+                code.type == CopilotCodeType.COPILOT_SET
+            } else {
+                forceSet
+            }
+            if (asSet) {
                 val tabIndex = _state.value.tabIndex
                 if (!supportsCopilotSetImport(tabIndex)) {
                     _state.update {
