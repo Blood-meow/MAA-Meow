@@ -121,36 +121,67 @@ class AnalyzeTaskChainUseCaseTest {
     }
 
     @Test
-    fun returnsReady_withThreePlans_whenClientTypesAreInterleaved() {
+    fun returnsReady_withTwoPlans_whenSameRuntimeIdentityIsInterleaved() {
         val result = useCase(
             listOf(
                 TaskChainNode(
-                    name = "开始唤醒1",
+                    name = "官服账号1-A",
                     order = 1,
                     enabled = true,
-                    config = WakeUpConfig(clientType = "Official"),
+                    config = WakeUpConfig(clientType = "Official", accountName = "1"),
                 ),
                 TaskChainNode(
-                    name = "开始唤醒2",
+                    name = "B服账号2",
                     order = 2,
                     enabled = true,
-                    config = WakeUpConfig(clientType = "Bilibili"),
+                    config = WakeUpConfig(clientType = "Bilibili", accountName = "2"),
                 ),
                 TaskChainNode(
-                    name = "开始唤醒3",
+                    name = "官服账号1-B",
                     order = 3,
                     enabled = true,
-                    config = WakeUpConfig(clientType = "Official"),
+                    config = WakeUpConfig(clientType = "Official", accountName = "1"),
                 ),
             )
         )
 
         val ready = result as AnalyzeTaskChainResult.Ready
-        assertEquals(3, ready.plans.size)
-        assertEquals("Official", ready.plans[0].clientType)
-        assertEquals("Bilibili", ready.plans[1].clientType)
-        assertEquals("Official", ready.plans[2].clientType)
-        assertTrue(ready.revisitsClientAcrossSegments)
+        assertEquals(2, ready.plans.size)
+        assertEquals("Official:1", ready.plans[0].depotAccountTag)
+        assertEquals(listOf("官服账号1-A", "官服账号1-B"), ready.plans[0].enabledNodes.map { it.name })
+        assertEquals("Bilibili:2", ready.plans[1].depotAccountTag)
+    }
+
+    @Test
+    fun returnsReady_withThreePlans_whenSameClientUsesDifferentAccounts() {
+        val result = useCase(
+            listOf(
+                TaskChainNode(
+                    name = "官服账号1",
+                    order = 1,
+                    enabled = true,
+                    config = WakeUpConfig(clientType = "Official", accountName = "1"),
+                ),
+                TaskChainNode(
+                    name = "B服账号2",
+                    order = 2,
+                    enabled = true,
+                    config = WakeUpConfig(clientType = "Bilibili", accountName = "2"),
+                ),
+                TaskChainNode(
+                    name = "官服账号3",
+                    order = 3,
+                    enabled = true,
+                    config = WakeUpConfig(clientType = "Official", accountName = "3"),
+                ),
+            )
+        )
+
+        val ready = result as AnalyzeTaskChainResult.Ready
+        assertEquals(
+            listOf("Official:1", "Bilibili:2", "Official:3"),
+            ready.plans.map { it.depotAccountTag },
+        )
     }
 
     @Test

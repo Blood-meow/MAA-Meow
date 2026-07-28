@@ -41,9 +41,9 @@ class AnalyzeTaskChainUseCase(
             )
         }
 
-        // Split by contiguous runtime identity (client + WakeUp account tag).
-        // Official(account1) → Official(account2) must be two segments, otherwise inventory shards will mix.
-        val partition = partitionByContiguousClient(enabledNodes)
+        // Group the whole chain by runtime identity while preserving first-seen group order.
+        // Same client/account runs once even when interleaved; different accounts remain isolated.
+        val partition = partitionByRuntimeIdentity(enabledNodes)
 
         val plans = partition.mapNotNull { segment -> buildPlan(segment) }
         if (plans.isEmpty()) {
@@ -55,61 +55,40 @@ class AnalyzeTaskChainUseCase(
     }
 
     /**
-     * Split enabled nodes into contiguous runtime-identity segments.
+     * Group enabled nodes by runtime identity across the whole chain.
      *
-     * Rules:
-     * - A new segment starts whenever WakeUp switches to a different clientType or account switch text.
-     * - Interleaving is allowed (Official/1 → Bilibili/default → Official/1 → 3 segments, run in order).
-     * - Grouping the same client/account together is only a UX tip (fewer switches), not a hard gate.
-     * - Nodes without WakeUp inherit the current segment client/account; leading nodes before any
-     *   WakeUp use [TaskChainState.getClientType] with a blank account tag (no user-data binding).
+     * The first occurrence of each client/account determines group order, while nodes inside each
+     * group retain their original order. Nodes without WakeUp inherit the latest identity; leading
+     * nodes use the configured fallback client with a blank account tag.
      */
-    internal fun partitionByContiguousClient(
+    internal fun partitionByRuntimeIdentity(
         enabledNodes: List<TaskChainNode>,
     ): List<ClientSegment> {
         if (enabledNodes.isEmpty()) return emptyList()
 
         val fallbackClient = taskChainState.getClientType().ifBlank { "Official" }
-        val segments = mutableListOf<ClientSegment>()
-        var currentNodes = mutableListOf<TaskChainNode>()
-        var currentClient: String? = null
-        var currentAccountName = ""
-
-        fun currentTag(client: String): String = depotAccountTag(client, currentAccountName)
-
-        fun flush() {
-            if (currentNodes.isEmpty()) return
-            val client = currentClient ?: fallbackClient
-            segments += ClientSegment(
-                clientType = client,
-                depotAccountTag = currentTag(client),
-                nodes = currentNodes.toList(),
-            )
-            currentNodes = mutableListOf()
-        }
+        val grouped = linkedMapOf<RuntimeIdentity, MutableList<TaskChainNode>>()
+        var currentIdentity = RuntimeIdentity(fallbackClient, "")
 
         for (node in enabledNodes) {
             val wake = node.config as? WakeUpConfig
             if (wake != null) {
-                val wakeClient = wake.clientType.takeIf { it.isNotBlank() } ?: currentClient ?: fallbackClient
-                val wakeAccount = wake.accountName.trim()
-                when {
-                    currentClient == null -> {
-                        currentClient = wakeClient
-                        currentAccountName = wakeAccount
-                    }
-                    wakeClient == currentClient && wakeAccount == currentAccountName -> Unit
-                    else -> {
-                        flush()
-                        currentClient = wakeClient
-                        currentAccountName = wakeAccount
-                    }
-                }
+                val client = wake.clientType.takeIf { it.isNotBlank() } ?: currentIdentity.clientType
+                currentIdentity = RuntimeIdentity(
+                    clientType = client,
+                    depotAccountTag = depotAccountTag(client, wake.accountName),
+                )
             }
-            currentNodes += node
+            grouped.getOrPut(currentIdentity) { mutableListOf() } += node
         }
-        flush()
-        return segments
+
+        return grouped.map { (identity, nodes) ->
+            ClientSegment(
+                clientType = identity.clientType,
+                depotAccountTag = identity.depotAccountTag,
+                nodes = nodes,
+            )
+        }
     }
 
     private fun buildPlan(segment: ClientSegment): TaskChainPlan? {
@@ -209,7 +188,12 @@ class AnalyzeTaskChainUseCase(
     }
 }
 
-/** One contiguous same-client/account slice of an enabled task chain. */
+private data class RuntimeIdentity(
+    val clientType: String,
+    val depotAccountTag: String,
+)
+
+/** One same-client/account group of an enabled task chain. */
 internal data class ClientSegment(
     val clientType: String,
     val depotAccountTag: String,
@@ -259,13 +243,6 @@ sealed interface AnalyzeTaskChainResult {
 
         /** First plan (backward-compatible accessor for single-segment callers). */
         val plan: TaskChainPlan get() = plans.first()
-
-        /**
-         * True when the same clientType appears in more than one segment
-         * (e.g. Official → Bilibili → Official). Not an error; soft-hint only.
-         */
-        val revisitsClientAcrossSegments: Boolean
-            get() = plans.groupingBy { it.clientType }.eachCount().any { it.value > 1 }
     }
 
     data class Blocked(

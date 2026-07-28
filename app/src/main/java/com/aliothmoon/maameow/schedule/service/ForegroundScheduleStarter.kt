@@ -151,11 +151,6 @@ class ForegroundScheduleStarter(
                                     plans.joinToString { it.clientType },
                                 ),
                             )
-                            if (plans.groupingBy { it.clientType }.eachCount().any { it.value > 1 }) {
-                                triggerLogger.append(
-                                    appCtx.getString(R.string.runlog_client_segments_revisit_hint),
-                                )
-                            }
                         }
                         triggerLogger.append(
                             appCtx.getString(R.string.runlog_task_start, chain.size, plans.first().clientType),
