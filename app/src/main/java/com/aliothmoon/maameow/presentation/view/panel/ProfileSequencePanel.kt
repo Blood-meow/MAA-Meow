@@ -30,7 +30,6 @@ import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.DropdownMenuItemDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
@@ -187,6 +186,8 @@ fun ProfileSequencePanel(
                                     text = config.name,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
+                                    color = if (selected) MaterialTheme.colorScheme.onPrimary
+                                    else MaterialTheme.colorScheme.onSurface,
                                 )
                             },
                             onClick = {
@@ -200,10 +201,6 @@ fun ProfileSequencePanel(
                                     if (selected) MaterialTheme.colorScheme.primary
                                     else MaterialTheme.colorScheme.surfaceContainerLowest
                                 ),
-                            colors = DropdownMenuItemDefaults.colors(
-                                textColor = if (selected) MaterialTheme.colorScheme.onPrimary
-                                else MaterialTheme.colorScheme.onSurface,
-                            ),
                         )
                     }
                     HorizontalDivider()
