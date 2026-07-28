@@ -1,19 +1,22 @@
 package com.aliothmoon.maameow.presentation.view.settings
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -34,11 +37,16 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.aliothmoon.maameow.R
 import com.aliothmoon.maameow.data.repository.DepotAccountSnapshot
+import com.aliothmoon.maameow.data.resource.ItemIconLoader
 import com.aliothmoon.maameow.presentation.components.TopAppBar
+import com.aliothmoon.maameow.presentation.view.panel.DepotItemCell
 import com.aliothmoon.maameow.presentation.viewmodel.DepotInventoryItemUi
 import com.aliothmoon.maameow.presentation.viewmodel.DepotInventoryViewModel
+import com.aliothmoon.maameow.presentation.viewmodel.availableDraws
+import com.aliothmoon.maameow.theme.MaaAnimations
 import com.aliothmoon.maameow.theme.MaaDesignTokens
 import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.koinInject
 import java.text.DateFormat
 import java.util.Date
 
@@ -52,18 +60,31 @@ fun DepotInventoryView(
 
     BackHandler(enabled = selectedAccountTag != null) { viewModel.clearSelection() }
 
-    if (selectedAccountTag == null) {
-        DepotAccountListView(
-            accounts = accounts,
-            onBack = { navController.navigateUp() },
-            onAccountClick = { viewModel.selectAccount(it.accountTag) },
-        )
-    } else {
-        DepotAccountDetailView(
-            accountTag = selectedAccountTag.orEmpty(),
-            items = viewModel.selectedItems(),
-            onBack = { viewModel.clearSelection() },
-        )
+    AnimatedContent(
+        targetState = selectedAccountTag,
+        modifier = Modifier.fillMaxSize(),
+        transitionSpec = {
+            if (targetState != null) {
+                MaaAnimations.sharedAxisForwardEnter togetherWith MaaAnimations.sharedAxisForwardExit
+            } else {
+                MaaAnimations.sharedAxisPopEnter togetherWith MaaAnimations.sharedAxisPopExit
+            }
+        },
+        label = "depot-account-navigation",
+    ) { accountTag ->
+        if (accountTag == null) {
+            DepotAccountListView(
+                accounts = accounts,
+                onBack = { navController.navigateUp() },
+                onAccountClick = { viewModel.selectAccount(it.accountTag) },
+            )
+        } else {
+            DepotAccountDetailView(
+                accountTag = accountTag,
+                items = viewModel.itemsForAccount(accountTag),
+                onBack = { viewModel.clearSelection() },
+            )
+        }
     }
 }
 
@@ -133,9 +154,8 @@ private fun DepotAccountCard(account: DepotAccountSnapshot, onClick: () -> Unit)
             )
             Text(
                 text = stringResource(
-                    R.string.depot_inventory_account_summary,
-                    account.itemKinds,
-                    account.totalCount,
+                    R.string.depot_inventory_available_draws,
+                    account.availableDraws(),
                 ),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -159,6 +179,7 @@ private fun DepotAccountDetailView(
     accountTag: String,
     items: List<DepotInventoryItemUi>,
     onBack: () -> Unit,
+    iconLoader: ItemIconLoader = koinInject(),
 ) {
     Scaffold(
         topBar = {
@@ -170,17 +191,17 @@ private fun DepotAccountDetailView(
         },
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
     ) { padding ->
-        LazyColumn(
+        LazyVerticalGrid(
+            columns = GridCells.Adaptive(minSize = 80.dp),
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding),
-            contentPadding = PaddingValues(
-                horizontal = MaaDesignTokens.Spacing.listHorizontal,
-                vertical = MaaDesignTokens.Spacing.sm,
-            ),
-            verticalArrangement = Arrangement.spacedBy(MaaDesignTokens.Spacing.xs),
+                .padding(padding)
+                .padding(horizontal = 12.dp),
+            contentPadding = PaddingValues(top = 6.dp, bottom = 4.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
-            item {
+            item(span = { GridItemSpan(maxLineSpan) }) {
                 Text(
                     text = accountTag,
                     style = MaterialTheme.typography.titleMedium,
@@ -189,7 +210,7 @@ private fun DepotAccountDetailView(
                 )
             }
             if (items.isEmpty()) {
-                item {
+                item(span = { GridItemSpan(maxLineSpan) }) {
                     Text(
                         text = stringResource(R.string.depot_inventory_empty_items),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -197,45 +218,10 @@ private fun DepotAccountDetailView(
                     )
                 }
             } else {
-                items(items, key = { it.id }) { item -> DepotItemRow(item) }
-                item { Spacer(modifier = Modifier.height(16.dp)) }
+                items(items, key = { it.id }) { item ->
+                    DepotItemCell(item.id, item.count, item.name, iconLoader)
+                }
             }
-        }
-    }
-}
-
-@Composable
-private fun DepotItemRow(item: DepotInventoryItemUi) {
-    Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = MaaDesignTokens.Spacing.md, vertical = MaaDesignTokens.Spacing.sm),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = item.name,
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Medium,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                Text(
-                    text = item.id,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            Text(
-                text = item.count.toString(),
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.primary,
-                fontWeight = FontWeight.SemiBold,
-            )
         }
     }
 }

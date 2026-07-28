@@ -38,9 +38,8 @@ class DepotInventoryViewModel(
         _selectedAccountTag.value = null
     }
 
-    fun selectedItems(): List<DepotInventoryItemUi> {
-        val tag = _selectedAccountTag.value ?: return emptyList()
-        val snapshot = _accounts.value.firstOrNull { it.accountTag == tag }?.snapshot ?: return emptyList()
+    fun itemsForAccount(accountTag: String): List<DepotInventoryItemUi> {
+        val snapshot = _accounts.value.firstOrNull { it.accountTag == accountTag }?.snapshot ?: return emptyList()
         return snapshot.items
             .asSequence()
             .map { (id, count) ->
@@ -63,3 +62,16 @@ data class DepotInventoryItemUi(
     val count: Int,
     val sortId: Int,
 )
+
+fun DepotAccountSnapshot.availableDraws(): Int =
+    snapshot.items[ORUNDUM_ID].orZero() / ORUNDUM_PER_DRAW +
+        snapshot.items[HEADHUNTING_PERMIT_ID].orZero() +
+        snapshot.items[TEN_ROLL_HEADHUNTING_PERMIT_ID].orZero() * TEN_ROLL_DRAW_COUNT
+
+private fun Int?.orZero(): Int = this ?: 0
+
+private const val ORUNDUM_ID = "4003"
+private const val HEADHUNTING_PERMIT_ID = "4004"
+private const val TEN_ROLL_HEADHUNTING_PERMIT_ID = "4005"
+private const val ORUNDUM_PER_DRAW = 600
+private const val TEN_ROLL_DRAW_COUNT = 10
