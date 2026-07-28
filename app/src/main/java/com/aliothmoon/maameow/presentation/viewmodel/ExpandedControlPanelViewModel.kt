@@ -407,6 +407,7 @@ class ExpandedControlPanelViewModel(
             val result = compositionService.start(
                 tasks = plan.params,
                 clientType = plan.clientType,
+                depotAccountTag = plan.depotAccountTag,
                 preflightLogs = plan.preflightLogs,
                 expectDoubleSync = plan.unlockDoubleSync,
             ) {
@@ -514,6 +515,7 @@ class ExpandedControlPanelViewModel(
         val result = compositionService.start(
             tasks = next.params,
             clientType = next.clientType,
+            depotAccountTag = next.depotAccountTag,
             preflightLogs = next.preflightLogs,
             expectDoubleSync = next.unlockDoubleSync,
         ) {

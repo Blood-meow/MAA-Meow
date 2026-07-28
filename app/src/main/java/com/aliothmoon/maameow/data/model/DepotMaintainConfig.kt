@@ -99,7 +99,7 @@ data class DepotMaintainConfig(
             }
 
             // 对齐上游：无库存数据或无该材料记录一律当 0，即按目标数量满量刷
-            val current = ctx.depotRepository.countOf(plan.dropId)
+            val current = ctx.depotRepository.countOf(plan.dropId, ctx.depotAccountTag)
             val need = plan.dropCount - current
             if (need <= 0) {
                 val dropName = ctx.itemHelper.getItemInfo(plan.dropId)?.name ?: plan.dropId

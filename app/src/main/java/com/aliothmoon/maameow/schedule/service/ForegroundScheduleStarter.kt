@@ -180,6 +180,7 @@ class ForegroundScheduleStarter(
                             val result = compositionService.start(
                                 tasks = plan.params,
                                 clientType = plan.clientType,
+                                depotAccountTag = plan.depotAccountTag,
                                 isScheduled = true,
                                 preflightLogs = plan.preflightLogs,
                                 expectDoubleSync = plan.unlockDoubleSync,

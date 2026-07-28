@@ -41,8 +41,8 @@ class AnalyzeTaskChainUseCase(
             )
         }
 
-        // Always split by contiguous same-client runs (Official→Bilibili→Official = 3 segments).
-        // Interleaving is allowed; callers may soft-hint that grouping same clients reduces switches.
+        // Split by contiguous runtime identity (client + WakeUp account tag).
+        // Official(account1) → Official(account2) must be two segments, otherwise inventory shards will mix.
         val partition = partitionByContiguousClient(enabledNodes)
 
         val plans = partition.mapNotNull { segment -> buildPlan(segment) }
@@ -55,14 +55,14 @@ class AnalyzeTaskChainUseCase(
     }
 
     /**
-     * Split enabled nodes into contiguous same-client segments.
+     * Split enabled nodes into contiguous runtime-identity segments.
      *
      * Rules:
-     * - A new segment starts whenever WakeUp switches to a different clientType.
-     * - Interleaving is allowed (Official → Bilibili → Official → 3 segments, run in order).
-     * - Grouping the same client together is only a UX tip (fewer client switches), not a hard gate.
-     * - Nodes without WakeUp inherit the current segment client; leading nodes before any
-     *   WakeUp use [TaskChainState.getClientType] as the initial client.
+     * - A new segment starts whenever WakeUp switches to a different clientType or account switch text.
+     * - Interleaving is allowed (Official/1 → Bilibili/default → Official/1 → 3 segments, run in order).
+     * - Grouping the same client/account together is only a UX tip (fewer switches), not a hard gate.
+     * - Nodes without WakeUp inherit the current segment client/account; leading nodes before any
+     *   WakeUp use [TaskChainState.getClientType] + default account.
      */
     internal fun partitionByContiguousClient(
         enabledNodes: List<TaskChainNode>,
@@ -73,24 +73,36 @@ class AnalyzeTaskChainUseCase(
         val segments = mutableListOf<ClientSegment>()
         var currentNodes = mutableListOf<TaskChainNode>()
         var currentClient: String? = null
+        var currentAccountName = ""
+
+        fun currentTag(client: String): String = depotAccountTag(client, currentAccountName)
 
         fun flush() {
             if (currentNodes.isEmpty()) return
             val client = currentClient ?: fallbackClient
-            segments += ClientSegment(clientType = client, nodes = currentNodes.toList())
+            segments += ClientSegment(
+                clientType = client,
+                depotAccountTag = currentTag(client),
+                nodes = currentNodes.toList(),
+            )
             currentNodes = mutableListOf()
         }
 
         for (node in enabledNodes) {
-            val wakeClient = (node.config as? WakeUpConfig)?.clientType
-                ?.takeIf { it.isNotBlank() }
-            if (wakeClient != null) {
+            val wake = node.config as? WakeUpConfig
+            if (wake != null) {
+                val wakeClient = wake.clientType.takeIf { it.isNotBlank() } ?: currentClient ?: fallbackClient
+                val wakeAccount = wake.accountName.trim()
                 when {
-                    currentClient == null -> currentClient = wakeClient
-                    wakeClient == currentClient -> Unit
+                    currentClient == null -> {
+                        currentClient = wakeClient
+                        currentAccountName = wakeAccount
+                    }
+                    wakeClient == currentClient && wakeAccount == currentAccountName -> Unit
                     else -> {
                         flush()
                         currentClient = wakeClient
+                        currentAccountName = wakeAccount
                     }
                 }
             }
@@ -103,6 +115,7 @@ class AnalyzeTaskChainUseCase(
     private fun buildPlan(segment: ClientSegment): TaskChainPlan? {
         val enabledNodes = segment.nodes
         val clientType = segment.clientType
+        val depotAccountTag = segment.depotAccountTag
         val creditFightAvailability =
             resolveMallCreditFightAvailability(enabledNodes, activityManager)
         val serverDayOfWeek = ServerTimezone.getYjDayOfWeek(clientType)
@@ -111,6 +124,7 @@ class AnalyzeTaskChainUseCase(
 
         val ctx = TaskParamContext(
             clientType = clientType,
+            depotAccountTag = depotAccountTag,
             chainAllowsCreditFight = creditFightAvailability.isAvailable,
             activityManager = activityManager,
             depotRepository = depotRepository,
@@ -152,6 +166,7 @@ class AnalyzeTaskChainUseCase(
             enabledNodes = enabledNodes,
             params = params,
             clientType = clientType,
+            depotAccountTag = depotAccountTag,
             gamePackageName = Packages[clientType],
             launchesGame = enabledNodes
                 .mapNotNull { it.config as? WakeUpConfig }
@@ -160,6 +175,13 @@ class AnalyzeTaskChainUseCase(
             // 双 due 标记：启动成功后 arm，两侧识别成功再解锁（见 ToolboxResultCollector）
             unlockDoubleSync = unlockDoubleSync,
         )
+    }
+
+
+    private fun depotAccountTag(clientType: String, accountName: String): String = buildString {
+        append(clientType)
+        append(':')
+        append(accountName.trim().ifEmpty { "default" })
     }
 
     private fun isSkippedByWeeklySchedule(node: TaskChainNode, serverDayOfWeek: DayOfWeek): Boolean {
@@ -190,6 +212,7 @@ class AnalyzeTaskChainUseCase(
 /** One contiguous same-client slice of an enabled task chain. */
 internal data class ClientSegment(
     val clientType: String,
+    val depotAccountTag: String,
     val nodes: List<TaskChainNode>,
 )
 
@@ -197,6 +220,8 @@ data class TaskChainPlan(
     val enabledNodes: List<TaskChainNode>,
     val params: List<MaaTaskParams>,
     val clientType: String,
+    /** Inventory bucket tag: client + WakeUp account switch text (or default). */
+    val depotAccountTag: String,
     val gamePackageName: String?,
     val launchesGame: Boolean,
     val gameAliveBeforeStart: Boolean? = null,
