@@ -89,6 +89,7 @@ class DepotRepository(
     private val dirty = ConcurrentHashMap.newKeySet<String>()
 
     private val _snapshot = MutableStateFlow(DepotSnapshot())
+    private val initialLoadComplete = MutableStateFlow(false)
 
     /**
      * 当前活跃配置档的仓库快照（内存权威）。
@@ -112,8 +113,14 @@ class DepotRepository(
                 .collect { (profileId, accountTag, prefs) ->
                     latestPrefs = prefs
                     onDiskOrProfileChanged(profileId, accountTag, prefs)
+                    initialLoadComplete.value = true
                 }
         }
+    }
+
+    /** 等待 DataStore 首帧，避免应用冷启动时把已有账号桶误判为空。 */
+    suspend fun awaitInitialLoad() {
+        initialLoadComplete.first { it }
     }
 
     /** 订阅配置档删除事件以清理其分片。 */

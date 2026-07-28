@@ -1,7 +1,11 @@
 package com.aliothmoon.maameow.domain.usecase
 
 import com.aliothmoon.maameow.data.model.TaskChainNode
+import com.aliothmoon.maameow.data.repository.DepotRepository
+import com.aliothmoon.maameow.data.repository.OperBoxRepository
 import com.aliothmoon.maameow.utils.i18n.UiText
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 
 /**
  * 主任务链的启动决策：链分析([AnalyzeTaskChainUseCase]) + 游戏就绪性闸门([CheckGameReadinessUseCase])。
@@ -12,11 +16,21 @@ import com.aliothmoon.maameow.utils.i18n.UiText
 class PrepareTaskStartUseCase(
     private val analyzeTaskChainUseCase: AnalyzeTaskChainUseCase,
     private val checkGameReadiness: CheckGameReadinessUseCase,
+    private val depotRepository: DepotRepository,
+    private val operBoxRepository: OperBoxRepository,
 ) {
     suspend operator fun invoke(
         chain: List<TaskChainNode>,
         context: TaskStartContext,
     ): TaskStartDecision {
+        // 账号分桶查询依赖 DataStore 首帧；冷启动立刻开始时必须先完成 hydrate。
+        coroutineScope {
+            val depotReady = async { depotRepository.awaitInitialLoad() }
+            val operBoxReady = async { operBoxRepository.awaitInitialLoad() }
+            depotReady.await()
+            operBoxReady.await()
+        }
+
         val plans = when (val analyzeResult = analyzeTaskChainUseCase(chain)) {
             is AnalyzeTaskChainResult.Ready -> analyzeResult.plans
             is AnalyzeTaskChainResult.Blocked -> {

@@ -50,7 +50,6 @@ class DepotInventoryViewModel(
                     name = info?.name ?: id,
                     count = count,
                     sortId = info?.sortId ?: Int.MAX_VALUE,
-                    classifyType = info?.classifyType.orEmpty(),
                 )
             }
             .sortedWith(compareBy<DepotInventoryItemUi> { it.sortId }.thenBy { it.id })
@@ -63,5 +62,4 @@ data class DepotInventoryItemUi(
     val name: String,
     val count: Int,
     val sortId: Int,
-    val classifyType: String,
 )
