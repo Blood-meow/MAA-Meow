@@ -12,6 +12,7 @@ import com.aliothmoon.maameow.data.model.LogLevel
 import com.aliothmoon.maameow.data.preferences.AppSettingsManager
 import com.aliothmoon.maameow.data.preferences.TaskChainState
 import com.aliothmoon.maameow.data.repository.DepotRepository
+import com.aliothmoon.maameow.data.repository.OperBoxRepository
 import com.aliothmoon.maameow.data.resource.ActivityManager
 import com.aliothmoon.maameow.domain.models.RemoteBackend
 import com.aliothmoon.maameow.domain.models.RunMode
@@ -60,6 +61,7 @@ class MaaCompositionService(
     private val sessionLogger: MaaSessionLogger,
     private val activityManager: ActivityManager,
     private val depotRepository: DepotRepository,
+    private val operBoxRepository: OperBoxRepository,
     private val appWatchdog: AppWatchdog,
     private val taskChainState: TaskChainState,
     private val subTaskHandler: SubTaskHandler,
@@ -447,6 +449,7 @@ class MaaCompositionService(
 
         val mode = appSettings.runMode.value
         depotRepository.activateAccountTag(depotAccountTag)
+        operBoxRepository.activateAccountTag(depotAccountTag)
         return withContext(Dispatchers.IO) {
             checkPreconditions(mode, isScheduled, clientType)?.let { return@withContext it }
 
