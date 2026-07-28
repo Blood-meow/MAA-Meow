@@ -1,14 +1,11 @@
 package com.aliothmoon.maameow.data.model
 
 import com.aliothmoon.maameow.data.repository.DepotRepository
-import com.aliothmoon.maameow.data.repository.DepotSnapshot
 import com.aliothmoon.maameow.data.repository.OperBoxRepository
-import com.aliothmoon.maameow.data.repository.OperBoxSnapshot
 import com.aliothmoon.maameow.domain.models.UserDataUpdateTriggerInterval
 import com.aliothmoon.maameow.maa.task.MaaTaskType
 import io.mockk.every
 import io.mockk.mockk
-import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -21,10 +18,10 @@ class UserDataUpdateConfigTest {
         depotSync: Long = 0L,
     ): TaskParamContext {
         val operRepo = mockk<OperBoxRepository> {
-            every { snapshot } returns MutableStateFlow(OperBoxSnapshot(syncTimeMillis = operSync))
+            every { syncTimeMillis("Official:test") } returns operSync
         }
         val depotRepo = mockk<DepotRepository> {
-            every { snapshot } returns MutableStateFlow(DepotSnapshot(syncTimeMillis = depotSync))
+            every { syncTimeMillis("Official:test") } returns depotSync
         }
         return testTaskParamContext(
             operBoxRepository = operRepo,
@@ -36,6 +33,15 @@ class UserDataUpdateConfigTest {
     fun bothSwitchesOff_producesNothing() {
         val result = UserDataUpdateConfig(updateOperBox = false, updateDepot = false)
             .toTaskParams(ctx())
+        assertTrue(result.params.isEmpty())
+        assertFalse(result.unlockDoubleSync)
+    }
+
+    @Test
+    fun blankAccountTag_skipsRecognitionTasks() {
+        val result = UserDataUpdateConfig().toTaskParams(
+            ctx().copy(depotAccountTag = "")
+        )
         assertTrue(result.params.isEmpty())
         assertFalse(result.unlockDoubleSync)
     }

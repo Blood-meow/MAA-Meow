@@ -43,6 +43,8 @@ val useCaseModule = module {
         PrepareTaskStartUseCase(
             analyzeTaskChainUseCase = get(),
             checkGameReadiness = get(),
+            depotRepository = get(),
+            operBoxRepository = get(),
         )
     }
 }

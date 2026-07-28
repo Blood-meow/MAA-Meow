@@ -109,7 +109,7 @@ class TaskParamProviderContractTest {
     @Test
     fun fightConfig_inventoryTarget_appendsNeedNotFullTarget() {
         val depot = mockk<com.aliothmoon.maameow.data.repository.DepotRepository> {
-            every { countOf("30011") } returns 90
+            every { countOf("30011", any()) } returns 90
         }
         val config = FightConfig(
             stage1 = "1-7",
@@ -127,7 +127,7 @@ class TaskParamProviderContractTest {
     @Test
     fun fightConfig_inventoryTarget_alreadyEnough_setsTimesZero() {
         val depot = mockk<com.aliothmoon.maameow.data.repository.DepotRepository> {
-            every { countOf("30011") } returns 100
+            every { countOf("30011", any()) } returns 100
         }
         val config = FightConfig(
             stage1 = "1-7",

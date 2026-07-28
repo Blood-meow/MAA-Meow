@@ -38,6 +38,8 @@ class PrepareTaskStartUseCaseTest {
 
     private fun useCase(aliveStatus: Int) = PrepareTaskStartUseCase(
         analyzeTaskChainUseCase = analyzeTaskChainUseCase,
+        depotRepository = mockk(relaxed = true),
+        operBoxRepository = mockk(relaxed = true),
         checkGameReadiness = CheckGameReadinessUseCase(
             appAliveChecker = FakeAppAliveChecker(aliveStatus),
             appSettings = mockk<AppSettingsManager> {

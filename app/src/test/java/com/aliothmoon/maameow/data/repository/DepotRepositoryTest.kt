@@ -26,6 +26,7 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import java.util.Base64
 
 /**
  * 用内存 [FakePreferencesDataStore] 而非 `PreferenceDataStoreFactory`：
@@ -44,6 +45,7 @@ class DepotRepositoryTest {
     fun setUp() {
         store = FakePreferencesDataStore()
         repository = DepotRepository(store, fakeChainState())
+        repository.activateAccountTag(ACCOUNT_A)
     }
 
     private fun fakeChainState(): TaskChainState = mockk {
@@ -53,12 +55,18 @@ class DepotRepositoryTest {
     }
 
     /** 直接读存储解码，用于断言「写入已发生」这类确定性事实。 */
-    private suspend fun storedSnapshot(profileId: String = PROFILE_A): DepotSnapshot =
-        rawShardOf(profileId)?.let { JsonUtils.common.decodeFromString<DepotSnapshot>(it) }
+    private suspend fun storedSnapshot(
+        profileId: String = PROFILE_A,
+        accountTag: String = ACCOUNT_A,
+    ): DepotSnapshot {
+        repository.awaitInitialLoad()
+        return rawShardOf(profileId, accountTag)
+            ?.let { JsonUtils.common.decodeFromString<DepotSnapshot>(it) }
             ?: DepotSnapshot()
+    }
 
-    private suspend fun rawShardOf(profileId: String): String? =
-        store.data.first()[stringPreferencesKey("depot_$profileId")]
+    private suspend fun rawShardOf(profileId: String, accountTag: String = ACCOUNT_A): String? =
+        store.data.first()[stringPreferencesKey("depot_${profileId}_${encodeTag(accountTag)}")]
 
     /**
      * 等待 StateFlow 传播，仅用于断言「快照跟随变化」。谓词必须描述终态 ——
@@ -262,10 +270,35 @@ class DepotRepositoryTest {
         repository.replaceAll(listOf(DepotItem("30011", 100)))
         awaitSnapshot { it.items.containsKey("30011") }
 
-        store.edit { it[stringPreferencesKey("depot_$PROFILE_A")] = "{ this is not json" }
+        store.edit {
+            it[stringPreferencesKey("depot_${PROFILE_A}_${encodeTag(ACCOUNT_A)}")] = "{ this is not json"
+        }
 
         // 由非空变为空，证明 decode 的失败回退分支确实被执行
         assertEquals(emptyMap<String, Int>(), awaitSnapshot { it.items.isEmpty() }.items)
+    }
+
+    @Test
+    fun blankAccountTag_skipsWrite() = runBlocking {
+        repository.activateAccountTag("")
+
+        repository.replaceAll(listOf(DepotItem("30011", 100)))
+
+        assertNull(rawShardOf(PROFILE_A))
+        assertEquals(0, repository.countOf("30011"))
+    }
+
+    @Test
+    fun accountsAreStoredInSeparateShards() = runBlocking {
+        repository.replaceAll(listOf(DepotItem("30011", 100)))
+
+        repository.activateAccountTag(ACCOUNT_B)
+        repository.replaceAll(listOf(DepotItem("30012", 7)))
+
+        assertEquals(mapOf("30011" to 100), storedSnapshot(accountTag = ACCOUNT_A).items)
+        assertEquals(mapOf("30012" to 7), storedSnapshot(accountTag = ACCOUNT_B).items)
+        assertEquals(100, repository.countOf("30011", ACCOUNT_A))
+        assertEquals(7, repository.countOf("30012", ACCOUNT_B))
     }
 
     @Test
@@ -280,7 +313,13 @@ class DepotRepositoryTest {
     private companion object {
         const val PROFILE_A = "profile-a"
         const val PROFILE_B = "profile-b"
+        const val ACCOUNT_A = "Official:1"
+        const val ACCOUNT_B = "Official:2"
         const val AWAIT_TIMEOUT_MS = 5_000L
+
+        fun encodeTag(tag: String): String = Base64.getUrlEncoder()
+            .withoutPadding()
+            .encodeToString(tag.toByteArray(Charsets.UTF_8))
     }
 }
 

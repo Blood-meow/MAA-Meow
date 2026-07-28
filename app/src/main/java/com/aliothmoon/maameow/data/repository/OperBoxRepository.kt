@@ -61,6 +61,7 @@ class OperBoxRepository(
     private val shards = ConcurrentHashMap<String, OperBoxSnapshot>()
     private val activeAccountTag = MutableStateFlow<String?>(null)
     private val _snapshot = MutableStateFlow(OperBoxSnapshot())
+    private val initialLoadComplete = MutableStateFlow(false)
     val snapshot: StateFlow<OperBoxSnapshot> = _snapshot.asStateFlow()
 
     init {
@@ -79,8 +80,14 @@ class OperBoxRepository(
                 .collect { (profileId, accountTag, prefs) ->
                     latestPrefs = prefs
                     onDiskOrProfileChanged(profileId, accountTag, prefs)
+                    initialLoadComplete.value = true
                 }
         }
+    }
+
+    /** 等待 DataStore 首帧，避免应用冷启动时把已有账号桶误判为从未识别。 */
+    suspend fun awaitInitialLoad() {
+        initialLoadComplete.first { it }
     }
 
     fun start() {
