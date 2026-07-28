@@ -113,7 +113,7 @@
     <string name="depot_inventory_detail_title">Inventory Details</string>
     <string name="depot_inventory_empty_accounts">No account inventory data yet. Fill the account switch value in Wake Up and run data update once.</string>
     <string name="depot_inventory_empty_items">No inventory details for this account</string>
-    <string name="depot_inventory_account_summary">%1$d item types, %2$d total</string>
+    <string name="depot_inventory_available_draws">%1$d pulls available</string>
     <string name="depot_inventory_sync_time">Updated: %1$s</string>
     <string name="settings_export_config_title">Export Configuration</string>
     <string name="settings_export_config_desc">Export all settings and task configurations to a file</string>
