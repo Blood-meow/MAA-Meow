@@ -26,10 +26,11 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.Serializable
 import timber.log.Timber
 import java.io.IOException
+import java.util.Base64
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * 单个配置档的仓库快照。
+ * 单个库存分桶的仓库快照。
  *
  * @param items itemId -> 数量
  * @param syncTimeMillis 上次「完整仓库识别」的时间戳；0 表示从未识别过。
@@ -42,7 +43,7 @@ data class DepotSnapshot(
 )
 
 /**
- * 仓库数据：按配置档分片持久化，运行时以**内存快照**为权威读取源。
+ * 仓库数据：按「用户配置档 + 游戏账号标签」分片持久化，运行时以**内存快照**为权威读取源。
  *
  * ## 为何内存写穿
  *
@@ -55,7 +56,7 @@ data class DepotSnapshot(
  *   **再**串行异步落盘；[countOf] / [snapshot] 只读内存。
  * - 不在 MaaCore 回调线程 `runBlocking` 等 DataStore。
  * - 某档在 [dirty] 中时忽略来自磁盘的同档覆盖，避免慢落盘写回冲掉更新的内存。
- * - 切配置档时从磁盘（或已有内存分片）hydrate。
+ * - 切配置档/账号标签时从磁盘（或已有内存分片）hydrate。
  */
 class DepotRepository(
     private val store: DataStore<Preferences>,
@@ -66,8 +67,15 @@ class DepotRepository(
     private val memoryLock = Any()
     private val persistMutex = Mutex()
 
-    /** profileId → 最新已知快照（含尚未落盘的变更） */
+    /** 最近一次 DataStore 快照；分析未来账号分桶时用于懒加载未激活过的 shard。 */
+    @Volatile
+    private var latestPrefs: Preferences = emptyPreferences()
+
+    /** shardKey(profileId, accountTag) → 最新已知快照（含尚未落盘的变更） */
     private val shards = ConcurrentHashMap<String, DepotSnapshot>()
+
+    /** 当前激活账号库存标签；由任务段 WakeUp.accountName 驱动，空/未配置为默认桶。 */
+    private val activeAccountTag = MutableStateFlow(DEFAULT_ACCOUNT_TAG)
 
     /** 有未确认落盘的分片；落盘成功且内存未再变时清除 */
     private val dirty = ConcurrentHashMap.newKeySet<String>()
@@ -82,19 +90,20 @@ class DepotRepository(
 
     init {
         scope.launch {
-            combine(taskChainState.activeProfileId, store.data) { profileId, prefs ->
-                profileId to prefs
+            combine(taskChainState.activeProfileId, activeAccountTag, store.data) { profileId, accountTag, prefs ->
+                Triple(profileId, accountTag, prefs)
             }
                 .catch { e ->
                     if (e is IOException) {
                         Timber.e(e, "读取仓库数据失败")
-                        emit("" to emptyPreferences())
+                        emit(Triple("", DEFAULT_ACCOUNT_TAG, emptyPreferences()))
                     } else {
                         throw e
                     }
                 }
-                .collect { (profileId, prefs) ->
-                    onDiskOrProfileChanged(profileId, prefs)
+                .collect { (profileId, accountTag, prefs) ->
+                    latestPrefs = prefs
+                    onDiskOrProfileChanged(profileId, accountTag, prefs)
                 }
         }
     }
@@ -104,6 +113,11 @@ class DepotRepository(
         scope.launch {
             taskChainState.profileDeleted.collect { dropProfile(it) }
         }
+    }
+
+    /** 切换当前库存分桶。空白账号走默认桶；同 profile 下不同账号库存互不污染。 */
+    fun activateAccountTag(accountTag: String?) {
+        activeAccountTag.value = normalizeAccountTag(accountTag)
     }
 
     /**
@@ -150,39 +164,63 @@ class DepotRepository(
     /** 当前库存数量；无快照或无该材料一律返回 0（对齐上游语义）。读内存，不读未传播的磁盘。 */
     fun countOf(itemId: String): Int = snapshot.value.items[itemId] ?: 0
 
+    /** 指定账号标签下的库存数量；用于任务分析阶段按即将启动的账号分桶计算缺口。 */
+    fun countOf(itemId: String, accountTag: String?): Int {
+        val profileId = taskChainState.activeProfileId.value
+        if (profileId.isEmpty()) return 0
+        val tag = normalizeAccountTag(accountTag)
+        val key = shardKey(profileId, tag)
+        return synchronized(memoryLock) {
+            val cached = shards[key]
+            if (cached != null) {
+                cached.items[itemId] ?: 0
+            } else {
+                val diskSnap = decode(latestPrefs[keyOf(key)] ?: legacyRawIfDefault(profileId, tag, latestPrefs))
+                shards[key] = diskSnap
+                diskSnap.items[itemId] ?: 0
+            }
+        }
+    }
+
     /** 配置档被删除时清理其分片（内存 + 磁盘）。 */
     suspend fun dropProfile(profileId: String) {
         if (profileId.isEmpty()) return
         synchronized(memoryLock) {
-            shards.remove(profileId)
-            dirty.remove(profileId)
+            val prefix = shardKeyPrefix(profileId)
+            shards.keys.removeIf { it.startsWith(prefix) }
+            dirty.removeIf { it.startsWith(prefix) }
             if (taskChainState.activeProfileId.value == profileId) {
                 _snapshot.value = DepotSnapshot()
             }
         }
         try {
-            store.edit { it.remove(keyOf(profileId)) }
+            store.edit { prefs ->
+                prefs.asMap().keys
+                    .filter { it.name.startsWith("depot_${profileId}_") || it.name == "depot_$profileId" }
+                    .forEach { prefs.remove(it) }
+            }
         } catch (e: IOException) {
             Timber.w(e, "删除仓库分片失败: %s", profileId)
         }
     }
 
-    private fun onDiskOrProfileChanged(profileId: String, prefs: Preferences) {
+    private fun onDiskOrProfileChanged(profileId: String, accountTag: String, prefs: Preferences) {
         if (profileId.isEmpty()) {
             synchronized(memoryLock) {
                 _snapshot.value = DepotSnapshot()
             }
             return
         }
-        val diskSnap = decode(prefs[keyOf(profileId)])
+        val key = shardKey(profileId, accountTag)
+        val diskSnap = decode(prefs[keyOf(key)] ?: legacyRawIfDefault(profileId, accountTag, prefs))
         synchronized(memoryLock) {
-            if (profileId in dirty) {
+            if (key in dirty) {
                 // 本地更新尚未落盘确认：内存优先，只保证对外 snapshot 指向内存分片
-                _snapshot.value = shards[profileId] ?: DepotSnapshot()
+                _snapshot.value = shards[key] ?: DepotSnapshot()
                 return
             }
-            shards[profileId] = diskSnap
-            if (taskChainState.activeProfileId.value == profileId) {
+            shards[key] = diskSnap
+            if (taskChainState.activeProfileId.value == profileId && activeAccountTag.value == accountTag) {
                 _snapshot.value = diskSnap
             }
         }
@@ -194,47 +232,50 @@ class DepotRepository(
             Timber.w("活跃配置档为空，跳过仓库写入")
             return
         }
+        val accountTag = activeAccountTag.value
+        val key = shardKey(profileId, accountTag)
         val next: DepotSnapshot
         synchronized(memoryLock) {
-            val current = shards[profileId] ?: DepotSnapshot()
+            val current = shards[key] ?: DepotSnapshot()
             next = transform(current)
-            shards[profileId] = next
-            dirty.add(profileId)
+            shards[key] = next
+            dirty.add(key)
             _snapshot.value = next
         }
-        scope.launch { persistProfile(profileId) }
+        scope.launch { persistShard(key) }
     }
 
     private suspend fun awaitPersistForActive() {
         taskChainState.isLoaded.first { it }
         val profileId = taskChainState.activeProfileId.value
         if (profileId.isEmpty()) return
+        val key = shardKey(profileId, activeAccountTag.value)
         // 有限次推进落盘；IO 失败时保留 dirty/内存，避免死等
         repeat(8) {
-            if (profileId !in dirty) return
-            persistProfile(profileId)
+            if (key !in dirty) return
+            persistShard(key)
         }
     }
 
-    private suspend fun persistProfile(profileId: String) {
+    private suspend fun persistShard(key: String) {
         persistMutex.withLock {
-            while (profileId in dirty) {
-                val snap = synchronized(memoryLock) { shards[profileId] } ?: run {
-                    dirty.remove(profileId)
+            while (key in dirty) {
+                val snap = synchronized(memoryLock) { shards[key] } ?: run {
+                    dirty.remove(key)
                     return@withLock
                 }
                 try {
                     store.edit { prefs ->
-                        prefs[keyOf(profileId)] = json.encodeToString(snap)
+                        prefs[keyOf(key)] = json.encodeToString(snap)
                     }
                     synchronized(memoryLock) {
                         // 落盘期间若内存又变了，保持 dirty 再写一轮
-                        if (shards[profileId] == snap) {
-                            dirty.remove(profileId)
+                        if (shards[key] == snap) {
+                            dirty.remove(key)
                         }
                     }
                 } catch (e: IOException) {
-                    Timber.e(e, "写入仓库分片失败: %s", profileId)
+                    Timber.e(e, "写入仓库分片失败: %s", key)
                     // 保留 dirty，避免误从磁盘 hydrate 冲掉内存；下次写入再试
                     return@withLock
                 }
@@ -264,7 +305,28 @@ class DepotRepository(
         fun create(context: Context, taskChainState: TaskChainState) =
             DepotRepository(context.depotStore, taskChainState)
 
-        private fun keyOf(profileId: String) = stringPreferencesKey("depot_$profileId")
+        const val DEFAULT_ACCOUNT_TAG = "default"
+
+        fun normalizeAccountTag(accountTag: String?): String =
+            accountTag?.trim()?.takeIf { it.isNotEmpty() } ?: DEFAULT_ACCOUNT_TAG
+
+        fun shardKey(profileId: String, accountTag: String): String =
+            "${profileId}_${encodeTag(accountTag)}"
+
+        private fun shardKeyPrefix(profileId: String) = "${profileId}_"
+
+        private fun keyOf(shardKey: String) = stringPreferencesKey("depot_$shardKey")
+
+        private fun legacyRawIfDefault(profileId: String, accountTag: String, prefs: Preferences): String? =
+            if (accountTag == DEFAULT_ACCOUNT_TAG || accountTag.endsWith(":$DEFAULT_ACCOUNT_TAG")) {
+                prefs[stringPreferencesKey("depot_$profileId")]
+            } else {
+                null
+            }
+
+        private fun encodeTag(tag: String): String = Base64.getUrlEncoder()
+            .withoutPadding()
+            .encodeToString(tag.toByteArray(Charsets.UTF_8))
 
         /**
          * 掉落累加排除集，对齐上游 ToolboxViewModel.ExcludedItemIds。
