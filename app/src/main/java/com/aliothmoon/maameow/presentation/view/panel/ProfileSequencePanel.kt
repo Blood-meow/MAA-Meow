@@ -1,6 +1,7 @@
 package com.aliothmoon.maameow.presentation.view.panel
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,6 +30,7 @@ import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.DropdownMenuItemDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
@@ -39,6 +41,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -46,7 +49,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
@@ -54,14 +56,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import androidx.compose.ui.window.DialogWindowProvider
 import com.aliothmoon.maameow.R
 import com.aliothmoon.maameow.data.model.ProfileSequenceEntry
 import com.aliothmoon.maameow.data.model.TaskProfile
@@ -159,12 +161,26 @@ fun ProfileSequencePanel(
                         .menuAnchor(MenuAnchorType.PrimaryNotEditable)
                         .fillMaxWidth(),
                     textStyle = MaterialTheme.typography.bodyMedium,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                        focusedBorderColor = Color.Transparent,
+                        unfocusedBorderColor = Color.Transparent,
+                        disabledBorderColor = Color.Transparent,
+                        errorBorderColor = Color.Transparent,
+                    ),
+                    shape = RoundedCornerShape(4.dp),
                 )
                 ExposedDropdownMenu(
                     expanded = configMenuExpanded,
-                    onDismissRequest = { configMenuExpanded = false }
+                    onDismissRequest = { configMenuExpanded = false },
+                    shape = RoundedCornerShape(4.dp),
+                    containerColor = overlayBoardColor(),
+                    tonalElevation = 0.dp,
+                    shadowElevation = 6.dp,
                 ) {
                     sequenceConfigs.forEach { config ->
+                        val selected = config.id == activeSequenceConfigId
                         DropdownMenuItem(
                             text = {
                                 Text(
@@ -176,7 +192,18 @@ fun ProfileSequencePanel(
                             onClick = {
                                 onSwitchSequenceConfig(config.id)
                                 configMenuExpanded = false
-                            }
+                            },
+                            modifier = Modifier
+                                .padding(horizontal = 8.dp, vertical = 2.dp)
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(
+                                    if (selected) MaterialTheme.colorScheme.primary
+                                    else MaterialTheme.colorScheme.surfaceContainerLowest
+                                ),
+                            colors = DropdownMenuItemDefaults.colors(
+                                textColor = if (selected) MaterialTheme.colorScheme.onPrimary
+                                else MaterialTheme.colorScheme.onSurface,
+                            ),
                         )
                     }
                     HorizontalDivider()
@@ -487,13 +514,6 @@ fun ProfileSequencePickerDialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
-        // Dialog 默认窗口暗幕会让同一张半透明卡片显得比「快捷操作」更糊、更暗。
-        // 清零系统 dim，只保留 overlayBoardColor() 自身的 0.96 透明度，视觉语义保持一致。
-        val dialogWindow = (LocalView.current.parent as? DialogWindowProvider)?.window
-        SideEffect {
-            dialogWindow?.setDimAmount(0f)
-        }
-
         Surface(
             shape = RoundedCornerShape(12.dp),
             // 二级浮层：与「快捷操作」卡片同色同透明度
