@@ -20,9 +20,9 @@ data class ScheduledExecutionRequest(
 ) {
     companion object {
         const val ACTION_SHOW_SCHEDULE_EXECUTION =
-            "com.aliothmoon.maameow.action.SHOW_SCHEDULE_EXECUTION"
+            "com.maa.maameow.action.SHOW_SCHEDULE_EXECUTION"
         const val ACTION_LAUNCH_PROFILE =
-            "com.aliothmoon.maameow.action.LAUNCH_PROFILE"
+            "com.maa.maameow.action.LAUNCH_PROFILE"
         const val EXTRA_REQUEST_ID = "extra_request_id"
         const val EXTRA_STRATEGY_ID = "extra_strategy_id"
         const val EXTRA_STRATEGY_NAME = "extra_strategy_name"

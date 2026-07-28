@@ -17,7 +17,7 @@ import java.time.ZoneId
 class ScheduleAlarmManager(private val context: Context) {
 
     companion object {
-        const val ACTION_SCHEDULE_TRIGGER = "com.aliothmoon.maameow.SCHEDULE_TRIGGER"
+        const val ACTION_SCHEDULE_TRIGGER = "com.maa.maameow.SCHEDULE_TRIGGER"
         const val EXTRA_STRATEGY_ID = "strategy_id"
         const val EXTRA_SCHEDULED_TIME = "scheduled_time"
     }
