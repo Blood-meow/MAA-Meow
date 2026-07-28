@@ -4,6 +4,7 @@ import com.aliothmoon.maameow.presentation.viewmodel.AchievementViewModel
 import com.aliothmoon.maameow.presentation.viewmodel.AppEventsViewModel
 import com.aliothmoon.maameow.presentation.viewmodel.BackgroundTaskViewModel
 import com.aliothmoon.maameow.presentation.viewmodel.CopilotViewModel
+import com.aliothmoon.maameow.presentation.viewmodel.DepotInventoryViewModel
 import com.aliothmoon.maameow.presentation.viewmodel.ErrorLogViewModel
 import com.aliothmoon.maameow.presentation.viewmodel.ExpandedControlPanelViewModel
 import com.aliothmoon.maameow.presentation.viewmodel.HomeViewModel
@@ -30,6 +31,7 @@ val viewModelModule = module {
     viewModelOf(::LogHistoryViewModel)
     viewModelOf(::ErrorLogViewModel)
     viewModelOf(::BackgroundTaskViewModel)
+    viewModelOf(::DepotInventoryViewModel)
     viewModelOf(::ScheduleListViewModel)
     viewModelOf(::ScheduleEditViewModel)
     viewModelOf(::ScheduleTriggerLogViewModel)

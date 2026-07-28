@@ -307,6 +307,14 @@
 
     <!-- settings: data section -->
     <string name="settings_section_data">数据管理</string>
+    <string name="settings_depot_inventory_title">库存数据</string>
+    <string name="settings_depot_inventory_desc">查看各个账号的仓库库存</string>
+    <string name="depot_inventory_title">库存数据</string>
+    <string name="depot_inventory_detail_title">库存明细</string>
+    <string name="depot_inventory_empty_accounts">暂无账号库存数据。请在“开始唤醒”的账号切换中填写账号数字/文本，并执行一次更新数据。</string>
+    <string name="depot_inventory_empty_items">该账号暂无库存明细</string>
+    <string name="depot_inventory_account_summary">%1$d 种物品，共 %2$d 个</string>
+    <string name="depot_inventory_sync_time">更新时间：%1$s</string>
     <string name="settings_export_config_title">导出配置</string>
     <string name="settings_export_config_desc">将所有设置和任务配置导出为文件</string>
     <string name="settings_import_config_title">导入配置</string>

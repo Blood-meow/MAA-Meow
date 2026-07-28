@@ -39,7 +39,7 @@ import com.aliothmoon.maameow.data.resource.ResourceDataManager
  *
  * @param clientType 客户端类型（Official / Bilibili / YoStarEN / …）。
  *   填错会静默产生错误参数（旧代码硬编码 "Official" 正是此坑），由编译器强制显式提供。
- * @param depotAccountTag 仓库库存分桶标签：由当前段 WakeUp 的账号切换文本归一化而来；空/未配置走默认桶。
+ * @param depotAccountTag 仓库库存分桶标签：由当前段 WakeUp 的账号切换文本归一化而来；空/未配置表示不读取库存。
  * @param chainAllowsCreditFight 整条任务链是否允许信用作战借助战打 OF-1。
  *   仅表示「链级前提成立」，是否真的下发还要与各 MallConfig 自身的开关取与。
  * @param activityManager 关卡开放判定、活动开放状态、活动临期理智药天数。
