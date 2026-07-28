@@ -9,15 +9,12 @@ import com.aliothmoon.maameow.data.model.UserDataUpdateConfig
 import com.aliothmoon.maameow.data.model.WakeUpConfig
 import com.aliothmoon.maameow.data.preferences.TaskChainState
 import com.aliothmoon.maameow.data.repository.DepotRepository
-import com.aliothmoon.maameow.data.repository.DepotSnapshot
 import com.aliothmoon.maameow.data.repository.OperBoxRepository
-import com.aliothmoon.maameow.data.repository.OperBoxSnapshot
 import com.aliothmoon.maameow.data.resource.CharacterInfo
 import com.aliothmoon.maameow.data.resource.ResourceDataManager
 import com.aliothmoon.maameow.maa.task.MaaTaskType
 import io.mockk.every
 import io.mockk.mockk
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -32,12 +29,8 @@ class AnalyzeTaskChainUseCaseTest {
         every { getClientType() } returns "Official"
     }
     private val resourceDataManager = mockk<ResourceDataManager>(relaxed = true)
-    private val operBoxRepository = mockk<OperBoxRepository>(relaxed = true) {
-        every { snapshot } returns MutableStateFlow(OperBoxSnapshot())
-    }
-    private val depotRepository = mockk<DepotRepository>(relaxed = true) {
-        every { snapshot } returns MutableStateFlow(DepotSnapshot())
-    }
+    private val operBoxRepository = mockk<OperBoxRepository>(relaxed = true)
+    private val depotRepository = mockk<DepotRepository>(relaxed = true)
     private val useCase = AnalyzeTaskChainUseCase(
         taskChainState = taskChainState,
         resourceDataManager = resourceDataManager,
@@ -100,6 +93,31 @@ class AnalyzeTaskChainUseCaseTest {
         assertEquals(2, ready.plans[1].params.size)
         assertEquals(Packages["Official"], ready.plans[0].gamePackageName)
         assertEquals(Packages["Bilibili"], ready.plans[1].gamePackageName)
+    }
+
+    @Test
+    fun returnsReady_withTwoPlans_whenSameClientSwitchesAccount() {
+        val result = useCase(
+            listOf(
+                TaskChainNode(
+                    name = "账号1",
+                    order = 1,
+                    enabled = true,
+                    config = WakeUpConfig(clientType = "Official", accountName = "1"),
+                ),
+                TaskChainNode(
+                    name = "账号2",
+                    order = 2,
+                    enabled = true,
+                    config = WakeUpConfig(clientType = "Official", accountName = "2"),
+                ),
+            )
+        )
+
+        val ready = result as AnalyzeTaskChainResult.Ready
+        assertEquals(2, ready.plans.size)
+        assertEquals("Official:1", ready.plans[0].depotAccountTag)
+        assertEquals("Official:2", ready.plans[1].depotAccountTag)
     }
 
     @Test
@@ -248,7 +266,14 @@ class AnalyzeTaskChainUseCaseTest {
         val result = useCase(
             listOf(
                 TaskChainNode(
+                    name = "开始唤醒",
+                    order = 0,
+                    enabled = true,
+                    config = WakeUpConfig(clientType = "Official", accountName = "1"),
+                ),
+                TaskChainNode(
                     name = "更新数据",
+                    order = 1,
                     enabled = true,
                     config = UserDataUpdateConfig(),
                 )
@@ -258,22 +283,24 @@ class AnalyzeTaskChainUseCaseTest {
         val ready = result as AnalyzeTaskChainResult.Ready
         assertEquals(
             listOf(MaaTaskType.OPER_BOX, MaaTaskType.DEPOT),
-            ready.plan.params.map { it.type },
+            ready.plan.params.map { it.type }.filter { it == MaaTaskType.OPER_BOX || it == MaaTaskType.DEPOT },
         )
         assertTrue(ready.plan.unlockDoubleSync)
     }
 
     @Test
     fun userDataUpdate_onlyOneSideDue_doesNotSetUnlockDoubleSync() {
-        every { operBoxRepository.snapshot } returns MutableStateFlow(
-            OperBoxSnapshot(syncTimeMillis = System.currentTimeMillis()),
-        )
-        every { depotRepository.snapshot } returns MutableStateFlow(DepotSnapshot())
-
         val result = useCase(
             listOf(
                 TaskChainNode(
+                    name = "开始唤醒",
+                    order = 0,
+                    enabled = true,
+                    config = WakeUpConfig(clientType = "Official", accountName = "1"),
+                ),
+                TaskChainNode(
                     name = "更新数据",
+                    order = 1,
                     enabled = true,
                     // 干员刚同步过但间隔为每次 → 两侧仍都 due；改用仅开仓库验证单侧
                     config = UserDataUpdateConfig(updateOperBox = false, updateDepot = true),
@@ -282,7 +309,10 @@ class AnalyzeTaskChainUseCaseTest {
         )
 
         val ready = result as AnalyzeTaskChainResult.Ready
-        assertEquals(listOf(MaaTaskType.DEPOT), ready.plan.params.map { it.type })
+        assertEquals(
+            listOf(MaaTaskType.DEPOT),
+            ready.plan.params.map { it.type }.filter { it == MaaTaskType.OPER_BOX || it == MaaTaskType.DEPOT },
+        )
         assertFalse(ready.plan.unlockDoubleSync)
     }
 }

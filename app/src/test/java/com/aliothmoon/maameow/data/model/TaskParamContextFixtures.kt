@@ -16,6 +16,7 @@ import io.mockk.mockk
  */
 fun testTaskParamContext(
     clientType: String = "Official",
+    depotAccountTag: String = "Official:test",
     chainAllowsCreditFight: Boolean = false,
     activityManager: ActivityManager = mockk(relaxed = true),
     depotRepository: DepotRepository = mockk(relaxed = true),
@@ -24,6 +25,7 @@ fun testTaskParamContext(
     resourceDataManager: ResourceDataManager = mockk(relaxed = true),
 ): TaskParamContext = TaskParamContext(
     clientType = clientType,
+    depotAccountTag = depotAccountTag,
     chainAllowsCreditFight = chainAllowsCreditFight,
     activityManager = activityManager,
     depotRepository = depotRepository,

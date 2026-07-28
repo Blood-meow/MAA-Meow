@@ -23,7 +23,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,7 +50,6 @@ fun DepotInventoryView(
     val accounts by viewModel.accounts.collectAsStateWithLifecycle()
     val selectedAccountTag by viewModel.selectedAccountTag.collectAsStateWithLifecycle()
 
-    LaunchedEffect(Unit) { viewModel.refresh() }
     BackHandler(enabled = selectedAccountTag != null) { viewModel.clearSelection() }
 
     if (selectedAccountTag == null) {

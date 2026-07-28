@@ -62,7 +62,7 @@ class AnalyzeTaskChainUseCase(
      * - Interleaving is allowed (Official/1 → Bilibili/default → Official/1 → 3 segments, run in order).
      * - Grouping the same client/account together is only a UX tip (fewer switches), not a hard gate.
      * - Nodes without WakeUp inherit the current segment client/account; leading nodes before any
-     *   WakeUp use [TaskChainState.getClientType] + default account.
+     *   WakeUp use [TaskChainState.getClientType] with a blank account tag (no user-data binding).
      */
     internal fun partitionByContiguousClient(
         enabledNodes: List<TaskChainNode>,

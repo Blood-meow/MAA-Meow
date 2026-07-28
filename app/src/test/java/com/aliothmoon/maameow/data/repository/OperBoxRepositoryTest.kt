@@ -25,6 +25,7 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import java.util.Base64
 
 /**
  * 内存 DataStore 单测，与 [DepotRepositoryTest] 对称。
@@ -41,6 +42,7 @@ class OperBoxRepositoryTest {
     fun setUp() {
         store = FakeOperBoxPreferencesDataStore()
         repository = OperBoxRepository(store, fakeChainState())
+        repository.activateAccountTag(ACCOUNT_A)
     }
 
     private fun fakeChainState(): TaskChainState = mockk {
@@ -49,12 +51,18 @@ class OperBoxRepositoryTest {
         every { this@mockk.profileDeleted } returns this@OperBoxRepositoryTest.profileDeleted
     }
 
-    private suspend fun storedSnapshot(profileId: String = PROFILE_A): OperBoxSnapshot =
-        rawShardOf(profileId)?.let { JsonUtils.common.decodeFromString<OperBoxSnapshot>(it) }
+    private suspend fun storedSnapshot(
+        profileId: String = PROFILE_A,
+        accountTag: String = ACCOUNT_A,
+    ): OperBoxSnapshot {
+        repository.awaitInitialLoad()
+        return rawShardOf(profileId, accountTag)
+            ?.let { JsonUtils.common.decodeFromString<OperBoxSnapshot>(it) }
             ?: OperBoxSnapshot()
+    }
 
-    private suspend fun rawShardOf(profileId: String): String? =
-        store.data.first()[stringPreferencesKey("operbox_$profileId")]
+    private suspend fun rawShardOf(profileId: String, accountTag: String = ACCOUNT_A): String? =
+        store.data.first()[stringPreferencesKey("operbox_${profileId}_${encodeTag(accountTag)}")]
 
     private suspend fun awaitSnapshot(predicate: (OperBoxSnapshot) -> Boolean): OperBoxSnapshot =
         withTimeout(AWAIT_TIMEOUT_MS) { repository.snapshot.first(predicate) }
@@ -152,9 +160,34 @@ class OperBoxRepositoryTest {
         repository.replaceAll(sampleOwned(), emptyList())
         awaitSnapshot { it.owned.isNotEmpty() }
 
-        store.edit { it[stringPreferencesKey("operbox_$PROFILE_A")] = "{ this is not json" }
+        store.edit {
+            it[stringPreferencesKey("operbox_${PROFILE_A}_${encodeTag(ACCOUNT_A)}")] = "{ this is not json"
+        }
 
         assertTrue(awaitSnapshot { it.owned.isEmpty() && !it.hasSynced }.owned.isEmpty())
+    }
+
+    @Test
+    fun blankAccountTag_skipsWrite() = runBlocking {
+        repository.activateAccountTag("")
+
+        repository.replaceAll(sampleOwned(), emptyList())
+
+        assertNull(rawShardOf(PROFILE_A))
+        assertFalse(repository.snapshot.value.hasSynced)
+    }
+
+    @Test
+    fun accountsAreStoredInSeparateShards() = runBlocking {
+        repository.replaceAll(sampleOwned(), emptyList())
+
+        repository.activateAccountTag(ACCOUNT_B)
+        repository.replaceAll(sampleNotOwned().map { it.copy(own = true) }, emptyList())
+
+        assertEquals("char_002_amiya", storedSnapshot(accountTag = ACCOUNT_A).owned.single().id)
+        assertEquals("char_1001_amiya2", storedSnapshot(accountTag = ACCOUNT_B).owned.single().id)
+        assertTrue(repository.syncTimeMillis(ACCOUNT_A) > 0L)
+        assertTrue(repository.syncTimeMillis(ACCOUNT_B) > 0L)
     }
 
     @Test
@@ -169,7 +202,13 @@ class OperBoxRepositoryTest {
     private companion object {
         const val PROFILE_A = "profile-a"
         const val PROFILE_B = "profile-b"
+        const val ACCOUNT_A = "Official:1"
+        const val ACCOUNT_B = "Official:2"
         const val AWAIT_TIMEOUT_MS = 5_000L
+
+        fun encodeTag(tag: String): String = Base64.getUrlEncoder()
+            .withoutPadding()
+            .encodeToString(tag.toByteArray(Charsets.UTF_8))
     }
 }
 
