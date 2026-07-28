@@ -129,11 +129,34 @@ class DepotRepository(
             taskChainState.profileDeleted.collect { dropProfile(it) }
         }
     }
-
     /** 切换当前库存分桶。空白账号不绑定库存；同 profile 下不同账号库存互不污染。 */
     fun activateAccountTag(accountTag: String?) {
         activeAccountTag.value = normalizeAccountTagOrNull(accountTag)
     }
+
+    /** 启动任务前同步绑定并 hydrate 目标账号，避免回调先于 Flow 收集器写入空快照。 */
+    suspend fun activateAccountTagAndAwait(accountTag: String?) {
+        awaitInitialLoad()
+        val prefs = store.data.first().also { latestPrefs = it }
+        val tag = normalizeAccountTagOrNull(accountTag)
+        activeAccountTag.value = tag
+        val profileId = taskChainState.activeProfileId.value
+        synchronized(memoryLock) {
+            if (profileId.isEmpty() || tag == null) {
+                _snapshot.value = DepotSnapshot()
+                return
+            }
+            val key = shardKey(profileId, tag)
+            val snap = if (key in dirty) {
+                shards[key] ?: DepotSnapshot()
+            } else {
+                decode(prefs[keyOf(key)] ?: legacyRawIfDefault(profileId, tag, prefs))
+                    .also { shards[key] = it }
+            }
+            _snapshot.value = snap
+        }
+    }
+
 
     /**
      * 仓库识别完成：全量覆盖并刷新识别时间（**同步更新内存**，再异步落盘）。
@@ -231,8 +254,11 @@ class DepotRepository(
             val raw = rawValue as? String ?: return@mapNotNull null
             val snap = decode(raw)
             val key = shardKey(profileId, tag)
-            synchronized(memoryLock) { shards.putIfAbsent(key, snap) }
-            DepotAccountSnapshot(accountTag = tag, snapshot = synchronized(memoryLock) { shards[key] } ?: snap)
+            val current = synchronized(memoryLock) {
+                if (key !in dirty) shards[key] = snap
+                shards[key] ?: snap
+            }
+            DepotAccountSnapshot(accountTag = tag, snapshot = current)
         }
         val fromMemory = synchronized(memoryLock) {
             shards.entries.mapNotNull { (key, snap) ->
@@ -326,6 +352,14 @@ class DepotRepository(
         // 有限次推进落盘；IO 失败时保留 dirty/内存，避免死等
         repeat(8) {
             if (key !in dirty) return
+            persistShard(key)
+        }
+    }
+
+    /** 停止任务前等待所有已接收的仓库/掉落变更落盘。IO 失败时仍保留 dirty 内存。 */
+    suspend fun awaitPendingWrites() {
+        val pending = dirty.toList()
+        for (key in pending) {
             persistShard(key)
         }
     }

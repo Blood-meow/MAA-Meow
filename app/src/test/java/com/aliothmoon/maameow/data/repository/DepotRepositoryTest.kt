@@ -289,6 +289,34 @@ class DepotRepositoryTest {
     }
 
     @Test
+    fun activateAndAwait_hydratesBeforeImmediateDropMutation() = runBlocking {
+        store.edit {
+            it[stringPreferencesKey("depot_${PROFILE_A}_${encodeTag(ACCOUNT_B)}")] =
+                JsonUtils.common.encodeToString(DepotSnapshot(mapOf("30011" to 100), 123L))
+        }
+
+        repository.activateAccountTagAndAwait(ACCOUNT_B)
+        repository.applyDropsSync(listOf("30011" to 7))
+
+        assertEquals(107, repository.countOf("30011"))
+        assertEquals(107, repository.countOf("30011", ACCOUNT_B))
+    }
+
+    @Test
+    fun accountList_refreshesCleanCachedShardFromDisk() = runBlocking {
+        repository.activateAccountTagAndAwait(ACCOUNT_B)
+        assertEquals(0, repository.countOf("30011", ACCOUNT_B))
+        store.edit {
+            it[stringPreferencesKey("depot_${PROFILE_A}_${encodeTag(ACCOUNT_B)}")] =
+                JsonUtils.common.encodeToString(DepotSnapshot(mapOf("30011" to 88), 456L))
+        }
+
+        val account = repository.listAccountSnapshotsForActiveProfile().single { it.accountTag == ACCOUNT_B }
+
+        assertEquals(88, account.snapshot.items["30011"])
+    }
+
+    @Test
     fun accountsAreStoredInSeparateShards() = runBlocking {
         repository.replaceAll(listOf(DepotItem("30011", 100)))
 

@@ -448,8 +448,8 @@ class MaaCompositionService(
         sessionLogger.appendAndWait(fetchDeviceMemoryInfo(), LogLevel.INFO)
 
         val mode = appSettings.runMode.value
-        depotRepository.activateAccountTag(depotAccountTag)
-        operBoxRepository.activateAccountTag(depotAccountTag)
+        depotRepository.activateAccountTagAndAwait(depotAccountTag)
+        operBoxRepository.activateAccountTagAndAwait(depotAccountTag)
         return withContext(Dispatchers.IO) {
             checkPreconditions(mode, isScheduled, clientType)?.let { return@withContext it }
 
@@ -538,6 +538,16 @@ class MaaCompositionService(
         }
     }
 
+    private suspend fun flushUserDataWritesOnStop() {
+        val completed = withTimeoutOrNull(5_000L) {
+            toolboxResultCollector.awaitPendingWrites()
+            true
+        } ?: false
+        if (!completed) {
+            Timber.w("等待用户数据落盘超时；内存快照与待写标记将保留")
+        }
+    }
+
     suspend fun stop(): StopResult {
         setRunState(MaaExecutionState.STOPPING)
         sessionLogger.appendAndWait(context.getString(R.string.runlog_task_stopping), LogLevel.INFO)
@@ -546,10 +556,12 @@ class MaaCompositionService(
             useRemoteService { service ->
                 val maa = service.maaCoreService
                 if (!maa.Running()) {
+                    flushUserDataWritesOnStop()
                     return@useRemoteService finishStop(StopResult.Success)
                 }
 
                 if (!maa.Stop()) {
+                    flushUserDataWritesOnStop()
                     return@useRemoteService finishStop(StopResult.Failed)
                 }
 
@@ -560,6 +572,7 @@ class MaaCompositionService(
                     elapsed += 100
                 }
 
+                flushUserDataWritesOnStop()
                 if (maa.Running()) {
                     finishStop(StopResult.Failed)
                 } else {

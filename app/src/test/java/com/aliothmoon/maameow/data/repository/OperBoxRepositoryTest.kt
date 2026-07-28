@@ -178,6 +178,20 @@ class OperBoxRepositoryTest {
     }
 
     @Test
+    fun activateAndAwait_hydratesSnapshotBeforeReturning() = runBlocking {
+        val seeded = OperBoxSnapshot(sampleOwned(), sampleNotOwned(), 123L)
+        store.edit {
+            it[stringPreferencesKey("operbox_${PROFILE_A}_${encodeTag(ACCOUNT_B)}")] =
+                JsonUtils.common.encodeToString(seeded)
+        }
+
+        repository.activateAccountTagAndAwait(ACCOUNT_B)
+
+        assertEquals(seeded, repository.snapshot.value)
+        assertEquals(123L, repository.syncTimeMillis(ACCOUNT_B))
+    }
+
+    @Test
     fun accountsAreStoredInSeparateShards() = runBlocking {
         repository.replaceAll(sampleOwned(), emptyList())
 

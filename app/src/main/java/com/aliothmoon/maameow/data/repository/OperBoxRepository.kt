@@ -95,11 +95,30 @@ class OperBoxRepository(
             taskChainState.profileDeleted.collect { dropProfile(it) }
         }
     }
-
     /** 切换当前干员箱分桶。空白账号不绑定干员箱。 */
     fun activateAccountTag(accountTag: String?) {
         activeAccountTag.value = normalizeAccountTagOrNull(accountTag)
     }
+
+    /** 启动任务前同步绑定并 hydrate 目标账号，避免结果回调短暂读写上一个账号。 */
+    suspend fun activateAccountTagAndAwait(accountTag: String?) {
+        awaitInitialLoad()
+        val prefs = store.data.first().also { latestPrefs = it }
+        val tag = normalizeAccountTagOrNull(accountTag)
+        activeAccountTag.value = tag
+        val profileId = taskChainState.activeProfileId.value
+        synchronized(memoryLock) {
+            if (profileId.isEmpty() || tag == null) {
+                _snapshot.value = OperBoxSnapshot()
+                return
+            }
+            val key = shardKey(profileId, tag)
+            val snap = decode(prefs[keyOf(key)] ?: legacyRawIfDefault(profileId, tag, prefs))
+            shards[key] = snap
+            _snapshot.value = snap
+        }
+    }
+
 
     suspend fun replaceAll(owned: List<OperBoxOperator>, notOwned: List<OperBoxOperator>) {
         editSnapshot {

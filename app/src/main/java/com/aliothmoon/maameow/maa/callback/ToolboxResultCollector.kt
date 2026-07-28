@@ -12,8 +12,11 @@ import com.aliothmoon.maameow.data.repository.OperBoxRepository
 import com.aliothmoon.maameow.data.resource.ItemHelper
 import com.aliothmoon.maameow.data.resource.ResourceDataManager
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -31,6 +34,26 @@ class ToolboxResultCollector(
     private val operBoxRepository: OperBoxRepository,
 ) {
     private val ioScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val pendingWriteJobs = java.util.concurrent.ConcurrentHashMap.newKeySet<Job>()
+
+    private fun launchTrackedWrite(block: suspend () -> Unit) {
+        lateinit var job: Job
+        job = ioScope.launch(start = CoroutineStart.LAZY) {
+            try {
+                block()
+            } finally {
+                pendingWriteJobs.remove(job)
+            }
+        }
+        pendingWriteJobs += job
+        job.start()
+    }
+
+    /** Core 停止后等待所有已接收完整识别结果写入 Repository。 */
+    suspend fun awaitPendingWrites() {
+        pendingWriteJobs.toList().joinAll()
+        depotRepository.awaitPendingWrites()
+    }
 
     /**
      * 本轮任务链是否期待 DoubleSync（更新数据双 due 且已启动成功）。
@@ -198,10 +221,12 @@ class ToolboxResultCollector(
         )
         val notOwnedSorted = notOwned.sortedByDescending { it.rarity }
 
-        // 识别成功即记 DoubleSync 半边（不等落盘）；写盘仍异步
+        // 识别成功即记 DoubleSync 半边；写盘异步执行但会在主动停止时等待。
         noteDoubleSyncOperSuccess()
-        ioScope.launch {
+        launchTrackedWrite {
             operBoxRepository.replaceAll(ownedSorted, notOwnedSorted)
+        }
+        ioScope.launch {
             achievementRepository.report {
                 event = AchievementEvents.TOOLBOX_RESULT
                 "tool" to "OperBox"
