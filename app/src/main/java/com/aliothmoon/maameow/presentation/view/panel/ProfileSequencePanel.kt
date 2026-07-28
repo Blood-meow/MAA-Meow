@@ -185,7 +185,7 @@ fun ProfileSequencePanel(
                             onCreateSequenceConfig()
                             configMenuExpanded = false
                         },
-                        enabled = sequenceConfigs.size < TaskChainState.MAX_SEQUENCE_CONFIGS
+                        enabled = true
                     )
                 }
             }
