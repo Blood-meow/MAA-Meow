@@ -211,7 +211,7 @@ private fun ProfileListPage(
             item(key = "new_profile") {
                 OutlinedButton(
                     onClick = onCreate,
-                    enabled = profiles.size < 10,
+                    enabled = true,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(40.dp),

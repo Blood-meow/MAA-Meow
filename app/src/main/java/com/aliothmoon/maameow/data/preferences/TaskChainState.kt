@@ -70,15 +70,12 @@ class TaskChainState(
         private val PROFILE_SEQUENCE_ENABLED_KEY =
             booleanPreferencesKey("profile_sequence_enabled")
 
-        private const val MAX_PROFILES = 10
         /** 用户配置名称长度上限（UI 与持久化共用） */
         const val MAX_PROFILE_NAME_LENGTH = 20
         /** 任务节点名称长度上限（UI） */
         const val MAX_NODE_NAME_LENGTH = 20
         /** 任务链配置名称长度上限（UI 与持久化共用） */
         const val MAX_SEQUENCE_NAME_LENGTH = 20
-        /** 任务链配置套数上限（UI 与持久化共用） */
-        const val MAX_SEQUENCE_CONFIGS = 10
         /** 单套任务链最大条目数（UI 与持久化共用） */
         const val MAX_SEQUENCE_ENTRIES = 20
     }
@@ -428,10 +425,6 @@ class TaskChainState(
 
     suspend fun createProfile(): String? {
         val currentProfiles = _profiles.value
-        if (currentProfiles.size >= MAX_PROFILES) {
-            Timber.w("createProfile: max profiles (%d) reached", MAX_PROFILES)
-            return null
-        }
         // 先保存当前活跃 Profile 的链
         val savedProfiles = currentProfiles.map { p ->
             if (p.id == _activeProfileId.value) p.copy(chain = _chain.value) else p
@@ -506,10 +499,6 @@ class TaskChainState(
 
     suspend fun duplicateProfile(profileId: String): String? {
         val currentProfiles = _profiles.value
-        if (currentProfiles.size >= MAX_PROFILES) {
-            Timber.w("duplicateProfile: max profiles (%d) reached", MAX_PROFILES)
-            return null
-        }
         // 先保存当前活跃 Profile 的链
         val savedProfiles = currentProfiles.map { p ->
             if (p.id == _activeProfileId.value) p.copy(chain = _chain.value) else p
@@ -570,10 +559,6 @@ class TaskChainState(
     }
 
     suspend fun createSequenceConfig(name: String? = null): String? = sequenceMutex.withLock {
-        if (_sequenceConfigs.value.size >= MAX_SEQUENCE_CONFIGS) {
-            Timber.w("createSequenceConfig: max configs reached")
-            return@withLock null
-        }
         val resolvedName = name?.trim()?.takeIf { it.isNotEmpty() }
             ?: nextSequenceName(_sequenceConfigs.value)
         val config = TaskSequenceConfig(name = resolvedName.take(MAX_SEQUENCE_NAME_LENGTH))
@@ -771,7 +756,6 @@ class TaskChainState(
         val configs = if (!rawConfigs.isNullOrEmpty()) {
             decodeSequenceConfigs(rawConfigs)
                 .map { it.copy(entries = sanitizeSequence(it.entries, validIds)) }
-                .take(MAX_SEQUENCE_CONFIGS)
         } else {
             // 旧版：仅有单条 profile_sequence，迁成一套默认任务链配置
             val legacy = sanitizeSequence(
@@ -986,7 +970,6 @@ class TaskChainState(
         val importedConfigs = when {
             sequenceConfigs.isNotEmpty() -> sequenceConfigs
                 .map { it.copy(entries = sanitizeSequence(it.entries, validIds)) }
-                .take(MAX_SEQUENCE_CONFIGS)
             else -> listOf(
                 TaskSequenceConfig(
                     name = sequenceDefaultName(),
