@@ -37,6 +37,7 @@ import com.aliothmoon.maameow.presentation.state.UiEffect
 import com.aliothmoon.maameow.presentation.view.notification.NotificationSettingsView
 import com.aliothmoon.maameow.presentation.view.settings.AchievementDebugView
 import com.aliothmoon.maameow.presentation.view.settings.AchievementView
+import com.aliothmoon.maameow.presentation.view.settings.DepotInventoryView
 import com.aliothmoon.maameow.presentation.view.settings.ErrorLogView
 import com.aliothmoon.maameow.presentation.view.settings.LogHistoryView
 import com.aliothmoon.maameow.presentation.view.settings.TaskOverrideEditorView
@@ -180,6 +181,9 @@ fun AppNavigation(
                 }
                 composable(Routes.TASK_OVERRIDE_EDITOR) {
                     TaskOverrideEditorView(navController = navController)
+                }
+                composable(Routes.DEPOT_INVENTORY) {
+                    DepotInventoryView(navController = navController)
                 }
             }
         }

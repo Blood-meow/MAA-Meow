@@ -178,10 +178,10 @@ class AnalyzeTaskChainUseCase(
     }
 
 
-    private fun depotAccountTag(clientType: String, accountName: String): String = buildString {
-        append(clientType)
-        append(':')
-        append(accountName.trim().ifEmpty { "default" })
+    private fun depotAccountTag(clientType: String, accountName: String): String {
+        val normalized = accountName.trim()
+        if (normalized.isEmpty()) return ""
+        return "$clientType:$normalized"
     }
 
     private fun isSkippedByWeeklySchedule(node: TaskChainNode, serverDayOfWeek: DayOfWeek): Boolean {
@@ -209,7 +209,7 @@ class AnalyzeTaskChainUseCase(
     }
 }
 
-/** One contiguous same-client slice of an enabled task chain. */
+/** One contiguous same-client/account slice of an enabled task chain. */
 internal data class ClientSegment(
     val clientType: String,
     val depotAccountTag: String,
@@ -220,7 +220,7 @@ data class TaskChainPlan(
     val enabledNodes: List<TaskChainNode>,
     val params: List<MaaTaskParams>,
     val clientType: String,
-    /** Inventory bucket tag: client + WakeUp account switch text (or default). */
+    /** Inventory bucket tag: client + WakeUp account switch text; blank means no inventory binding. */
     val depotAccountTag: String,
     val gamePackageName: String?,
     val launchesGame: Boolean,

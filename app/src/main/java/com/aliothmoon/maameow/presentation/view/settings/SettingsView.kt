@@ -611,6 +611,14 @@ fun SettingsView(
                 SectionHeader(stringResource(R.string.settings_section_data))
                 SettingsGroupCard {
                     SettingClickItem(
+                        title = stringResource(R.string.settings_depot_inventory_title),
+                        description = stringResource(R.string.settings_depot_inventory_desc),
+                        contentColor = contentColor
+                    ) {
+                        navController.navigate(Routes.DEPOT_INVENTORY)
+                    }
+                    ListItemDivider()
+                    SettingClickItem(
                         title = stringResource(R.string.settings_export_config_title),
                         description = stringResource(R.string.settings_export_config_desc),
                         contentColor = contentColor
