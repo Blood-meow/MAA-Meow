@@ -2,11 +2,11 @@ package com.aliothmoon.maameow.domain.usecase
 
 import com.aliothmoon.maameow.R
 import com.aliothmoon.maameow.constant.Packages
+import com.aliothmoon.maameow.data.model.CollectingPreflightLogSink
 import com.aliothmoon.maameow.data.model.DepotMaintainConfig
 import com.aliothmoon.maameow.data.model.FightConfig
 import com.aliothmoon.maameow.data.model.LogLevel
 import com.aliothmoon.maameow.data.model.MallConfig
-import com.aliothmoon.maameow.data.model.TaskChainNode
 import com.aliothmoon.maameow.data.model.TaskParamContext
 import com.aliothmoon.maameow.data.model.WakeUpConfig
 import com.aliothmoon.maameow.data.preferences.TaskChainState
@@ -15,25 +15,34 @@ import com.aliothmoon.maameow.data.repository.OperBoxRepository
 import com.aliothmoon.maameow.data.resource.ActivityManager
 import com.aliothmoon.maameow.data.resource.ItemHelper
 import com.aliothmoon.maameow.data.resource.ResourceDataManager
-import com.aliothmoon.maameow.data.resource.ServerTimezone
 import com.aliothmoon.maameow.domain.models.MallCreditFightAvailability
 import com.aliothmoon.maameow.domain.models.SeriesLock
-import com.aliothmoon.maameow.domain.models.resolveMallCreditFightAvailability
+import com.aliothmoon.maameow.domain.models.TaskChainNode
+import com.aliothmoon.maameow.domain.service.FightDropsRefresher
 import com.aliothmoon.maameow.maa.task.MaaTaskParams
+import com.aliothmoon.maameow.maa.task.MaaTaskType
+import com.aliothmoon.maameow.maa.task.TaskSlot
+import com.aliothmoon.maameow.utils.ServerTimezone
 import com.aliothmoon.maameow.utils.i18n.UiText
 import com.aliothmoon.maameow.utils.i18n.uiTextOf
+import kotlinx.coroutines.flow.first
 import timber.log.Timber
 import java.time.DayOfWeek
 
 class AnalyzeTaskChainUseCase(
     private val taskChainState: TaskChainState,
-    private val resourceDataManager: ResourceDataManager,
     private val activityManager: ActivityManager,
+    private val resourceDataManager: ResourceDataManager,
     private val depotRepository: DepotRepository,
     private val operBoxRepository: OperBoxRepository,
     private val itemHelper: ItemHelper,
+    private val dropsRefresher: FightDropsRefresher,
 ) {
-    operator fun invoke(chain: List<TaskChainNode>): AnalyzeTaskChainResult {
+    /** 先等 depot/operBox 分片装载；config 的 toTaskParams 仍是非 suspend。 */
+    suspend operator fun invoke(chain: List<TaskChainNode>): AnalyzeTaskChainResult {
+        depotRepository.isLoaded.first { it }
+        operBoxRepository.isLoaded.first { it }
+
         val enabledNodes = chain.filter { it.enabled }.sortedBy { it.order }
         if (enabledNodes.isEmpty()) {
             return AnalyzeTaskChainResult.Blocked(
@@ -41,8 +50,7 @@ class AnalyzeTaskChainUseCase(
             )
         }
 
-        // Restore the original contract: each client occupies one contiguous block.
-        // Account switching does not split a client block; interleaved clients are rejected.
+        // 每个客户端占一个连续块；账号切换不拆块，交错客户端直接拒绝。
         val partition = partitionByContiguousClient(enabledNodes)
             ?: return AnalyzeTaskChainResult.Blocked(
                 reason = AnalyzeTaskChainFailureReason.INTERLEAVED_CLIENT_TYPES,
@@ -52,6 +60,7 @@ class AnalyzeTaskChainUseCase(
                     .distinct(),
             )
 
+        dropsRefresher.clear()
         val plans = partition.mapNotNull { segment -> buildPlan(segment) }
         if (plans.isEmpty()) {
             return AnalyzeTaskChainResult.Blocked(
@@ -61,7 +70,7 @@ class AnalyzeTaskChainUseCase(
         return AnalyzeTaskChainResult.Ready(plans = plans)
     }
 
-    /** Same clients must form one contiguous block; account switching stays inside that block. */
+    /** 同客户端必须连续成块；账号切换留在该块内。 */
     internal fun partitionByContiguousClient(
         enabledNodes: List<TaskChainNode>,
     ): List<ClientSegment>? {
@@ -100,11 +109,20 @@ class AnalyzeTaskChainUseCase(
                         flush()
                         currentClient = wakeClient
                         seenClients += wakeClient
+                        currentAccountTag = ""
                     }
                 }
-                currentAccountTag = depotAccountTag(wakeClient, wake.accountName)
+                val accountName = wake.accountName.trim()
+                currentAccountTag = if (accountName.isEmpty()) {
+                    currentAccountTag
+                } else {
+                    depotAccountTag(wakeClient, accountName)
+                }
+            } else if (currentClient == null) {
+                currentClient = fallbackClient
+                seenClients += fallbackClient
             }
-            currentNodes += AccountBoundNode(node, currentAccountTag)
+            currentNodes += AccountBoundNode(node = node, accountTag = currentAccountTag)
         }
         flush()
         return segments
@@ -115,26 +133,25 @@ class AnalyzeTaskChainUseCase(
         val clientType = segment.clientType
         val initialAccountTag = segment.nodes.firstOrNull()?.accountTag.orEmpty()
         val creditFightAvailability =
-            resolveMallCreditFightAvailability(enabledNodes, activityManager)
+            MallCreditFightAvailability.resolve(enabledNodes, activityManager)
         val serverDayOfWeek = ServerTimezone.getYjDayOfWeek(clientType)
+        val log = CollectingPreflightLogSink()
 
-        logCreditFightWarning(enabledNodes, creditFightAvailability)
-
-        val preflightLogs = mutableListOf<Pair<UiText, LogLevel>>()
         // TODO: MaaCore 适配代理倍率 7~10 后删除
         if (SeriesLock.isLocked(clientType) &&
             enabledNodes.any { it.config is FightConfig || it.config is DepotMaintainConfig }
         ) {
-            preflightLogs += uiTextOf(R.string.runlog_series_locked) to LogLevel.WARNING
+            log.append(uiTextOf(R.string.runlog_series_locked), LogLevel.WARNING)
         }
 
         var unlockDoubleSync = false
-        val params = segment.nodes.flatMap { boundNode ->
+        val expanded = segment.nodes.flatMap { boundNode ->
             val node = boundNode.node
             if (isSkippedByWeeklySchedule(node, serverDayOfWeek)) {
                 return@flatMap emptyList()
             }
             val ctx = TaskParamContext(
+                node = node,
                 clientType = clientType,
                 depotAccountTag = boundNode.accountTag,
                 chainAllowsCreditFight = creditFightAvailability.isAvailable,
@@ -143,25 +160,27 @@ class AnalyzeTaskChainUseCase(
                 operBoxRepository = operBoxRepository,
                 itemHelper = itemHelper,
                 resourceDataManager = resourceDataManager,
+                dropsRefresher = dropsRefresher,
+                logSink = log,
             )
-            val result = node.config.toTaskParams(ctx)
-            preflightLogs += result.logs
-            if (result.unlockDoubleSync) unlockDoubleSync = true
-            result.params.map { taskParams ->
-                val withNode = taskParams.copy(nodeId = node.id, accountTag = boundNode.accountTag)
-                // 理智作战的目标库存日志标签用节点名（用户可重命名），比固定 "Fight" 更可读
-                val target = withNode.dropTarget
-                if (node.config is FightConfig && target != null) {
-                    withNode.copy(dropTarget = target.copy(logLabel = node.name))
-                } else {
-                    withNode
-                }
+            // UserDataUpdate 等仍可能通过扩展字段标记双 due；兼容旧返回若存在
+            val rawParams = node.config.toTaskParams(ctx)
+            rawParams.mapIndexed { index, task ->
+                val slot = TaskSlot(
+                    nodeId = node.id,
+                    index = index,
+                    accountTag = boundNode.accountTag.ifBlank { null },
+                )
+                task.copy(slot = slot)
             }
         }
+
+        // 相邻重复 DEPOT 去重；中间有其它任务则保留
+        val params = dropAdjacentDuplicateDepot(expanded)
         if (params.isEmpty()) return null
 
         return TaskChainPlan(
-            enabledNodes = enabledNodes,
+            nodes = enabledNodes,
             params = params,
             clientType = clientType,
             depotAccountTag = initialAccountTag,
@@ -169,12 +188,17 @@ class AnalyzeTaskChainUseCase(
             launchesGame = enabledNodes
                 .mapNotNull { it.config as? WakeUpConfig }
                 .any { it.startGameEnabled },
-            preflightLogs = preflightLogs,
-            // 双 due 标记：启动成功后 arm，两侧识别成功再解锁（见 ToolboxResultCollector）
+            preflightLogs = log.entries,
             unlockDoubleSync = unlockDoubleSync,
         )
     }
 
+    private fun dropAdjacentDuplicateDepot(params: List<MaaTaskParams>): List<MaaTaskParams> =
+        params.filterIndexed { index, task ->
+            index == 0 ||
+                task.type != MaaTaskType.DEPOT ||
+                params[index - 1].type != MaaTaskType.DEPOT
+        }
 
     private fun depotAccountTag(clientType: String, accountName: String): String {
         val normalized = accountName.trim()
@@ -182,7 +206,10 @@ class AnalyzeTaskChainUseCase(
         return "$clientType:$normalized"
     }
 
-    private fun isSkippedByWeeklySchedule(node: TaskChainNode, serverDayOfWeek: DayOfWeek): Boolean {
+    private fun isSkippedByWeeklySchedule(
+        node: TaskChainNode,
+        serverDayOfWeek: DayOfWeek,
+    ): Boolean {
         val config = node.config
         if (config is FightConfig && config.useWeeklySchedule) {
             if (config.weeklySchedule[serverDayOfWeek.name] == false) {
@@ -192,19 +219,6 @@ class AnalyzeTaskChainUseCase(
         }
         return false
     }
-
-    private fun logCreditFightWarning(
-        nodes: List<TaskChainNode>,
-        availability: MallCreditFightAvailability,
-    ) {
-        if (!availability.isAvailable && nodes.any { (it.config as? MallConfig)?.creditFight == true }) {
-            Timber.w(
-                "Credit fight disabled because a fight task has no resolvable active stage. task=%s order=%d",
-                availability.blockingTaskName ?: "unknown",
-                availability.blockingTaskOrder ?: -1,
-            )
-        }
-    }
 }
 
 internal data class AccountBoundNode(
@@ -212,14 +226,13 @@ internal data class AccountBoundNode(
     val accountTag: String,
 )
 
-/** One contiguous same-client block; each node retains its inherited account tag. */
 internal data class ClientSegment(
     val clientType: String,
     val nodes: List<AccountBoundNode>,
 )
 
 data class TaskChainPlan(
-    val enabledNodes: List<TaskChainNode>,
+    val nodes: List<TaskChainNode>,
     val params: List<MaaTaskParams>,
     val clientType: String,
     /** Inventory bucket tag: client + WakeUp account switch text; blank means no inventory binding. */
@@ -227,18 +240,15 @@ data class TaskChainPlan(
     val gamePackageName: String?,
     val launchesGame: Boolean,
     val gameAliveBeforeStart: Boolean? = null,
-    /**
-     * 任务链分析阶段产生的、需要在会话开始后回放给用户的日志。
-     * UseCase 保持无副作用，由 MaaCompositionService 在 startSession 之后统一 append。
-     */
+    /** 预检日志，会话开始后由 Composition 回放。 */
     val preflightLogs: List<Pair<UiText, LogLevel>> = emptyList(),
-    /**
-     * 更新数据节点同时到期干员+仓库时为 true。
-     * 启动成功后 arm [com.aliothmoon.maameow.maa.callback.ToolboxResultCollector]，
-     * 两侧识别成功后再报 TOOLBOX_RESULT(DepotOperBox)。
-     */
+    /** 更新数据节点同时到期干员+仓库时为 true。 */
     val unlockDoubleSync: Boolean = false,
-)
+) {
+    /** 兼容上游 logs 命名。 */
+    val logs: List<Pair<UiText, LogLevel>> get() = preflightLogs
+    val enabledNodes: List<TaskChainNode> get() = nodes
+}
 
 enum class AnalyzeTaskChainFailureReason {
     NO_TASK_SELECTED,
@@ -255,18 +265,15 @@ sealed interface AnalyzeTaskChainResult {
      * Each client may occupy only one block; callers run valid blocks sequentially.
      */
     data class Ready(val plans: List<TaskChainPlan>) : AnalyzeTaskChainResult {
-        init {
-            require(plans.isNotEmpty()) { "Ready.plans must not be empty" }
-        }
-
-        /** First plan (backward-compatible accessor for single-segment callers). */
+        /** Convenience for single-plan callers. */
         val plan: TaskChainPlan get() = plans.first()
     }
 
     data class Blocked(
         val reason: AnalyzeTaskChainFailureReason,
         val clientTypes: List<String> = emptyList(),
-        /** 拦截前已产生的诊断日志（如库存保持逐条计划的失败原因），由调用方展示 */
         val preflightLogs: List<Pair<UiText, LogLevel>> = emptyList(),
-    ) : AnalyzeTaskChainResult
+    ) : AnalyzeTaskChainResult {
+        val logs: List<Pair<UiText, LogLevel>> get() = preflightLogs
+    }
 }
