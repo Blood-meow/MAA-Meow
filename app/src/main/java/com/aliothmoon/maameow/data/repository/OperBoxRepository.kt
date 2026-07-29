@@ -43,6 +43,11 @@ data class OperBoxSnapshot(
     val hasSynced: Boolean get() = syncTimeMillis > 0L
 }
 
+data class OperBoxAccountSnapshot(
+    val accountTag: String,
+    val snapshot: OperBoxSnapshot,
+)
+
 /**
  * 干员识别结果持久化，按「用户配置档 + 游戏账号标签」分片，与 [DepotRepository] 对称。
  * 空账号不读写，避免多账号场景误把干员箱当全局数据。
@@ -159,6 +164,39 @@ class OperBoxRepository(
         }
     }
 
+    suspend fun listAccountSnapshotsForActiveProfile(): List<OperBoxAccountSnapshot> {
+        taskChainState.isLoaded.first { it }
+        val profileId = taskChainState.activeProfileId.value
+        if (profileId.isEmpty()) return emptyList()
+        val prefix = "operbox_${profileId}_"
+        val prefs = store.data.first()
+        latestPrefs = prefs
+        val fromDisk = prefs.asMap().entries.mapNotNull { (prefKey, rawValue) ->
+            val name = prefKey.name
+            if (!name.startsWith(prefix)) return@mapNotNull null
+            val encodedTag = name.removePrefix(prefix)
+            val tag = decodeTag(encodedTag)?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
+            val raw = rawValue as? String ?: return@mapNotNull null
+            val snapshot = decode(raw)
+            val key = shardKey(profileId, tag)
+            synchronized(memoryLock) { shards[key] = snapshot }
+            OperBoxAccountSnapshot(tag, snapshot)
+        }
+        val fromMemory = synchronized(memoryLock) {
+            shards.entries.mapNotNull { (key, snapshot) ->
+                if (!key.startsWith(shardKeyPrefix(profileId))) return@mapNotNull null
+                val encodedTag = key.removePrefix(shardKeyPrefix(profileId))
+                val tag = decodeTag(encodedTag)?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
+                OperBoxAccountSnapshot(tag, snapshot)
+            }
+        }
+        return (fromDisk + fromMemory)
+            .groupBy { it.accountTag }
+            .map { (_, rows) -> rows.last() }
+            .filter { it.snapshot.hasSynced }
+            .sortedBy { it.accountTag }
+    }
+
     suspend fun dropProfile(profileId: String) {
         if (profileId.isEmpty()) return
         synchronized(memoryLock) {
@@ -263,5 +301,9 @@ class OperBoxRepository(
         private fun encodeTag(tag: String): String = Base64.getUrlEncoder()
             .withoutPadding()
             .encodeToString(tag.toByteArray(Charsets.UTF_8))
+
+        private fun decodeTag(encoded: String): String? = runCatching {
+            String(Base64.getUrlDecoder().decode(encoded), Charsets.UTF_8)
+        }.getOrNull()
     }
 }

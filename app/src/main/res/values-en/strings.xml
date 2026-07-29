@@ -110,9 +110,12 @@
     <string name="settings_depot_inventory_title">Depot Inventory</string>
     <string name="settings_depot_inventory_desc">View depot inventory for each account</string>
     <string name="depot_inventory_title">Depot Inventory</string>
-    <string name="depot_inventory_detail_title">Inventory Details</string>
+    <string name="depot_inventory_detail_title">Account Data</string>
     <string name="depot_inventory_empty_accounts">No account inventory data yet. Fill the account switch value in Wake Up and run data update once.</string>
     <string name="depot_inventory_empty_items">No inventory details for this account</string>
+    <string name="depot_inventory_empty_operators">No operator data for this account. Run an operator data update first.</string>
+    <string name="depot_inventory_tab_items">Inventory</string>
+    <string name="depot_inventory_tab_operators">Operators</string>
     <string name="depot_inventory_available_draws">%1$d pulls (%2$d from Orundum, %3$d from permits)</string>
     <string name="depot_inventory_sync_time">Updated: %1$s</string>
     <string name="settings_export_config_title">Export Configuration</string>

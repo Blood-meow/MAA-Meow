@@ -1,6 +1,7 @@
 package com.aliothmoon.maameow.maa.callback
-
+import com.alibaba.fastjson2.JSON
 import com.alibaba.fastjson2.JSONObject
+
 import com.aliothmoon.maameow.data.achievement.AchievementEvents
 import com.aliothmoon.maameow.data.achievement.AchievementRepository
 import com.aliothmoon.maameow.data.model.toolbox.DepotItem
@@ -148,19 +149,13 @@ class ToolboxResultCollector(
 
     /**
      * 解析仓库识别结果并写入 [DepotRepository]（小工具 UI 读持久化快照）。
-     * MaaCore 回调 taskchain="Depot" 时 details 格式：
-     * { "done": true, "data": "{\"30011\":200,...}" }
+     * 兼容 Core 历史裸数字格式，以及字符串/对象数量格式。
      */
     fun onDepotResult(details: JSONObject?) {
         details ?: return
         if (!details.getBooleanValue("done")) return
 
-        val dataStr = details.getString("data") ?: return
-        val dataObj = com.alibaba.fastjson2.JSON.parseObject(dataStr) ?: return
-        val items = dataObj.entries.mapNotNull { (id, value) ->
-            val count = (value as? Number)?.toInt() ?: return@mapNotNull null
-            if (count > 0) DepotItem(id, count) else null
-        }
+        val items = parseDepotItems(details["data"]) ?: return
         // 同步写穿内存，保证随后 TaskChainStart 重算能读到最新库存
         depotRepository.replaceAllSync(items)
         noteDoubleSyncDepotSuccess()
@@ -171,6 +166,29 @@ class ToolboxResultCollector(
                 "maxCount" to (items.maxOfOrNull { it.count } ?: 0)
             }
         }
+    }
+
+    internal fun parseDepotItems(rawData: Any?): List<DepotItem>? {
+        val dataObj = when (rawData) {
+            is JSONObject -> rawData
+            is String -> runCatching { JSON.parseObject(rawData) }.getOrNull()
+            else -> null
+        } ?: return null
+
+        return dataObj.entries.mapNotNull { (id, value) ->
+            val count = depotItemCount(value) ?: return@mapNotNull null
+            if (count > 0) DepotItem(id, count) else null
+        }
+    }
+
+    private fun depotItemCount(value: Any?): Int? = when (value) {
+        is Number -> value.toInt()
+        is String -> value.toIntOrNull()
+        is JSONObject -> listOf("count", "quantity", "have", "value")
+            .firstNotNullOfOrNull { key -> depotItemCount(value[key]) }
+        is Map<*, *> -> listOf("count", "quantity", "have", "value")
+            .firstNotNullOfOrNull { key -> depotItemCount(value[key]) }
+        else -> null
     }
 
     // ==================== 干员识别 ====================
