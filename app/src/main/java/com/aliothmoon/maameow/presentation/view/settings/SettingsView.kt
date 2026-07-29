@@ -989,26 +989,30 @@ private fun FontSizeSetting(
     LaunchedEffect(value, recommended, isAuto) {
         sliderValue = (if (isAuto) recommended else value).toFloat()
 
+<<<<<<< HEAD
     }
     val current = sliderValue.roundToInt().coerceIn(AppSettingsManager.FONT_SIZE_SCALE_MIN, AppSettingsManager.FONT_SIZE_SCALE_MAX)
 
     Column(modifier = Modifier.fillMaxWidth().padding(vertical = MaaDesignTokens.Spacing.listItemVertical)) {
+=======
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = MaaDesignTokens.Spacing.listItemVertical)
+    ) {
+        // 数值只与标题同行，避免贴在多行说明文案右侧
+>>>>>>> 3f637126 (fix: 页面缩放数值与标题同行，避免贴紧说明文案)
         Row(
             modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = stringResource(R.string.settings_font_size_title),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = contentColor
-                )
-                Text(
-                    text = stringResource(R.string.settings_font_size_summary),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = contentColor.copy(alpha = 0.6f)
-                )
-            }
+            Text(
+                text = stringResource(R.string.settings_font_size_title),
+                style = MaterialTheme.typography.bodyLarge,
+                color = contentColor,
+                modifier = Modifier.weight(1f, fill = false),
+            )
             Text(
                 text = if (isAuto) {
                     stringResource(R.string.settings_font_size_auto_value, effective)
@@ -1016,9 +1020,17 @@ private fun FontSizeSetting(
                     current.toString()
                 },
                 style = MaterialTheme.typography.bodyMedium,
-                color = contentColor
+                color = contentColor,
+                modifier = Modifier.padding(start = 12.dp),
             )
         }
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = stringResource(R.string.settings_font_size_summary),
+            style = MaterialTheme.typography.bodySmall,
+            color = contentColor.copy(alpha = 0.6f),
+            modifier = Modifier.fillMaxWidth(),
+        )
         Spacer(modifier = Modifier.height(8.dp))
         if (!isAuto) {
             OutlinedButton(
