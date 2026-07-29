@@ -5,6 +5,8 @@ import com.aliothmoon.maameow.data.repository.OperBoxRepository
 import com.aliothmoon.maameow.data.resource.ActivityManager
 import com.aliothmoon.maameow.data.resource.ItemHelper
 import com.aliothmoon.maameow.data.resource.ResourceDataManager
+import com.aliothmoon.maameow.domain.service.FightDropsRefresher
+import com.aliothmoon.maameow.utils.i18n.UiText
 
 /**
  * 任务参数组装所需的外部输入。
@@ -34,9 +36,11 @@ import com.aliothmoon.maameow.data.resource.ResourceDataManager
  * 且单测因 Koin 未启动而实际测的是降级分支，生产路径反而从未被覆盖。
  * 所有外部输入一律走本类。
  *
+ * 展开日志通过 [appendLog] / [PreflightLogSink] 收集；关卡缺口通过 [FightDropsRefresher] 重算。
  * 本类持有的是有状态的管理器，`equals` / `hashCode` 无实际意义，
  * 不要用于相等性比较或做 Map key。
  *
+ * @param node 当前展开的任务节点。
  * @param clientType 客户端类型（Official / Bilibili / YoStarEN / …）。
  *   填错会静默产生错误参数（旧代码硬编码 "Official" 正是此坑），由编译器强制显式提供。
  * @param depotAccountTag 仓库库存分桶标签：由当前段 WakeUp 的账号切换文本归一化而来；空/未配置表示不读取库存。
@@ -50,8 +54,11 @@ import com.aliothmoon.maameow.data.resource.ResourceDataManager
  *   （BattleDataConfig::find_oper 只匹配 name 字段，繁中/英文名会使 get_role 返回 Unknown，
  *   导致开局干员选择失败），故下发前须把本地化名反查回简中名。
  *   对齐 WPF RoguelikeSettingsUserControlModel.cs:1073。
+ * @param dropsRefresher 指定掉落缺口重算。
+ * @param logSink 前置日志收集器。
  */
-data class TaskParamContext(
+class TaskParamContext(
+    val node: TaskChainNode,
     val clientType: String,
     val depotAccountTag: String,
     val chainAllowsCreditFight: Boolean,
@@ -60,4 +67,10 @@ data class TaskParamContext(
     val operBoxRepository: OperBoxRepository,
     val itemHelper: ItemHelper,
     val resourceDataManager: ResourceDataManager,
-)
+    val dropsRefresher: FightDropsRefresher,
+    val logSink: PreflightLogSink,
+) {
+    fun appendLog(text: UiText, level: LogLevel = LogLevel.INFO) {
+        logSink.append(text, level)
+    }
+}

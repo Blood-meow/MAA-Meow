@@ -32,7 +32,7 @@ class UserDataUpdateConfigTest {
     fun bothSwitchesOff_producesNothing() {
         val result = UserDataUpdateConfig(updateOperBox = false, updateDepot = false)
             .toTaskParams(ctx())
-        assertTrue(result.params.isEmpty())
+        assertTrue(result.isEmpty())
     }
 
     @Test
@@ -49,7 +49,7 @@ class UserDataUpdateConfigTest {
         val result = UserDataUpdateConfig().toTaskParams(ctx())
         assertEquals(
             listOf(MaaTaskType.OPER_BOX, MaaTaskType.DEPOT),
-            result.params.map { it.type },
+            result.map { it.type },
         )
     }
 
@@ -57,7 +57,7 @@ class UserDataUpdateConfigTest {
     fun onlyDepot_producesDepotOnly() {
         val result = UserDataUpdateConfig(updateOperBox = false, updateDepot = true)
             .toTaskParams(ctx())
-        assertEquals(listOf(MaaTaskType.DEPOT), result.params.map { it.type })
+        assertEquals(listOf(MaaTaskType.DEPOT), result.map { it.type })
     }
 
     @Test
@@ -66,6 +66,6 @@ class UserDataUpdateConfigTest {
         val result = UserDataUpdateConfig(
             triggerInterval = UserDataUpdateTriggerInterval.DAILY,
         ).toTaskParams(ctx(operSync = now, depotSync = now))
-        assertTrue(result.params.isEmpty())
+        assertTrue(result.isEmpty())
     }
 }
