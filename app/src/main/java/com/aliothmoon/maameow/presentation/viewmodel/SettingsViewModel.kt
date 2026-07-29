@@ -249,7 +249,7 @@ class SettingsViewModel(
             appSettingsManager.setLanguage(resolved)
             AppCompatDelegate.setApplicationLocales(resolved.toLocaleList())
             resourceDataManager.refreshDisplayLanguage(
-                clientType = taskChainState.getClientType(),
+                clientType = taskChainState.clientType,
                 displayLanguage = ResourceDataManager.displayLanguageCode(resolved)
             )
         }
