@@ -157,9 +157,17 @@ fun TaskListPanel(
                         .clickable { onToggleAddingTask() },
                     shape = RoundedCornerShape(4.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = if (isAddingTask) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface
+                        containerColor = if (isAddingTask) {
+                            MaterialTheme.colorScheme.primaryContainer
+                        } else {
+                            MaterialTheme.colorScheme.surface
+                        }
                     ),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+                    border = if (isAddingTask) {
+                        BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f))
+                    } else {
+                        null
+                    }
                 ) {
                     Row(
                         modifier = Modifier
@@ -171,13 +179,22 @@ fun TaskListPanel(
                             imageVector = Icons.Default.Add,
                             contentDescription = null,
                             modifier = Modifier.size(20.dp),
-                            tint = MaterialTheme.colorScheme.secondary
+                            tint = if (isAddingTask) {
+                                MaterialTheme.colorScheme.onPrimaryContainer
+                            } else {
+                                MaterialTheme.colorScheme.primary
+                            }
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
                             stringResource(R.string.panel_task_list_add),
                             style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurface
+                            color = if (isAddingTask) {
+                                MaterialTheme.colorScheme.onPrimaryContainer
+                            } else {
+                                MaterialTheme.colorScheme.onSurface
+                            },
+                            fontWeight = if (isAddingTask) FontWeight.Medium else FontWeight.Normal
                         )
                     }
                 }
