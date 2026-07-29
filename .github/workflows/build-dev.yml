@@ -17,7 +17,7 @@ on:
       maa_tag:
         description: 'MAA Core release tag'
         required: false
-        default: 'core-v2-1d4432d'
+        default: 'core-v2-4857c6a'
 
 jobs:
   build:
