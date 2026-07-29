@@ -989,19 +989,15 @@ private fun FontSizeSetting(
     LaunchedEffect(value, recommended, isAuto) {
         sliderValue = (if (isAuto) recommended else value).toFloat()
 
-<<<<<<< HEAD
     }
     val current = sliderValue.roundToInt().coerceIn(AppSettingsManager.FONT_SIZE_SCALE_MIN, AppSettingsManager.FONT_SIZE_SCALE_MAX)
 
-    Column(modifier = Modifier.fillMaxWidth().padding(vertical = MaaDesignTokens.Spacing.listItemVertical)) {
-=======
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = MaaDesignTokens.Spacing.listItemVertical)
     ) {
         // 数值只与标题同行，避免贴在多行说明文案右侧
->>>>>>> 3f637126 (fix: 页面缩放数值与标题同行，避免贴紧说明文案)
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
