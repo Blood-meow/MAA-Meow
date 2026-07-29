@@ -276,7 +276,7 @@ private fun OperBoxHintRow(text: String) {
 }
 
 @Composable
-private fun OperatorRow(oper: OperBoxOperator) {
+internal fun OperatorRow(oper: OperBoxOperator) {
     val rarityColor = when (oper.rarity) {
         6 -> Color(0xFFFF6B35)
         5 -> Color(0xFFFFD700)

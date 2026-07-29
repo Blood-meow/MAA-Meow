@@ -205,6 +205,32 @@ class OperBoxRepositoryTest {
     }
 
     @Test
+    fun listAccountSnapshotsForActiveProfile_returnsSyncedAccountsOnly() = runBlocking {
+        repository.replaceAll(sampleOwned(), emptyList())
+        repository.activateAccountTag(ACCOUNT_B)
+        repository.replaceAll(sampleNotOwned().map { it.copy(own = true) }, emptyList())
+        repository.activateAccountTag("Official:empty")
+
+        val accounts = repository.listAccountSnapshotsForActiveProfile()
+
+        assertEquals(listOf(ACCOUNT_A, ACCOUNT_B), accounts.map { it.accountTag })
+        assertEquals("char_002_amiya", accounts[0].snapshot.owned.single().id)
+        assertEquals("char_1001_amiya2", accounts[1].snapshot.owned.single().id)
+    }
+
+    @Test
+    fun listAccountSnapshotsForActiveProfile_excludesOtherProfiles() = runBlocking {
+        repository.replaceAll(sampleOwned(), emptyList())
+        activeProfileId.value = PROFILE_B
+        repository.activateAccountTag(ACCOUNT_B)
+        repository.replaceAll(sampleNotOwned().map { it.copy(own = true) }, emptyList())
+
+        val accounts = repository.listAccountSnapshotsForActiveProfile()
+
+        assertEquals(listOf(ACCOUNT_B), accounts.map { it.accountTag })
+    }
+
+    @Test
     fun emptyProfileId_skipsWrite() = runBlocking {
         activeProfileId.value = ""
 
