@@ -180,7 +180,7 @@ class ToolboxViewModel(
     private fun onStart(context: TaskStartContext) {
         viewModelScope.launch {
             when (val readiness = checkGameReadiness(
-                clientType = chainState.clientType,
+                clientType = chainState.getClientType(),
                 launchesGame = false,
                 context = context,
             )) {

@@ -43,7 +43,7 @@ class ConfigBackupManager(
             appSettings = appSettingsManager.settings.first().sanitized(),
             notificationSettings = notificationSettingsManager.settings.first().sanitized(),
             taskProfiles = taskChainState.profiles.value.map { it.sanitized() },
-            activeProfileId = taskChainState.profileId.value,
+            activeProfileId = taskChainState.activeProfileId.value,
             scheduleStrategies = scheduleStrategyRepository.strategies.value,
             profileSequence = taskChainState.profileSequence.value,
             profileSequenceEnabled = taskChainState.profileSequenceEnabled.value,

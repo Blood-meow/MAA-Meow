@@ -95,7 +95,7 @@ class TaskChainHandler(
     }
 
     private fun refreshDropsIfNeeded(taskId: Int) {
-        when (val outcome = dropsRefresher.onTaskStarted(taskId, compositionService::setTaskParams)) {
+        when (val outcome = dropsRefresher.onTaskStarted(taskId)) {
             is FightDropsRefresher.RefreshOutcome.Sufficient -> {
                 sessionLogger.append(
                     appContext.getString(

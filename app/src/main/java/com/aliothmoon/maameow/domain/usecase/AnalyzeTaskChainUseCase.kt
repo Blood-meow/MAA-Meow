@@ -17,12 +17,12 @@ import com.aliothmoon.maameow.data.resource.ItemHelper
 import com.aliothmoon.maameow.data.resource.ResourceDataManager
 import com.aliothmoon.maameow.domain.models.MallCreditFightAvailability
 import com.aliothmoon.maameow.domain.models.SeriesLock
-import com.aliothmoon.maameow.domain.models.TaskChainNode
+import com.aliothmoon.maameow.data.model.TaskChainNode
 import com.aliothmoon.maameow.domain.service.FightDropsRefresher
 import com.aliothmoon.maameow.maa.task.MaaTaskParams
 import com.aliothmoon.maameow.maa.task.MaaTaskType
 import com.aliothmoon.maameow.maa.task.TaskSlot
-import com.aliothmoon.maameow.utils.ServerTimezone
+import com.aliothmoon.maameow.data.resource.ServerTimezone
 import com.aliothmoon.maameow.utils.i18n.UiText
 import com.aliothmoon.maameow.utils.i18n.uiTextOf
 import kotlinx.coroutines.flow.first
@@ -40,8 +40,7 @@ class AnalyzeTaskChainUseCase(
 ) {
     /** 先等 depot/operBox 分片装载；config 的 toTaskParams 仍是非 suspend。 */
     suspend operator fun invoke(chain: List<TaskChainNode>): AnalyzeTaskChainResult {
-        depotRepository.isLoaded.first { it }
-        operBoxRepository.isLoaded.first { it }
+        taskChainState.isLoaded.first { it }
 
         val enabledNodes = chain.filter { it.enabled }.sortedBy { it.order }
         if (enabledNodes.isEmpty()) {

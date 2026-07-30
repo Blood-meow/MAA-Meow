@@ -82,36 +82,36 @@ class MaaCallbackDispatcher(
     }
 
     private fun handleTaskChainStart(details: JSONObject?) {
-        details?.let { taskChainHandler.onTaskChainStart(it) }
+        details?.let { taskChainHandler.handle(AsstMsg.TaskChainStart, it) }
     }
 
     private fun handleAllTasksCompleted() {
         stateHolder.reportRunState(MaaExecutionState.IDLE)
         // 不依赖 details：全部完成的收尾（清运行时登记、写总结、发通知）
         // 不该因为这一条回调的 JSON 解析失败而被整个跳过
-        taskChainHandler.onAllTasksCompleted()
+        taskChainHandler.handle(AsstMsg.AllTasksCompleted, JSONObject())
         sessionLogger.endSession("COMPLETED")
     }
 
     private fun handleTaskChainError(details: JSONObject?) {
         // 单条任务链出错不终止全局状态和日志会话
         // MaaCore 会继续执行后续任务链，最终由 AllTasksCompleted 或 TaskChainStopped 收尾
-        details?.let { taskChainHandler.onTaskChainError(it) }
+        details?.let { taskChainHandler.handle(AsstMsg.TaskChainError, it) }
     }
 
     private fun handleTaskChainCompleted(details: JSONObject?) {
-        details?.let { taskChainHandler.onTaskChainCompleted(it) }
+        details?.let { taskChainHandler.handle(AsstMsg.TaskChainCompleted, it) }
     }
 
     private fun handleTaskChainStopped() {
         stateHolder.reportRunState(MaaExecutionState.IDLE)
         // 同 handleAllTasksCompleted：停止收尾不依赖 details，不该被 JSON 解析失败跳过
-        taskChainHandler.onTaskChainStopped()
+        taskChainHandler.handle(AsstMsg.TaskChainStopped, JSONObject())
         sessionLogger.endSession("STOPPED")
     }
 
     private fun handleTaskChainExtraInfo(details: JSONObject?) {
-        details?.let { taskChainHandler.onTaskChainExtraInfo(it) }
+        details?.let { taskChainHandler.handle(AsstMsg.TaskChainExtraInfo, it) }
     }
 
     private fun handleAsyncCallInfo(details: JSONObject?) {

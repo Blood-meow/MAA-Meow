@@ -22,7 +22,7 @@ data class UserDataUpdateConfig(
 
         // 账号切换为空时不绑定任何账号数据，更新数据也不生成识别任务，避免白跑且不落盘。
         if (ctx.depotAccountTag.isBlank()) {
-            return TaskParamResult(emptyList())
+            return emptyList()
         }
 
         val yjToday = ServerTimezone.getYjDate(ctx.clientType)

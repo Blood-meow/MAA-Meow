@@ -230,7 +230,7 @@ class MaaCompositionService(
 
     suspend fun startCopilot(
         tasks: List<MaaTaskParams>,
-        clientType: String = taskChainState.clientType
+        clientType: String = taskChainState.getClientType()
     ): StartResult = executeStart(
         tasks = tasks,
         clientType = clientType,
@@ -440,7 +440,7 @@ class MaaCompositionService(
         setRunState(MaaExecutionState.STARTING)
         sessionLogger.startSession(tasks.map { it.type.value })
         subTaskHandler.resetSessionState()
-        toolboxResultCollector.onSessionStart()
+        toolboxResultCollector.clearDoubleSyncSession()
         onSessionStarted?.invoke()
         sessionLogger.appendAndWait(startMessage, LogLevel.INFO)
         preflightLogs.forEach { (text, level) ->
@@ -449,12 +449,12 @@ class MaaCompositionService(
         sessionLogger.appendAndWait(fetchDeviceMemoryInfo(), LogLevel.INFO)
 
         val mode = appSettings.runMode.value
-        val accountTags = tasks.mapNotNull { it.accountTag?.takeIf(String::isNotBlank) }.distinct()
+        val accountTags = tasks.mapNotNull { it.slot?.accountTag?.takeIf(String::isNotBlank) }.distinct()
         for (accountTag in accountTags) {
             depotRepository.activateAccountTagAndAwait(accountTag)
             operBoxRepository.activateAccountTagAndAwait(accountTag)
         }
-        val initialAccountTag = tasks.firstOrNull()?.accountTag ?: depotAccountTag
+        val initialAccountTag = tasks.firstOrNull()?.slot?.accountTag ?: depotAccountTag
         depotRepository.activateAccountTagAndAwait(initialAccountTag)
         operBoxRepository.activateAccountTagAndAwait(initialAccountTag)
         return withContext(Dispatchers.IO) {
