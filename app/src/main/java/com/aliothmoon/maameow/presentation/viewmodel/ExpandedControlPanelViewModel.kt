@@ -440,7 +440,6 @@ class ExpandedControlPanelViewModel(
                 clientType = plan.clientType,
                 depotAccountTag = plan.depotAccountTag,
                 preflightLogs = plan.preflightLogs,
-                expectDoubleSync = plan.unlockDoubleSync,
             ) {
                 if (allPlans.size > 1) {
                     sessionLogger.appendAndWait(
@@ -543,7 +542,6 @@ class ExpandedControlPanelViewModel(
             clientType = next.clientType,
             depotAccountTag = next.depotAccountTag,
             preflightLogs = next.preflightLogs,
-            expectDoubleSync = next.unlockDoubleSync,
         ) {
             sessionLogger.appendAndWait(
                 application.getString(

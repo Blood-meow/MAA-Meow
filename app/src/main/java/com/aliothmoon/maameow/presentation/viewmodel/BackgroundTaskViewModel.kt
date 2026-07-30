@@ -264,7 +264,6 @@ class BackgroundTaskViewModel(
             depotAccountTag = next.depotAccountTag,
             isScheduled = false,
             preflightLogs = next.preflightLogs,
-            expectDoubleSync = next.unlockDoubleSync,
         ) {
             sessionLogger.appendAndWait(
                 application.getString(

@@ -178,7 +178,6 @@ class ForegroundScheduleStarter(
                                 depotAccountTag = plan.depotAccountTag,
                                 isScheduled = true,
                                 preflightLogs = plan.preflightLogs,
-                                expectDoubleSync = plan.unlockDoubleSync,
                             )
                             if (result !is MaaCompositionService.StartResult.Success) {
                                 failed = appCtx.getString(
