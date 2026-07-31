@@ -92,8 +92,7 @@ import com.aliothmoon.maameow.presentation.view.panel.PanelHeader
 import com.aliothmoon.maameow.presentation.view.panel.LogPanel
 import com.aliothmoon.maameow.presentation.view.panel.PanelDialogType
 import com.aliothmoon.maameow.presentation.view.panel.PanelTab
-import com.aliothmoon.maameow.presentation.view.panel.TaskConfigPanel
-import com.aliothmoon.maameow.presentation.view.panel.TaskListPanel
+import com.aliothmoon.maameow.presentation.view.panel.TaskListDetailLayout
 import com.aliothmoon.maameow.presentation.view.panel.AutoBattlePanel
 import com.aliothmoon.maameow.presentation.viewmodel.BackgroundTaskViewModel
 import com.aliothmoon.maameow.presentation.viewmodel.CopilotViewModel
@@ -356,110 +355,66 @@ fun BackgroundTaskView(
                         ) { page ->
                             when (page) {
                                 0 -> {
-                                    Row(modifier = Modifier.fillMaxSize()) {
-                                        TaskListPanel(
-                                            nodes = nodes,
-                                            selectedNodeId = state.selectedNodeId,
-                                            isEditMode = state.isEditMode,
-                                            isAddingTask = state.isAddingTask,
-                                            isProfileMode = state.isProfileMode,
-                                            onNodeEnabledChange = viewModel::onNodeEnabledChange,
-                                            onNodeSelected = viewModel::onNodeSelected,
-                                            onNodeMove = viewModel::onNodeMove,
-                                            onToggleEditMode = viewModel::onToggleEditMode,
-                                            onToggleAddingTask = viewModel::onToggleAddingTask,
-                                            onToggleProfileMode = viewModel::onToggleProfileMode,
-                                            modifier = Modifier.fillMaxHeight(),
-                                        )
-
-                                        Spacer(modifier = Modifier.width(8.dp))
-
-                                        Card(
-                                            modifier = Modifier
-                                                .weight(1f)
-                                                .fillMaxHeight(),
-                                            colors = CardDefaults.cardColors(
-                                                containerColor = MaterialTheme.colorScheme.surfaceContainerLowest
+                                    TaskListDetailLayout(
+                                        nodes = nodes,
+                                        selectedNode = selectedNode,
+                                        selectedNodeId = state.selectedNodeId,
+                                        isEditMode = state.isEditMode,
+                                        isAddingTask = state.isAddingTask,
+                                        isProfileMode = state.isProfileMode,
+                                        profiles = profiles,
+                                        activeProfileId = activeProfileId,
+                                        sequenceConfigs = sequenceConfigs,
+                                        activeSequenceConfigId = activeSequenceConfigId,
+                                        sequence = profileSequence,
+                                        sequenceEnabled = profileSequenceEnabled,
+                                        clientType = clientType,
+                                        onNodeEnabledChange = viewModel::onNodeEnabledChange,
+                                        onNodeSelected = viewModel::onNodeSelected,
+                                        onNodeMove = viewModel::onNodeMove,
+                                        onToggleEditMode = viewModel::onToggleEditMode,
+                                        onToggleAddingTask = viewModel::onToggleAddingTask,
+                                        onToggleProfileMode = viewModel::onToggleProfileMode,
+                                        onConfigChange = { config ->
+                                            val nodeId = selectedNode?.id
+                                                ?: return@TaskListDetailLayout
+                                            viewModel.onNodeConfigChange(
+                                                nodeId, config
                                             )
-                                        ) {
-                                            Column(modifier = Modifier.padding(top = 10.dp)) {
-                                                TaskConfigPanel(
-                                                    selectedNode = selectedNode,
-                                                    isEditMode = state.isEditMode,
-                                                    isAddingTask = state.isAddingTask,
-                                                    isProfileMode = state.isProfileMode,
-                                                    profiles = profiles,
-                                                    activeProfileId = activeProfileId,
-                                                    sequenceConfigs = sequenceConfigs,
-                                                    activeSequenceConfigId = activeSequenceConfigId,
-                                                    sequence = profileSequence,
-                                                    sequenceEnabled = profileSequenceEnabled,
-                                                    clientType = clientType,
-                                                    onConfigChange = { config ->
-                                                        val nodeId = selectedNode?.id
-                                                            ?: return@TaskConfigPanel
-                                                        viewModel.onNodeConfigChange(
-                                                            nodeId, config
-                                                        )
-                                                    },
-                                                    onAddNode = { viewModel.onAddNode(it) },
-                                                    onRemoveNode = { viewModel.onRemoveNode(it) },
-                                                    onDuplicateNode = { viewModel.onDuplicateNode(it) },
-                                                    onRenameNode = { id, name ->
-                                                        viewModel.onRenameNode(
-                                                            id, name
-                                                        )
-                                                    },
-                                                    onSwitchProfile = {
-                                                        viewModel.onSwitchProfile(
-                                                            it
-                                                        )
-                                                    },
-                                                    onRenameProfile = { id, name ->
-                                                        viewModel.onRenameProfile(
-                                                            id, name
-                                                        )
-                                                    },
-                                                    onDuplicateProfile = {
-                                                        viewModel.onDuplicateProfile(
-                                                            it
-                                                        )
-                                                    },
-                                                    onDeleteProfile = {
-                                                        viewModel.onDeleteProfile(
-                                                            it
-                                                        )
-                                                    },
-                                                    onCreateProfile = { viewModel.onCreateProfile() },
-                                                    onReorderProfile = { from, to ->
-                                                        viewModel.onReorderProfile(from, to)
-                                                    },
-                                                    onAddProfilesToSequence = { viewModel.onAddProfilesToSequence(it) },
-                                                    onRemoveSequenceEntry = {
-                                                        viewModel.onRemoveSequenceEntry(it)
-                                                    },
-                                                    onReorderSequence = { from, to ->
-                                                        viewModel.onReorderSequence(from, to)
-                                                    },
-                                                    onSwitchSequenceConfig = {
-                                                        viewModel.onSwitchSequenceConfig(it)
-                                                    },
-                                                    onCreateSequenceConfig = {
-                                                        viewModel.onCreateSequenceConfig()
-                                                    },
-                                                    onRenameSequenceConfig = { id, name ->
-                                                        viewModel.onRenameSequenceConfig(id, name)
-                                                    },
-                                                    onDeleteSequenceConfig = {
-                                                        viewModel.onDeleteSequenceConfig(it)
-                                                    },
-                                                    onSequenceEnabledChange = {
-                                                        viewModel.onSetProfileSequenceEnabled(it)
-                                                    },
-                                                )
-                                            }
-                                        }
-                                    }
+                                        },
+                                        onAddNode = { viewModel.onAddNode(it) },
+                                        onRemoveNode = { viewModel.onRemoveNode(it) },
+                                        onDuplicateNode = { viewModel.onDuplicateNode(it) },
+                                        onRenameNode = { id, name ->
+                                            viewModel.onRenameNode(id, name)
+                                        },
+                                        onSwitchProfile = { viewModel.onSwitchProfile(it) },
+                                        onRenameProfile = { id, name ->
+                                            viewModel.onRenameProfile(id, name)
+                                        },
+                                        onDuplicateProfile = { viewModel.onDuplicateProfile(it) },
+                                        onDeleteProfile = { viewModel.onDeleteProfile(it) },
+                                        onCreateProfile = { viewModel.onCreateProfile() },
+                                        onReorderProfile = { from, to ->
+                                            viewModel.onReorderProfile(from, to)
+                                        },
+                                        onAddProfilesToSequence = { viewModel.onAddProfilesToSequence(it) },
+                                        onRemoveSequenceEntry = { viewModel.onRemoveSequenceEntry(it) },
+                                        onReorderSequence = { from, to ->
+                                            viewModel.onReorderSequence(from, to)
+                                        },
+                                        onSwitchSequenceConfig = { viewModel.onSwitchSequenceConfig(it) },
+                                        onCreateSequenceConfig = { viewModel.onCreateSequenceConfig() },
+                                        onRenameSequenceConfig = { id, name ->
+                                            viewModel.onRenameSequenceConfig(id, name)
+                                        },
+                                        onDeleteSequenceConfig = { viewModel.onDeleteSequenceConfig(it) },
+                                        onSequenceEnabledChange = {
+                                            viewModel.onSetProfileSequenceEnabled(it)
+                                        },
+                                        modifier = Modifier.fillMaxSize(),
+                                        wrapDetailInCard = true,
+                                    )
                                 }
 
                                 1 -> AutoBattlePanel(modifier = Modifier.fillMaxSize())

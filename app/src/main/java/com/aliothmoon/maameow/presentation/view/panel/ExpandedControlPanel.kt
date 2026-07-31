@@ -152,68 +152,51 @@ fun ExpandedControlPanel(
                     beyondViewportPageCount = 1
                 ) { page ->
                     when (page) {
-                        0 -> { // PanelTab.ONE_KEY_TASKS
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                            ) {
-                                // 左侧任务列表
-                                TaskListPanel(
-                                    nodes = nodes,
-                                    selectedNodeId = uiState.selectedNodeId,
-                                    isEditMode = uiState.isEditMode,
-                                    isAddingTask = uiState.isAddingTask,
-                                    isProfileMode = uiState.isProfileMode,
-                                    onNodeEnabledChange = viewModel::onNodeEnabledChange,
-                                    onNodeSelected = viewModel::onNodeSelected,
-                                    onNodeMove = viewModel::onNodeMove,
-                                    onToggleEditMode = viewModel::onToggleEditMode,
-                                    onToggleAddingTask = viewModel::onToggleAddingTask,
-                                    onToggleProfileMode = viewModel::onToggleProfileMode,
-                                    modifier = Modifier
-                                        .fillMaxHeight()
-                                )
-
-                                // 右侧配置区域
-                                TaskConfigPanel(
-                                    selectedNode = selectedNode,
-                                    isEditMode = uiState.isEditMode,
-                                    isAddingTask = uiState.isAddingTask,
-                                    isProfileMode = uiState.isProfileMode,
-                                    profiles = profiles,
-                                    activeProfileId = activeProfileId,
-                                    sequenceConfigs = sequenceConfigs,
-                                    activeSequenceConfigId = activeSequenceConfigId,
-                                    sequence = profileSequence,
-                                    sequenceEnabled = profileSequenceEnabled,
-                                    clientType = clientType,
-                                    onConfigChange = { config ->
-                                        val nodeId = selectedNode?.id ?: return@TaskConfigPanel
-                                        viewModel.onNodeConfigChange(nodeId, config)
-                                    },
-                                    onAddNode = viewModel::onAddNode,
-                                    onRemoveNode = viewModel::onRemoveNode,
-                                    onDuplicateNode = viewModel::onDuplicateNode,
-                                    onRenameNode = viewModel::onRenameNode,
-                                    onSwitchProfile = viewModel::onSwitchProfile,
-                                    onRenameProfile = viewModel::onRenameProfile,
-                                    onDuplicateProfile = viewModel::onDuplicateProfile,
-                                    onDeleteProfile = viewModel::onDeleteProfile,
-                                    onCreateProfile = viewModel::onCreateProfile,
-                                    onReorderProfile = viewModel::onReorderProfile,
-                                    onAddProfilesToSequence = viewModel::onAddProfilesToSequence,
-                                    onRemoveSequenceEntry = viewModel::onRemoveSequenceEntry,
-                                    onReorderSequence = viewModel::onReorderSequence,
-                                    onSwitchSequenceConfig = viewModel::onSwitchSequenceConfig,
-                                    onCreateSequenceConfig = viewModel::onCreateSequenceConfig,
-                                    onRenameSequenceConfig = viewModel::onRenameSequenceConfig,
-                                    onDeleteSequenceConfig = viewModel::onDeleteSequenceConfig,
-                                    onSequenceEnabledChange = viewModel::onSetProfileSequenceEnabled,
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .fillMaxHeight()
-                                )
-                            }
+                        0 -> { // PanelTab.ONE_KEY_TASKS / TASKS
+                            TaskListDetailLayout(
+                                nodes = nodes,
+                                selectedNode = selectedNode,
+                                selectedNodeId = uiState.selectedNodeId,
+                                isEditMode = uiState.isEditMode,
+                                isAddingTask = uiState.isAddingTask,
+                                isProfileMode = uiState.isProfileMode,
+                                profiles = profiles,
+                                activeProfileId = activeProfileId,
+                                sequenceConfigs = sequenceConfigs,
+                                activeSequenceConfigId = activeSequenceConfigId,
+                                sequence = profileSequence,
+                                sequenceEnabled = profileSequenceEnabled,
+                                clientType = clientType,
+                                onNodeEnabledChange = viewModel::onNodeEnabledChange,
+                                onNodeSelected = viewModel::onNodeSelected,
+                                onNodeMove = viewModel::onNodeMove,
+                                onToggleEditMode = viewModel::onToggleEditMode,
+                                onToggleAddingTask = viewModel::onToggleAddingTask,
+                                onToggleProfileMode = viewModel::onToggleProfileMode,
+                                onConfigChange = { config ->
+                                    val nodeId = selectedNode?.id ?: return@TaskListDetailLayout
+                                    viewModel.onNodeConfigChange(nodeId, config)
+                                },
+                                onAddNode = viewModel::onAddNode,
+                                onRemoveNode = viewModel::onRemoveNode,
+                                onDuplicateNode = viewModel::onDuplicateNode,
+                                onRenameNode = viewModel::onRenameNode,
+                                onSwitchProfile = viewModel::onSwitchProfile,
+                                onRenameProfile = viewModel::onRenameProfile,
+                                onDuplicateProfile = viewModel::onDuplicateProfile,
+                                onDeleteProfile = viewModel::onDeleteProfile,
+                                onCreateProfile = viewModel::onCreateProfile,
+                                onReorderProfile = viewModel::onReorderProfile,
+                                onAddProfilesToSequence = viewModel::onAddProfilesToSequence,
+                                onRemoveSequenceEntry = viewModel::onRemoveSequenceEntry,
+                                onReorderSequence = viewModel::onReorderSequence,
+                                onSwitchSequenceConfig = viewModel::onSwitchSequenceConfig,
+                                onCreateSequenceConfig = viewModel::onCreateSequenceConfig,
+                                onRenameSequenceConfig = viewModel::onRenameSequenceConfig,
+                                onDeleteSequenceConfig = viewModel::onDeleteSequenceConfig,
+                                onSequenceEnabledChange = viewModel::onSetProfileSequenceEnabled,
+                                modifier = Modifier.fillMaxSize(),
+                            )
                         }
 
                         1 -> { // PanelTab.AUTO_BATTLE
