@@ -377,8 +377,8 @@ class DepotRepository(
         }
         val accountTag = activeAccountTag.value
         if (accountTag == null) {
+            // 不绑定账号时跳过写入，但不要把内存 snapshot 清掉。
             Timber.w("账号切换为空，跳过仓库写入")
-            synchronized(memoryLock) { _snapshot.value = DepotSnapshot() }
             return
         }
         val key = shardKey(profileId, accountTag)

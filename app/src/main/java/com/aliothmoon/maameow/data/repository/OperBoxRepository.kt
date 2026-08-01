@@ -265,8 +265,8 @@ class OperBoxRepository(
         }
         val accountTag = activeAccountTag.value
         if (accountTag == null) {
+            // 不绑定账号时跳过落盘，但不要把内存 snapshot 清掉——否则小工具页/库存页会看起来像数据被清空。
             Timber.w("账号切换为空，跳过干员箱写入")
-            synchronized(memoryLock) { _snapshot.value = OperBoxSnapshot() }
             return
         }
         val key = shardKey(profileId, accountTag)

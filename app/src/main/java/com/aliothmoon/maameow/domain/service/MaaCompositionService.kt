@@ -234,7 +234,9 @@ class MaaCompositionService(
     ): StartResult = executeStart(
         tasks = tasks,
         clientType = clientType,
-        depotAccountTag = null,
+        // 小工具/识别链路通常没有任务槽 accountTag；落到 default 分片，
+        // 否则 activate(null) 会清空 snapshot，识别结果也无法落盘，库存页看起来被"清空"。
+        depotAccountTag = DepotRepository.DEFAULT_ACCOUNT_TAG,
         startMessage = context.getString(R.string.runlog_copilot_start),
         successMessage = context.getString(R.string.runlog_copilot_started),
     )
