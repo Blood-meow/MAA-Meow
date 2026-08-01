@@ -4,7 +4,9 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.RectF
 import android.graphics.Typeface
+import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aliothmoon.maameow.data.model.toolbox.OperBoxExportFormatter
@@ -18,6 +20,7 @@ import com.aliothmoon.maameow.data.repository.OperBoxRepository
 import com.aliothmoon.maameow.data.repository.OperBoxSnapshot
 import com.aliothmoon.maameow.data.repository.toSortedItems
 import com.aliothmoon.maameow.data.resource.ItemHelper
+import com.aliothmoon.maameow.data.resource.ItemIconLoader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -27,11 +30,15 @@ import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 import java.text.DateFormat
 import java.util.Date
+import kotlin.math.ceil
+import kotlin.math.max
+import kotlin.math.min
 
 class DepotInventoryViewModel(
     private val depotRepository: DepotRepository,
     private val operBoxRepository: OperBoxRepository,
     private val itemHelper: ItemHelper,
+    private val itemIconLoader: ItemIconLoader,
 ) : ViewModel() {
     private val _accounts = MutableStateFlow<List<DepotAccountSnapshot>>(emptyList())
     val accounts: StateFlow<List<DepotAccountSnapshot>> = _accounts.asStateFlow()
@@ -123,74 +130,213 @@ class DepotInventoryViewModel(
     fun exportOperBoxCsv(accountTag: String, labels: OperBoxExportLabels): String =
         OperBoxExportFormatter.toCsv(exportOperBoxList(accountTag), labels)
 
+    /**
+     * 导出与库存详情页「库存」Tab 同构的网格图：
+     * 图标 + 名称 + x数量，按 sortId 排序。
+     */
     suspend fun renderDepotPng(accountTag: String): ByteArray? = withContext(Dispatchers.Default) {
         val items = itemsForAccount(accountTag)
         val snap = depotSnapshot(accountTag)
-        val lines = buildList {
-            add("Depot / $accountTag")
+        val header = buildList {
+            add(accountTag)
             if (snap != null && snap.syncTimeMillis > 0L) {
-                add("Updated: ${DateFormat.getDateTimeInstance().format(Date(snap.syncTimeMillis))}")
+                add(DateFormat.getDateTimeInstance().format(Date(snap.syncTimeMillis)))
             }
-            add("Items: ${items.size}")
-            add("")
-            if (items.isEmpty()) {
-                add("(empty)")
-            } else {
-                items.forEach { add("${it.name}  x${it.count}  (${it.id})") }
-            }
+            add("${items.size} items")
         }
-        renderTextTablePng(lines)
-    }
 
-    suspend fun renderOperBoxPng(accountTag: String): ByteArray? = withContext(Dispatchers.Default) {
-        val snap = operBoxSnapshot(accountTag)
-        val opers = exportOperBoxList(accountTag)
-        val lines = buildList {
-            add("Operators / $accountTag")
-            if (snap != null && snap.syncTimeMillis > 0L) {
-                add("Updated: ${DateFormat.getDateTimeInstance().format(Date(snap.syncTimeMillis))}")
-            }
-            add("Owned: ${snap?.owned?.size ?: 0}  Not owned: ${snap?.notOwned?.size ?: 0}")
-            add("")
-            if (opers.isEmpty()) {
-                add("(empty)")
-            } else {
-                opers.forEach { op ->
-                    val own = if (op.own) "Y" else "N"
-                    add("${op.name}  R${op.rarity}  E${op.elite} Lv${op.level}  P${op.potential}  own=$own")
-                }
-            }
-        }
-        renderTextTablePng(lines)
-    }
+        val columns = 4
+        val cellW = 180
+        val cellH = 170
+        val gap = 12
+        val pad = 24
+        val headerLineH = 40
+        val headerH = pad + header.size * headerLineH + 12
 
-    private fun renderTextTablePng(lines: List<String>): ByteArray? {
-        val padding = 32f
-        val lineHeight = 36f
-        val titlePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.BLACK
-            textSize = 34f
-            typeface = Typeface.create(Typeface.MONOSPACE, Typeface.BOLD)
-        }
-        val bodyPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.DKGRAY
-            textSize = 28f
-            typeface = Typeface.MONOSPACE
-        }
-        val width = lines.maxOfOrNull { line ->
-            val paint = if (line === lines.firstOrNull()) titlePaint else bodyPaint
-            paint.measureText(line)
-        }?.let { it + padding * 2 }?.toInt()?.coerceAtLeast(720) ?: 720
-        val height = (padding * 2 + lineHeight * lines.size).toInt().coerceAtLeast(200)
+        val rows = if (items.isEmpty()) 1 else ceil(items.size / columns.toFloat()).toInt()
+        val width = pad * 2 + columns * cellW + (columns - 1) * gap
+        val height = headerH + pad + rows * cellH + max(0, rows - 1) * gap + pad
+
         val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
         canvas.drawColor(Color.WHITE)
-        var y = padding + lineHeight
-        lines.forEachIndexed { index, line ->
-            val paint = if (index == 0) titlePaint else bodyPaint
-            canvas.drawText(line, padding, y, paint)
-            y += lineHeight
+
+        val titlePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.BLACK
+            textSize = 34f
+            typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
         }
+        val subPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.DKGRAY
+            textSize = 26f
+        }
+        var y = pad + 34f
+        header.forEachIndexed { i, line ->
+            canvas.drawText(line, pad.toFloat(), y, if (i == 0) titlePaint else subPaint)
+            y += headerLineH
+        }
+
+        val cellBg = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.parseColor("#F0EEEA") }
+        val namePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.DKGRAY
+            textSize = 22f
+            textAlign = Paint.Align.CENTER
+        }
+        val countPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.BLACK
+            textSize = 26f
+            typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+            textAlign = Paint.Align.CENTER
+        }
+
+        if (items.isEmpty()) {
+            canvas.drawText("(empty)", width / 2f, headerH + 80f, namePaint)
+        } else {
+            items.forEachIndexed { index, item ->
+                val col = index % columns
+                val row = index / columns
+                val left = pad + col * (cellW + gap)
+                val top = headerH + row * (cellH + gap)
+                val rect = RectF(left.toFloat(), top.toFloat(), (left + cellW).toFloat(), (top + cellH).toFloat())
+                canvas.drawRoundRect(rect, 12f, 12f, cellBg)
+
+                val icon = runCatching { itemIconLoader.load(item.id)?.asAndroidBitmap() }.getOrNull()
+                val iconSize = 88
+                val iconLeft = left + (cellW - iconSize) / 2
+                val iconTop = top + 14
+                if (icon != null && !icon.isRecycled) {
+                    val dst = RectF(
+                        iconLeft.toFloat(),
+                        iconTop.toFloat(),
+                        (iconLeft + iconSize).toFloat(),
+                        (iconTop + iconSize).toFloat(),
+                    )
+                    canvas.drawBitmap(icon, null, dst, null)
+                } else {
+                    val ph = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.parseColor("#D0D0D0") }
+                    canvas.drawRoundRect(
+                        RectF(
+                            iconLeft.toFloat(),
+                            iconTop.toFloat(),
+                            (iconLeft + iconSize).toFloat(),
+                            (iconTop + iconSize).toFloat(),
+                        ),
+                        8f,
+                        8f,
+                        ph,
+                    )
+                }
+
+                val cx = left + cellW / 2f
+                val name = item.name.let { if (it.length > 8) it.take(7) + "…" else it }
+                canvas.drawText(name, cx, (top + iconSize + 40).toFloat(), namePaint)
+                canvas.drawText("x${item.count}", cx, (top + iconSize + 72).toFloat(), countPaint)
+            }
+        }
+
+        compressPng(bitmap)
+    }
+
+    /**
+     * 导出与库存详情页「干员」Tab 同构的列表：
+     * 稀有度色 + 名称 + E/Lv/潜能（已拥有）。
+     */
+    suspend fun renderOperBoxPng(accountTag: String): ByteArray? = withContext(Dispatchers.Default) {
+        val snap = operBoxSnapshot(accountTag)
+        val owned = snap?.owned.orEmpty()
+        val notOwned = snap?.notOwned.orEmpty()
+        // 与详情页默认 Tab 一致：优先导出已拥有；若空则未拥有
+        val opers = if (owned.isNotEmpty()) owned else notOwned
+        val section = if (owned.isNotEmpty()) "Owned" else "Not owned"
+
+        val pad = 24
+        val rowH = 64
+        val gap = 8
+        val headerLineH = 40
+        val headerLines = buildList {
+            add(accountTag)
+            if (snap != null && snap.syncTimeMillis > 0L) {
+                add(DateFormat.getDateTimeInstance().format(Date(snap.syncTimeMillis)))
+            }
+            add("$section  owned=${owned.size}  notOwned=${notOwned.size}")
+        }
+        val headerH = pad + headerLines.size * headerLineH + 8
+        val width = 900
+        val height = headerH + pad + max(1, opers.size) * (rowH + gap) + pad
+
+        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        canvas.drawColor(Color.WHITE)
+
+        val titlePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.BLACK
+            textSize = 34f
+            typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+        }
+        val subPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.DKGRAY
+            textSize = 26f
+        }
+        var y = pad + 34f
+        headerLines.forEachIndexed { i, line ->
+            canvas.drawText(line, pad.toFloat(), y, if (i == 0) titlePaint else subPaint)
+            y += headerLineH
+        }
+
+        val rowBg = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.parseColor("#F3F1ED") }
+        val namePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.BLACK
+            textSize = 28f
+        }
+        val metaPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.DKGRAY
+            textSize = 24f
+            textAlign = Paint.Align.RIGHT
+        }
+        val rarityPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            textSize = 24f
+            typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+        }
+
+        if (opers.isEmpty()) {
+            canvas.drawText("(empty)", pad.toFloat(), headerH + 48f, namePaint)
+        } else {
+            opers.forEachIndexed { index, op ->
+                val top = headerH + index * (rowH + gap)
+                val rect = RectF(
+                    pad.toFloat(),
+                    top.toFloat(),
+                    (width - pad).toFloat(),
+                    (top + rowH).toFloat(),
+                )
+                canvas.drawRoundRect(rect, 10f, 10f, rowBg)
+
+                rarityPaint.color = rarityColor(op.rarity)
+                canvas.drawText("${op.rarity}★", (pad + 16).toFloat(), top + 40f, rarityPaint)
+
+                val nameX = pad + 80f
+                canvas.drawText(op.name, nameX, top + 40f, namePaint)
+
+                if (op.own) {
+                    val meta = "E${op.elite} Lv${op.level}  P${op.potential}"
+                    canvas.drawText(meta, (width - pad - 16).toFloat(), top + 40f, metaPaint)
+                }
+            }
+        }
+
+        compressPng(bitmap)
+    }
+
+    private fun rarityColor(rarity: Int): Int = when (rarity) {
+        6 -> Color.parseColor("#FF6B35")
+        5 -> Color.parseColor("#FFD700")
+        4 -> Color.parseColor("#9C7CFF")
+        3 -> Color.parseColor("#4FC3F7")
+        2 -> Color.parseColor("#A5D6A7")
+        else -> Color.GRAY
+    }
+
+    private fun compressPng(bitmap: Bitmap): ByteArray? {
         return ByteArrayOutputStream().use { out ->
             if (!bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)) {
                 bitmap.recycle()
