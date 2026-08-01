@@ -6,7 +6,6 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
 import android.graphics.Typeface
-import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aliothmoon.maameow.data.model.toolbox.OperBoxExportFormatter
@@ -200,7 +199,7 @@ class DepotInventoryViewModel(
                 val rect = RectF(left.toFloat(), top.toFloat(), (left + cellW).toFloat(), (top + cellH).toFloat())
                 canvas.drawRoundRect(rect, 12f, 12f, cellBg)
 
-                val icon = runCatching { itemIconLoader.load(item.id)?.asAndroidBitmap() }.getOrNull()
+                val icon = runCatching { itemIconLoader.loadRawAndroidBitmap(item.id) }.getOrNull()
                 val iconSize = 88
                 val iconLeft = left + (cellW - iconSize) / 2
                 val iconTop = top + 14
@@ -211,7 +210,12 @@ class DepotInventoryViewModel(
                         (iconLeft + iconSize).toFloat(),
                         (iconTop + iconSize).toFloat(),
                     )
-                    canvas.drawBitmap(icon, null, dst, null)
+                    // 先铺不透明底，再画原图，避免导出图 item 图标发透
+                    val plate = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.WHITE }
+                    canvas.drawRoundRect(dst, 8f, 8f, plate)
+                    val iconPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { isFilterBitmap = true }
+                    canvas.drawBitmap(icon, null, dst, iconPaint)
+                    icon.recycle()
                 } else {
                     val ph = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.parseColor("#D0D0D0") }
                     canvas.drawRoundRect(

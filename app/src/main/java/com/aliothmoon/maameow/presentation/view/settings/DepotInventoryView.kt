@@ -66,7 +66,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
+import androidx.compose.ui.modifier
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
@@ -267,8 +268,11 @@ private fun SwipeRevealAccountCard(
     val actionWidthPx = with(density) { actionWidth.toPx() }
     val offsetX = remember { Animatable(0f) }
     val scope = rememberCoroutineScope()
+    // 用卡片实测高度，保证分享/删除与卡片完全等高（之前 matchParentSize 那版的高度手感）
+    var cardHeightPx by remember { mutableIntStateOf(0) }
     val revealPx = (-offsetX.value).coerceIn(0f, actionWidthPx)
     val revealDp = with(density) { revealPx.toDp() }
+    val cardHeightDp = with(density) { cardHeightPx.toDp() }
     val revealed = revealPx > 8f
 
     Box(
@@ -276,12 +280,12 @@ private fun SwipeRevealAccountCard(
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp)),
     ) {
-        // 只占「滑开露出」的右侧宽度：半透明卡片底下不会透出按钮
-        if (revealPx > 0.5f) {
+        // 操作钮只放在右侧「露出条带」里：卡片半透明也不会透出整块按钮
+        if (cardHeightPx > 0 && revealPx > 0.5f) {
             Box(
                 modifier = Modifier
                     .align(Alignment.CenterEnd)
-                    .fillMaxHeight()
+                    .height(cardHeightDp)
                     .width(revealDp)
                     .clip(RectangleShape),
             ) {
@@ -325,11 +329,11 @@ private fun SwipeRevealAccountCard(
             }
         }
 
-        // 保持半透明 surfaceVariant；外层 Box 负责圆角
         Card(
             shape = RoundedCornerShape(0.dp),
             modifier = Modifier
                 .fillMaxWidth()
+                .onSizeChanged { cardHeightPx = it.height }
                 .offset { IntOffset(offsetX.value.roundToInt(), 0) }
                 .pointerInput(actionWidthPx) {
                     detectHorizontalDragGestures(
@@ -355,6 +359,7 @@ private fun SwipeRevealAccountCard(
                         onClick()
                     }
                 }),
+            // 保持半透明 surfaceVariant
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
         ) {
             val draws = account.drawSummary()
@@ -393,6 +398,7 @@ private fun SwipeRevealAccountCard(
         }
     }
 }
+
 
 
 @OptIn(ExperimentalMaterial3Api::class)

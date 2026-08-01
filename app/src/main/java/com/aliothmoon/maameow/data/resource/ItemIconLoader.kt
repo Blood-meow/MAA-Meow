@@ -57,6 +57,22 @@ class ItemIconLoader(
         }
     }
 
+
+    /**
+     * 导出用：读取原始物品图标（不把黑色抠成透明），避免导出图上图标发透。
+     * UI 仍走 [load] 的黑转透明处理。
+     */
+    suspend fun loadRawAndroidBitmap(itemId: String): Bitmap? = withContext(Dispatchers.IO) {
+        val file = File(pathConfig.resourceDir, "template/items/$itemId.png")
+        if (!file.exists()) return@withContext null
+        runCatching {
+            val options = BitmapFactory.Options().apply {
+                inPreferredConfig = Bitmap.Config.ARGB_8888
+                inMutable = true
+            }
+            BitmapFactory.decodeFile(file.absolutePath, options)
+        }.getOrNull()
+    }
     private fun doProcess(file: File): ImageBitmap? {
         val options = BitmapFactory.Options().apply {
             inPreferredConfig = Bitmap.Config.ARGB_8888
