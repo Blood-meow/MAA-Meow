@@ -332,6 +332,8 @@
     <string name="depot_inventory_export_arkplanner">企鹅物流 / ArkPlanner (JSON)</string>
     <string name="depot_inventory_export_lolicon">Lolicon (JSON)</string>
     <string name="depot_inventory_export_image">导出为图片 (PNG)</string>
+    <string name="depot_inventory_export_hide_account">隐去账号标识</string>
+    <string name="depot_inventory_export_hide_account_hint">导出图片时不显示 official 后账号串，仅保留时间与数据</string>
     <string name="settings_export_config_title">导出配置</string>
     <string name="settings_export_config_desc">将所有设置和任务配置导出为文件</string>
     <string name="settings_import_config_title">导入配置</string>

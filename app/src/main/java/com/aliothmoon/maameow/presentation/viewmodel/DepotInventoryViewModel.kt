@@ -133,11 +133,16 @@ class DepotInventoryViewModel(
      * 导出与库存详情页「库存」Tab 同构的网格图：
      * 图标 + 名称 + x数量，按 sortId 排序。
      */
-    suspend fun renderDepotPng(accountTag: String): ByteArray? = withContext(Dispatchers.Default) {
+    /**
+     * @param hideAccountTag true 时不在图头写 accountTag（official 后那串），只留时间与数据摘要
+     */
+    suspend fun renderDepotPng(accountTag: String, hideAccountTag: Boolean = false): ByteArray? = withContext(Dispatchers.Default) {
         val items = itemsForAccount(accountTag)
         val snap = depotSnapshot(accountTag)
         val header = buildList {
-            add(accountTag)
+            if (!hideAccountTag) {
+                add(accountTag)
+            }
             if (snap != null && snap.syncTimeMillis > 0L) {
                 add(DateFormat.getDateTimeInstance().format(Date(snap.syncTimeMillis)))
             }
@@ -245,7 +250,10 @@ class DepotInventoryViewModel(
      * 导出与库存详情页「干员」Tab 同构的列表：
      * 稀有度色 + 名称 + E/Lv/潜能（已拥有）。
      */
-    suspend fun renderOperBoxPng(accountTag: String): ByteArray? = withContext(Dispatchers.Default) {
+    /**
+     * @param hideAccountTag true 时不在图头写 accountTag（official 后那串），只留时间与数据摘要
+     */
+    suspend fun renderOperBoxPng(accountTag: String, hideAccountTag: Boolean = false): ByteArray? = withContext(Dispatchers.Default) {
         val snap = operBoxSnapshot(accountTag)
         val owned = snap?.owned.orEmpty()
         val notOwned = snap?.notOwned.orEmpty()
@@ -258,7 +266,9 @@ class DepotInventoryViewModel(
         val gap = 8
         val headerLineH = 40
         val headerLines = buildList {
-            add(accountTag)
+            if (!hideAccountTag) {
+                add(accountTag)
+            }
             if (snap != null && snap.syncTimeMillis > 0L) {
                 add(DateFormat.getDateTimeInstance().format(Date(snap.syncTimeMillis)))
             }

@@ -132,6 +132,8 @@
     <string name="depot_inventory_export_arkplanner">Penguin / ArkPlanner (JSON)</string>
     <string name="depot_inventory_export_lolicon">Lolicon (JSON)</string>
     <string name="depot_inventory_export_image">Export as image (PNG)</string>
+    <string name="depot_inventory_export_hide_account">Hide account id</string>
+    <string name="depot_inventory_export_hide_account_hint">PNG header omits the official account tag; keeps time and data only</string>
     <string name="settings_export_config_title">Export Configuration</string>
     <string name="settings_export_config_desc">Export all settings and task configurations to a file</string>
     <string name="settings_import_config_title">Import Configuration</string>

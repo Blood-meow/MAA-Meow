@@ -54,6 +54,7 @@ import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -413,6 +414,8 @@ private fun DepotInventoryExportBottomSheet(
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
     var section by remember { mutableStateOf<ExportSection?>(null) }
+    // 导出图片时可选：隐去 accountTag（official 后那串），只留时间与数据
+    var hideAccountTag by remember { mutableStateOf(false) }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -432,6 +435,37 @@ private fun DepotInventoryExportBottomSheet(
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 12.dp),
             )
+
+            // 仅在选了仓库/干员后显示：导出图片是否隐去账号标识
+            if (section != null) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Column(modifier = Modifier.weight(1f).padding(end = 12.dp)) {
+                        Text(
+                            text = stringResource(R.string.depot_inventory_export_hide_account),
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                        Text(
+                            text = stringResource(R.string.depot_inventory_export_hide_account_hint),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    Switch(
+                        checked = hideAccountTag,
+                        onCheckedChange = { hideAccountTag = it },
+                    )
+                }
+                HorizontalDivider(
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant,
+                )
+            }
 
             when (section) {
                 null -> {
@@ -481,7 +515,7 @@ private fun DepotInventoryExportBottomSheet(
                         icon = Icons.Default.Image,
                         onClick = {
                             scope.launch {
-                                val bytes = viewModel.renderDepotPng(accountTag)
+                                val bytes = viewModel.renderDepotPng(accountTag, hideAccountTag = hideAccountTag)
                                 if (bytes != null) {
                                     exporter.exportBytes("depot_$accountTag", bytes, ToolboxExportFileType.PNG)
                                 }
@@ -532,7 +566,7 @@ private fun DepotInventoryExportBottomSheet(
                         icon = Icons.Default.Image,
                         onClick = {
                             scope.launch {
-                                val bytes = viewModel.renderOperBoxPng(accountTag)
+                                val bytes = viewModel.renderOperBoxPng(accountTag, hideAccountTag = hideAccountTag)
                                 if (bytes != null) {
                                     exporter.exportBytes("operbox_$accountTag", bytes, ToolboxExportFileType.PNG)
                                 }
