@@ -15,6 +15,7 @@ enum class ToolboxExportFileType(val extension: String, val mimeType: String) {
     JSON("json", "application/json"),
     MARKDOWN("md", "text/markdown"),
     CSV("csv", "text/csv"),
+    PNG("png", "image/png"),
 }
 
 
@@ -60,6 +61,36 @@ class ToolboxExportService(
             }
         }
 
+
+    suspend fun buildShareIntentBytes(prefix: String, bytes: ByteArray, fileType: ToolboxExportFileType): Intent? =
+        withContext(Dispatchers.IO) {
+            try {
+                val exportDir = File(context.cacheDir, EXPORT_DIR).apply { mkdirs() }
+                cleanupOldExports(exportDir, prefix)
+                val file = File(exportDir, makeFileName(prefix, fileType))
+                file.writeBytes(bytes)
+                createShareIntent(file, fileType)
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to build share intent bytes for %s", prefix)
+                null
+            }
+        }
+
+    suspend fun writeBytesToUri(uri: Uri, bytes: ByteArray): Boolean =
+        withContext(Dispatchers.IO) {
+            try {
+                val out = context.contentResolver.openOutputStream(uri)
+                if (out == null) {
+                    Timber.e("openOutputStream returned null for %s", uri)
+                    return@withContext false
+                }
+                out.use { it.write(bytes) }
+                true
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to write export bytes to uri")
+                false
+            }
+        }
     private fun createShareIntent(file: File, fileType: ToolboxExportFileType): Intent {
         val authority = "${context.packageName}.fileprovider"
         val uri = FileProvider.getUriForFile(context, authority, file)

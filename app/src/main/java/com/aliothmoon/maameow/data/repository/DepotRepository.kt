@@ -299,6 +299,32 @@ class DepotRepository(
             .sortedBy { it.accountTag }
     }
 
+    /** 删除当前配置档下指定账号标签的仓库分片（内存 + 磁盘）。 */
+    suspend fun dropAccount(accountTag: String) {
+        val profileId = taskChainState.activeProfileId.value
+        if (profileId.isEmpty()) return
+        val tag = normalizeAccountTagOrNull(accountTag) ?: return
+        val key = shardKey(profileId, tag)
+        synchronized(memoryLock) {
+            shards.remove(key)
+            dirty.remove(key)
+            if (activeAccountTag.value == tag) {
+                _snapshot.value = DepotSnapshot()
+            }
+        }
+        try {
+            store.edit { prefs ->
+                prefs.remove(keyOf(key))
+                // 兼容旧默认账号 key
+                if (tag == DEFAULT_ACCOUNT_TAG || tag.endsWith(":$DEFAULT_ACCOUNT_TAG")) {
+                    prefs.remove(stringPreferencesKey("depot_$profileId"))
+                }
+            }
+        } catch (e: IOException) {
+            Timber.w(e, "删除仓库账号分片失败: %s / %s", profileId, tag)
+        }
+    }
+
     /** 配置档被删除时清理其分片（内存 + 磁盘）。 */
     suspend fun dropProfile(profileId: String) {
         if (profileId.isEmpty()) return

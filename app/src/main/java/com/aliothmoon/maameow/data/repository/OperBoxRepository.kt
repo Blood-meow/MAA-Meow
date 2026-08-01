@@ -197,6 +197,30 @@ class OperBoxRepository(
             .sortedBy { it.accountTag }
     }
 
+    /** 删除当前配置档下指定账号标签的干员箱分片（内存 + 磁盘）。 */
+    suspend fun dropAccount(accountTag: String) {
+        val profileId = taskChainState.activeProfileId.value
+        if (profileId.isEmpty()) return
+        val tag = normalizeAccountTagOrNull(accountTag) ?: return
+        val key = shardKey(profileId, tag)
+        synchronized(memoryLock) {
+            shards.remove(key)
+            if (activeAccountTag.value == tag) {
+                _snapshot.value = OperBoxSnapshot()
+            }
+        }
+        try {
+            store.edit { prefs ->
+                prefs.remove(keyOf(key))
+                if (tag == DepotRepository.DEFAULT_ACCOUNT_TAG || tag.endsWith(":${DepotRepository.DEFAULT_ACCOUNT_TAG}")) {
+                    prefs.remove(stringPreferencesKey("operbox_$profileId"))
+                }
+            }
+        } catch (e: IOException) {
+            Timber.w(e, "删除干员箱账号分片失败: %s / %s", profileId, tag)
+        }
+    }
+
     suspend fun dropProfile(profileId: String) {
         if (profileId.isEmpty()) return
         synchronized(memoryLock) {
