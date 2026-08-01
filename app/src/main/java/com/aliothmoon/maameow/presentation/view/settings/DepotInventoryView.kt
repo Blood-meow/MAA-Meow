@@ -287,7 +287,7 @@ private fun SwipeRevealAccountCard(
                         right = size.width,
                         bottom = size.height,
                     ) {
-                        hannah.h@example.com()
+                        drawContent()
                     }
                 },
             horizontalArrangement = Arrangement.End,
