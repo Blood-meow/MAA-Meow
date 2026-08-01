@@ -163,7 +163,7 @@ class DepotInventoryViewModel(
 
         val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
-        canvas.drawColor(Color.WHITE)
+        canvas.drawColor(Color.WHITE) // 导出底必须不透明白，黑底图标抠透后透出这里
 
         val titlePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color = Color.BLACK
@@ -180,7 +180,7 @@ class DepotInventoryViewModel(
             y += headerLineH
         }
 
-        val cellBg = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.parseColor("#F0EEEA") }
+        val cellBg = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.parseColor("#F7F5F2") }
         val namePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color = Color.DKGRAY
             textSize = 22f
@@ -215,10 +215,16 @@ class DepotInventoryViewModel(
                         (iconLeft + iconSize).toFloat(),
                         (iconTop + iconSize).toFloat(),
                     )
-                    // 先铺不透明底，再画原图，避免导出图 item 图标发透
-                    val plate = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.WHITE }
+                    // 先铺不透明白底，再画黑转透明后的图标，透出白底不发黑
+                    val plate = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                        color = Color.WHITE
+                        style = Paint.Style.FILL
+                    }
                     canvas.drawRoundRect(dst, 8f, 8f, plate)
-                    val iconPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { isFilterBitmap = true }
+                    val iconPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                        isFilterBitmap = true
+                        isDither = true
+                    }
                     canvas.drawBitmap(icon, null, dst, iconPaint)
                     icon.recycle()
                 } else {
@@ -280,7 +286,7 @@ class DepotInventoryViewModel(
 
         val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
-        canvas.drawColor(Color.WHITE)
+        canvas.drawColor(Color.WHITE) // 导出底必须不透明白，黑底图标抠透后透出这里
 
         val titlePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color = Color.BLACK

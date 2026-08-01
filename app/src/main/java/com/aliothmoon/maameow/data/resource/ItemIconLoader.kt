@@ -59,8 +59,9 @@ class ItemIconLoader(
 
 
     /**
-     * 导出用：读取原始物品图标（不把黑色抠成透明），避免导出图上图标发透。
-     * UI 仍走 [load] 的黑转透明处理。
+     * 导出用：读取物品图标并把纯黑抠成透明。
+     * 模板 item 图底是黑的，导出时要透出画布白底；再在绘制处铺不透明白底，避免发透发灰。
+     * UI 仍走 [load]。
      */
     suspend fun loadRawAndroidBitmap(itemId: String): Bitmap? = withContext(Dispatchers.IO) {
         val file = File(pathConfig.resourceDir, "template/items/$itemId.png")
@@ -70,8 +71,24 @@ class ItemIconLoader(
                 inPreferredConfig = Bitmap.Config.ARGB_8888
                 inMutable = true
             }
-            BitmapFactory.decodeFile(file.absolutePath, options)
+            val bitmap = BitmapFactory.decodeFile(file.absolutePath, options) ?: return@runCatching null
+            processBlackToTransparentInPlace(bitmap)
+            bitmap
         }.getOrNull()
+    }
+
+    /** 与 UI doProcess 一致：RGB 全 0 的像素 alpha 清零，黑底变透明。 */
+    private fun processBlackToTransparentInPlace(bitmap: Bitmap) {
+        val width = bitmap.width
+        val height = bitmap.height
+        val pixels = IntArray(width * height)
+        bitmap.getPixels(pixels, 0, width, 0, 0, width, height)
+        for (i in pixels.indices) {
+            if (pixels[i] and 0x00FFFFFF == 0) {
+                pixels[i] = 0
+            }
+        }
+        bitmap.setPixels(pixels, 0, width, 0, 0, width, height)
     }
     private fun doProcess(file: File): ImageBitmap? {
         val options = BitmapFactory.Options().apply {
