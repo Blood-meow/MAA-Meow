@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.matchParentSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
@@ -272,11 +271,9 @@ private fun SwipeRevealAccountCard(
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp)),
     ) {
-        // 右侧露出的操作区：导出 + 红色删除
+        // 右侧操作区：与卡片同高（matchParentSize 跟随 Card 测量高度）
         Row(
-            modifier = Modifier
-                .matchParentSize()
-                .padding(start = 8.dp),
+            modifier = Modifier.matchParentSize(),
             horizontalArrangement = Arrangement.End,
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -311,6 +308,7 @@ private fun SwipeRevealAccountCard(
         }
 
         Card(
+            shape = RoundedCornerShape(0.dp), // 外层 Box 已 clip，避免卡片圆角裁切后按钮视觉不等高
             modifier = Modifier
                 .fillMaxWidth()
                 .offset { IntOffset(offsetX.value.roundToInt(), 0) }
