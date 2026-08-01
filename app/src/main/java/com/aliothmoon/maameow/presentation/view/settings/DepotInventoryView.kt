@@ -68,9 +68,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.drawscope.clipRect
-import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
@@ -264,66 +263,69 @@ private fun SwipeRevealAccountCard(
     onExport: () -> Unit,
 ) {
     val density = LocalDensity.current
-    val actionWidthPx = with(density) { 144.dp.toPx() }
+    val actionWidth = 144.dp
+    val actionWidthPx = with(density) { actionWidth.toPx() }
     val offsetX = remember { Animatable(0f) }
     val scope = rememberCoroutineScope()
+    val revealPx = (-offsetX.value).coerceIn(0f, actionWidthPx)
+    val revealDp = with(density) { revealPx.toDp() }
+    val revealed = revealPx > 8f
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp)),
     ) {
-        // 操作区与卡片同高，但只裁剪到「滑开露出」的右侧条带，
-        // 避免半透明卡片把底下的分享/删除透出来。
-        Row(
-            modifier = Modifier
-                .matchParentSize()
-                .drawWithContent {
-                    val reveal = (-offsetX.value).coerceIn(0f, size.width)
-                    if (reveal <= 0.5f) return@drawWithContent
-                    clipRect(
-                        left = size.width - reveal,
-                        top = 0f,
-                        right = size.width,
-                        bottom = size.height,
+        // 只占「滑开露出」的右侧宽度：半透明卡片底下不会透出按钮
+        if (revealPx > 0.5f) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .fillMaxHeight()
+                    .width(revealDp)
+                    .clip(RectangleShape),
+            ) {
+                Row(
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                        .fillMaxHeight()
+                        .width(actionWidth),
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .width(72.dp)
+                            .fillMaxHeight()
+                            .background(MaterialTheme.colorScheme.primary)
+                            .clickable(enabled = revealed, onClick = onExport),
+                        contentAlignment = Alignment.Center,
                     ) {
-                        drawContent()
+                        Icon(
+                            imageVector = Icons.Default.Share,
+                            contentDescription = stringResource(R.string.depot_inventory_export),
+                            tint = MaterialTheme.colorScheme.onPrimary,
+                        )
                     }
-                },
-            horizontalArrangement = Arrangement.End,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Box(
-                modifier = Modifier
-                    .width(72.dp)
-                    .fillMaxHeight()
-                    .background(MaterialTheme.colorScheme.primary)
-                    .clickable(enabled = offsetX.value < -8f, onClick = onExport),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Share,
-                    contentDescription = stringResource(R.string.depot_inventory_export),
-                    tint = MaterialTheme.colorScheme.onPrimary,
-                )
-            }
-            Box(
-                modifier = Modifier
-                    .width(72.dp)
-                    .fillMaxHeight()
-                    .background(MaterialTheme.colorScheme.error)
-                    .clickable(enabled = offsetX.value < -8f, onClick = onDelete),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = stringResource(R.string.depot_inventory_delete),
-                    tint = MaterialTheme.colorScheme.onError,
-                )
+                    Box(
+                        modifier = Modifier
+                            .width(72.dp)
+                            .fillMaxHeight()
+                            .background(MaterialTheme.colorScheme.error)
+                            .clickable(enabled = revealed, onClick = onDelete),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = stringResource(R.string.depot_inventory_delete),
+                            tint = MaterialTheme.colorScheme.onError,
+                        )
+                    }
+                }
             }
         }
 
-        // 保持 surfaceVariant 半透明卡片；外层 Box 负责圆角 clip
+        // 保持半透明 surfaceVariant；外层 Box 负责圆角
         Card(
             shape = RoundedCornerShape(0.dp),
             modifier = Modifier
@@ -391,6 +393,7 @@ private fun SwipeRevealAccountCard(
         }
     }
 }
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
