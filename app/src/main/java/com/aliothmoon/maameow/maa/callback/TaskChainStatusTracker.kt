@@ -9,7 +9,7 @@ enum class TaskRunStatus {
     PENDING,
     IN_PROGRESS,
     COMPLETED,
-    ERROR,
+    ERROR
 }
 
 data class TaskRunInfo(
@@ -38,8 +38,6 @@ class TaskChainStatusTracker {
     }
 
     fun getNodeId(taskId: Int): String? = registry[taskId]?.slot?.nodeId
-
-    fun getAccountTag(taskId: Int): String? = registry[taskId]?.slot?.accountTag
 
     fun clear() {
         registry.clear()

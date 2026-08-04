@@ -46,7 +46,7 @@ class ProfileShardStoreTest {
     private fun fakeChainState(
         profileIdFlow: StateFlow<String> = activeProfileId,
     ): TaskChainState = mockk {
-        every { this@mockk.activeProfileId } returns profileIdFlow
+        every { this@mockk.profileId } returns profileIdFlow
         every { isLoaded } returns MutableStateFlow(true)
         every { this@mockk.profileDeleted } returns this@ProfileShardStoreTest.profileDeleted
     }

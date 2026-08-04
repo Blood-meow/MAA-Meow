@@ -48,6 +48,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.remember
 import com.aliothmoon.maameow.R
+import com.aliothmoon.maameow.data.model.toolbox.DepotItem
 import com.aliothmoon.maameow.data.repository.toSortedItems
 import com.aliothmoon.maameow.data.resource.ItemHelper
 import com.aliothmoon.maameow.data.resource.ItemIconLoader
@@ -165,7 +166,7 @@ fun DepotRecognitionPanel(
         // 物品网格
         items(items, key = { it.id }) { item ->
             val name = itemMap[item.id]?.name
-            DepotItemCell(item.id, item.count, name, iconLoader)
+            DepotItemCell(item, name, iconLoader)
         }
     }
 }
@@ -273,8 +274,8 @@ private fun rememberItemIcon(itemId: String, loader: ItemIconLoader): State<Imag
 }
 
 @Composable
-internal fun DepotItemCell(itemId: String, count: Int, name: String?, iconLoader: ItemIconLoader) {
-    val icon by rememberItemIcon(itemId, iconLoader)
+private fun DepotItemCell(item: DepotItem, name: String?, iconLoader: ItemIconLoader) {
+    val icon by rememberItemIcon(item.id, iconLoader)
     Surface(
         shape = RoundedCornerShape(6.dp),
         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
@@ -297,7 +298,7 @@ internal fun DepotItemCell(itemId: String, count: Int, name: String?, iconLoader
                 Box(modifier = Modifier.size(44.dp))
             }
             Text(
-                text = name ?: itemId,
+                text = name ?: item.id,
                 style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,
@@ -305,7 +306,7 @@ internal fun DepotItemCell(itemId: String, count: Int, name: String?, iconLoader
                 textAlign = TextAlign.Center
             )
             Text(
-                text = "x$count",
+                text = "x${item.count}",
                 style = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.sp),
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface,

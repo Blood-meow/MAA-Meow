@@ -18,7 +18,6 @@ import com.aliothmoon.maameow.domain.service.MaaSessionLogger
 import com.aliothmoon.maameow.domain.service.AchievementReporter
 import com.aliothmoon.maameow.domain.state.MaaExecutionState
 import com.aliothmoon.maameow.domain.usecase.PrepareTaskStartUseCase
-import com.aliothmoon.maameow.domain.usecase.TaskChainPlan
 import com.aliothmoon.maameow.domain.usecase.TaskStartContext
 import com.aliothmoon.maameow.domain.usecase.TaskStartDecision
 import com.aliothmoon.maameow.domain.usecase.TaskStartMode
@@ -31,7 +30,6 @@ import com.aliothmoon.maameow.presentation.view.panel.PanelDialogUiState
 import com.aliothmoon.maameow.presentation.view.panel.PanelTab
 import com.aliothmoon.maameow.schedule.data.ScheduleStrategyRepository
 import com.aliothmoon.maameow.schedule.model.ScheduledExecutionRequest
-import com.aliothmoon.maameow.schedule.service.ScheduleAlarmManager
 import com.aliothmoon.maameow.schedule.service.ScheduleTriggerLogger
 import com.aliothmoon.maameow.schedule.service.ScheduledLaunchCoordinator
 import com.aliothmoon.maameow.utils.i18n.UiText
@@ -64,11 +62,11 @@ class BackgroundTaskViewModel(
     private val pathConfig: MaaPathConfig,
     private val achievementReporter: AchievementReporter,
     private val gameMuteCoordinator: GameMuteCoordinator,
-    private val scheduleRepository: ScheduleStrategyRepository,
-    private val scheduleAlarmManager: ScheduleAlarmManager,
+    scheduleRepository: ScheduleStrategyRepository,
     triggerLogger: ScheduleTriggerLogger,
     private val application: Context,
 ) : ViewModel() {
+
     val coordinator = ScheduledLaunchCoordinator(
         scope = viewModelScope,
         scheduleRepository = scheduleRepository,
@@ -76,7 +74,6 @@ class BackgroundTaskViewModel(
         appSettingsManager = appSettingsManager,
         chainState = chainState,
         triggerLogger = triggerLogger,
-        appContext = application,
     )
 
     private val _state = MutableStateFlow(BackgroundTaskState())
@@ -97,12 +94,6 @@ class BackgroundTaskViewModel(
     private val touchPreviewController = TouchPreviewController(viewModelScope)
     val markers: StateFlow<List<PreviewTouchMarker>> = touchPreviewController.markers
     private var pendingStart: PendingStart? = null
-
-    /** Remaining single-client plans after the current segment (contiguous multi-client split). */
-    private var pendingClientPlans: List<TaskChainPlan> = emptyList()
-
-    /** Total segments for the active multi-client run (for run-log ordinals). */
-    private var clientSegmentTotal: Int = 0
 
     private data class PendingStart(
         val context: TaskStartContext,
@@ -181,127 +172,18 @@ class BackgroundTaskViewModel(
         viewModelScope.launch {
             var prev = compositionService.state.value
             compositionService.state.collect { current ->
-                // Clear queued multi-client segments on user/external stop so a conflated
-                // RUNNING→IDLE (skipped STOPPING) cannot auto-start the next segment.
-                // Covers float-ball / volume-key stops that only call compositionService.stop().
-                if (current == MaaExecutionState.STOPPING) {
-                    pendingClientPlans = emptyList()
-                    clientSegmentTotal = 0
-                }
-                val naturalEnd = prev == MaaExecutionState.RUNNING &&
-                    (current == MaaExecutionState.IDLE || current == MaaExecutionState.ERROR)
-                // 手动停止走 RUNNING → STOPPING → IDLE，prev 为 STOPPING 不会匹配。
-                if (naturalEnd) {
-                    val remaining = pendingClientPlans
-                    if (remaining.isNotEmpty() && current == MaaExecutionState.IDLE) {
-                        // Contiguous multi-client: start next single-client segment.
-                        pendingClientPlans = emptyList()
-                        viewModelScope.launch {
-                            continueClientSegmentQueue(remaining)
-                        }
-                    } else if (remaining.isNotEmpty() && current == MaaExecutionState.ERROR) {
-                        Timber.w("Segment ended in ERROR; dropping %d remaining client segment(s)", remaining.size)
-                        pendingClientPlans = emptyList()
-                        clientSegmentTotal = 0
-                        viewModelScope.launch {
-                            sessionLogger.appendAndWait(
-                                application.getString(
-                                    R.string.runlog_client_segment_aborted,
-                                    current.name,
-                                ),
-                            )
-                        }
-                    } else if (appSettingsManager.closeAppOnTaskEnd.value) {
-                        // 仅在任务自然结束且无后续客户端段时关闭游戏
-                        Timber.i("Task ended (%s), auto closing app", current)
-                        _effects.send(UiEffect.toast(R.string.bg_toast_auto_closed_on_end))
-                        compositionService.stopVirtualDisplay()
-                    }
+                // 仅在任务自然结束（RUNNING → IDLE/ERROR）时关闭游戏；
+                // 手动停止走 RUNNING → STOPPING → IDLE，prev 为 STOPPING 不会匹配，
+                // 这是预期行为：手动停止说明用户可能还要继续操作，不应自动关闭游戏。
+                if (prev == MaaExecutionState.RUNNING
+                    && (current == MaaExecutionState.IDLE || current == MaaExecutionState.ERROR)
+                    && appSettingsManager.closeAppOnTaskEnd.value
+                ) {
+                    Timber.i("Task ended (%s), auto closing app", current)
+                    _effects.send(UiEffect.toast(R.string.bg_toast_auto_closed_on_end))
+                    compositionService.stopVirtualDisplay()
                 }
                 prev = current
-            }
-        }
-    }
-
-    /** Run the next queued single-client plan after a natural IDLE end. */
-    private suspend fun continueClientSegmentQueue(remaining: List<TaskChainPlan>) {
-        val next = remaining.firstOrNull() ?: return
-        val rest = remaining.drop(1)
-        Timber.i(
-            "Starting next client segment %s (%d task(s)); %d segment(s) after this",
-            next.clientType,
-            next.params.size,
-            rest.size,
-        )
-        val finishedSegment = (clientSegmentTotal - remaining.size).coerceAtLeast(1)
-        val segmentIndex = (finishedSegment + 1).coerceAtMost(clientSegmentTotal.coerceAtLeast(1))
-        sessionLogger.appendAndWait(
-            application.getString(
-                R.string.runlog_client_segment_next,
-                finishedSegment,
-                next.clientType,
-            ),
-        )
-        _effects.send(
-            UiEffect.toast(
-                application.getString(
-                    R.string.task_start_toast_next_client_segment,
-                    next.clientType,
-                ),
-            ),
-        )
-        runCatching { compositionService.stopVirtualDisplay() }
-            .onFailure { Timber.w(it, "stopVirtualDisplay before next client segment failed") }
-
-        val muteRequested = appSettingsManager.muteOnGameLaunch.value
-        if (muteRequested && !gameMuteCoordinator.mute(next.clientType)) {
-            _effects.send(UiEffect.toast(R.string.bg_toast_mute_failed))
-        }
-
-        val result = compositionService.start(
-            tasks = next.params,
-            clientType = next.clientType,
-            depotAccountTag = next.depotAccountTag,
-            isScheduled = false,
-            preflightLogs = next.preflightLogs,
-        ) {
-            sessionLogger.appendAndWait(
-                application.getString(
-                    R.string.runlog_client_segment_start,
-                    segmentIndex,
-                    clientSegmentTotal,
-                    next.clientType,
-                    next.params.size,
-                ),
-            )
-        }
-        if (result is MaaCompositionService.StartResult.Success) {
-            pendingClientPlans = rest
-            chainState.grantGameBatteryExemption(next.clientType)
-            achievementReporter.reportTaskStarted(
-                taskCount = next.params.size,
-                launchesGame = next.launchesGame,
-                gameAliveBeforeStart = next.gameAliveBeforeStart,
-            )
-            if (rest.isEmpty()) {
-                sessionLogger.appendAndWait(
-                    application.getString(R.string.runlog_client_segment_done_all),
-                )
-                clientSegmentTotal = 0
-            }
-        } else {
-            pendingClientPlans = emptyList()
-            clientSegmentTotal = 0
-            val message = application.resolveTaskStartFailureMessage(result)
-            sessionLogger.appendAndWait(
-                application.getString(
-                    R.string.runlog_client_segment_aborted,
-                    message?.resolve(application) ?: result.toString(),
-                ),
-            )
-            if (message != null) {
-                Timber.w("Next client segment start failed: %s", message.resolve(application))
-                showStartFailedDialog(message)
             }
         }
     }
@@ -466,16 +348,7 @@ class BackgroundTaskViewModel(
 
     fun onDeleteProfile(profileId: String) {
         viewModelScope.launch {
-            chainState.deleteProfile(profileId)
-            // PROFILE 定时解绑 + 可能因此变空的 SEQUENCE 定时一并消毒
-            val detached = scheduleRepository.detachProfileConfig(profileId)
-            val emptied = scheduleRepository.sanitizeInvalidTargets(
-                profiles = chainState.profiles.value,
-                sequenceConfigs = chainState.sequenceConfigs.value,
-            )
-            (detached + emptied).distinct().forEach { strategyId ->
-                scheduleAlarmManager.cancel(strategyId)
-            }
+            chainState.removeProfile(profileId)
             _state.update { it.copy(selectedNodeId = null) }
         }
     }
@@ -496,65 +369,6 @@ class BackgroundTaskViewModel(
         viewModelScope.launch {
             runCatching { chainState.reorderProfiles(fromIndex, toIndex) }
                 .onFailure { e -> Timber.e(e, "Failed to reorder profile: ${e.message}") }
-        }
-    }
-
-    fun onAddToSequence(profileId: String) {
-        onAddProfilesToSequence(listOf(profileId))
-    }
-
-    fun onAddProfilesToSequence(profileIds: List<String>) {
-        if (profileIds.isEmpty()) return
-        viewModelScope.launch {
-            chainState.addProfilesToSequence(profileIds)
-        }
-    }
-
-    fun onRemoveSequenceEntry(entryId: String) {
-        viewModelScope.launch {
-            chainState.removeSequenceEntry(entryId)
-        }
-    }
-
-    fun onReorderSequence(fromIndex: Int, toIndex: Int) {
-        viewModelScope.launch {
-            runCatching { chainState.reorderSequence(fromIndex, toIndex) }
-                .onFailure { e -> Timber.e(e, "Failed to reorder sequence: ${e.message}") }
-        }
-    }
-
-    fun onSetProfileSequenceEnabled(enabled: Boolean) {
-        viewModelScope.launch {
-            chainState.setProfileSequenceEnabled(enabled)
-        }
-    }
-
-    fun onSwitchSequenceConfig(configId: String) {
-        viewModelScope.launch {
-            chainState.switchSequenceConfig(configId)
-        }
-    }
-
-    fun onCreateSequenceConfig() {
-        viewModelScope.launch {
-            chainState.createSequenceConfig()
-        }
-    }
-
-    fun onRenameSequenceConfig(configId: String, name: String) {
-        viewModelScope.launch {
-            chainState.renameSequenceConfig(configId, name)
-        }
-    }
-
-    fun onDeleteSequenceConfig(configId: String) {
-        viewModelScope.launch {
-            chainState.deleteSequenceConfig(configId)
-            // 删除任务链后：禁用并解绑引用它的定时策略，同时取消已注册闹钟
-            val detached = scheduleRepository.detachSequenceConfig(configId)
-            detached.forEach { strategyId ->
-                scheduleAlarmManager.cancel(strategyId)
-            }
         }
     }
 
@@ -626,8 +440,7 @@ class BackgroundTaskViewModel(
     }
 
     private suspend fun doSwitchProfile(request: ScheduledExecutionRequest?) {
-        if (request == null || request.useSequence) return
-        if (chainState.activeProfileId.value != request.profileId) {
+        if (request != null && chainState.profileId.value != request.profileId) {
             chainState.switchProfile(request.profileId)
         }
     }
@@ -638,56 +451,19 @@ class BackgroundTaskViewModel(
     ): UiText? {
         doSwitchProfile(request)
 
-        // 手动：按当前启用状态 resolve；定时任务链：强制按绑定配置拼接；定时 profile：单链
-        val executableChain = when {
-            request == null -> chainState.resolveExecutableChain()
-            request.useSequence -> {
-                val seq = chainState.sequenceConfigs.value
-                    .find { it.id == request.sequenceConfigId }
-                if (seq == null) emptyList()
-                else chainState.resolveExecutableChain(
-                    sequence = seq.entries,
-                    sequenceEnabled = true,
-                    fallbackToActive = false,
-                )
-            }
-            else -> chainState.chain.value
-        }
-
         val plan = when (
             val decision = prepareTaskStart(
-                chain = executableChain,
+                chain = chainState.chain.value,
                 context = context,
             )
         ) {
             is TaskStartDecision.Ready -> {
                 pendingStart = null
-                // Queue trailing single-client segments (if any) for sequential execution.
-                pendingClientPlans = decision.plans.drop(1)
-                clientSegmentTotal = decision.plans.size
-                if (decision.plans.size > 1) {
-                    val clients = decision.plans.joinToString { it.clientType }
-                    Timber.i(
-                        "Multi-client chain split into %d segments: %s",
-                        decision.plans.size,
-                        clients,
-                    )
-                    _effects.send(
-                        UiEffect.toast(
-                            application.getString(
-                                R.string.task_start_toast_multi_client_segments,
-                                decision.plans.size,
-                            ),
-                        ),
-                    )
-                }
                 decision.plan
             }
 
             is TaskStartDecision.Blocked -> {
                 pendingStart = null
-                pendingClientPlans = emptyList()
-                clientSegmentTotal = 0
                 val message = application.resolveTaskStartDecisionMessage(decision)
                 Timber.w("Validation failed: %s", message.resolve(application))
                 if (request != null) {
@@ -712,13 +488,11 @@ class BackgroundTaskViewModel(
             _effects.send(UiEffect.toast(R.string.bg_toast_mute_failed))
         }
 
-        val allPlans = listOf(plan) + pendingClientPlans
         val result = compositionService.start(
             tasks = plan.params,
             clientType = plan.clientType,
-            depotAccountTag = plan.depotAccountTag,
             isScheduled = context.mode == TaskStartMode.SCHEDULED,
-            preflightLogs = plan.preflightLogs,
+            preflightLogs = plan.logs,
         ) {
             if (request != null) {
                 sessionLogger.appendAndWait(
@@ -728,24 +502,6 @@ class BackgroundTaskViewModel(
                     ),
                 )
             }
-            if (allPlans.size > 1) {
-                sessionLogger.appendAndWait(
-                    application.getString(
-                        R.string.runlog_client_segments_plan,
-                        allPlans.size,
-                        allPlans.joinToString { it.clientType },
-                    ),
-                )
-            }
-            sessionLogger.appendAndWait(
-                application.getString(
-                    R.string.runlog_client_segment_start,
-                    1,
-                    allPlans.size,
-                    plan.clientType,
-                    plan.params.size,
-                ),
-            )
         }
         if (result is MaaCompositionService.StartResult.Success) {
             achievementReporter.reportTaskStarted(
@@ -753,7 +509,6 @@ class BackgroundTaskViewModel(
                 launchesGame = plan.launchesGame,
                 gameAliveBeforeStart = plan.gameAliveBeforeStart,
             )
-            chainState.grantGameBatteryExemption(plan.clientType)
         }
 
         val message = application.resolveTaskStartFailureMessage(result)
@@ -769,8 +524,6 @@ class BackgroundTaskViewModel(
 
     fun onStopTasks() {
         achievementReporter.reportTaskStopped()
-        pendingClientPlans = emptyList()
-        clientSegmentTotal = 0
         viewModelScope.launch {
             compositionService.stop()
         }
@@ -782,7 +535,7 @@ class BackgroundTaskViewModel(
 
     fun onToggleGameSound() {
         viewModelScope.launch {
-            val ok = gameMuteCoordinator.toggle(chainState.getClientTypeOrNull())
+            val ok = gameMuteCoordinator.toggle(chainState.clientType)
             if (!ok) {
                 _effects.send(UiEffect.toast(R.string.bg_toast_mute_failed))
             }
@@ -823,13 +576,6 @@ class BackgroundTaskViewModel(
 
     fun onDialogDismiss() {
         pendingStart = null
-        // Keep pendingClientPlans only if a multi-segment run is already in flight;
-        // dismiss before start should not leave a stale queue.
-        if (compositionService.state.value == MaaExecutionState.IDLE ||
-            compositionService.state.value == MaaExecutionState.ERROR
-        ) {
-            pendingClientPlans = emptyList()
-        }
         _state.update { it.copy(dialog = null) }
     }
 

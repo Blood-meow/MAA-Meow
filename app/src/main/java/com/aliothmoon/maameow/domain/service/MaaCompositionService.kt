@@ -12,8 +12,6 @@ import com.aliothmoon.maameow.data.model.LogLevel
 
 import com.aliothmoon.maameow.data.preferences.AppSettingsManager
 import com.aliothmoon.maameow.data.preferences.TaskChainState
-import com.aliothmoon.maameow.data.repository.DepotRepository
-import com.aliothmoon.maameow.data.repository.OperBoxRepository
 import com.aliothmoon.maameow.data.resource.ActivityManager
 import com.aliothmoon.maameow.domain.models.RemoteBackend
 import com.aliothmoon.maameow.domain.models.RunMode
@@ -62,8 +60,6 @@ class MaaCompositionService(
     private val unifiedStateDispatcher: UnifiedStateDispatcher,
     private val sessionLogger: MaaSessionLogger,
     private val activityManager: ActivityManager,
-    private val depotRepository: DepotRepository,
-    private val operBoxRepository: OperBoxRepository,
     private val appWatchdog: AppWatchdog,
     private val taskChainState: TaskChainState,
     private val subTaskHandler: SubTaskHandler,
@@ -109,11 +105,6 @@ class MaaCompositionService(
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     private val connectDeferred = AtomicReference<CompletableDeferred<Boolean>?>()
-
-    fun activateAccountTag(accountTag: String?) {
-        depotRepository.activateAccountTag(accountTag)
-        operBoxRepository.activateAccountTag(accountTag)
-    }
 
     sealed class StartResult {
         data class Success(val version: String) : StartResult()
@@ -167,7 +158,6 @@ class MaaCompositionService(
         scope.launch {
             unifiedStateDispatcher.serviceDiedEvent.collect {
                 appWatchdog.stopWatching()
-                taskChainState.clearActiveClientType()
                 setRunState(MaaExecutionState.ERROR)
                 sessionLogger.completeSessionAndWait(
                     "SERVICE_DIED",
@@ -183,6 +173,16 @@ class MaaCompositionService(
                 Timber.w("App watchdog detected app died: %s", packageName)
                 sessionLogger.appendAndWait(
                     context.getString(R.string.runlog_game_process_gone, packageName),
+                    LogLevel.WARNING
+                )
+            }
+        }
+
+        scope.launch {
+            appWatchdog.displayDriftEvent.collect { packageName ->
+                Timber.w("App watchdog detected display drift: %s", packageName)
+                sessionLogger.appendAndWait(
+                    context.getString(R.string.runlog_game_left_virtual_display, packageName),
                     LogLevel.WARNING
                 )
             }
@@ -213,30 +213,25 @@ class MaaCompositionService(
     suspend fun start(
         tasks: List<MaaTaskParams>,
         clientType: String,
-        depotAccountTag: String? = null,
         isScheduled: Boolean = false,
         preflightLogs: List<Pair<UiText, LogLevel>> = emptyList(),
         onSessionStarted: (suspend () -> Unit)? = null
     ): StartResult = executeStart(
         tasks = tasks,
         clientType = clientType,
-        depotAccountTag = depotAccountTag,
         isScheduled = isScheduled,
-        startMessage = context.getString(R.string.runlog_task_start, tasks.size, clientType),
-        successMessage = context.getString(R.string.runlog_task_started, clientType),
+        startMessage = context.getString(R.string.runlog_task_start, tasks.size),
+        successMessage = context.getString(R.string.runlog_task_started),
         preflightLogs = preflightLogs,
         onSessionStarted = onSessionStarted,
     )
 
     suspend fun startCopilot(
         tasks: List<MaaTaskParams>,
-        clientType: String = taskChainState.getClientType()
+        clientType: String = taskChainState.clientType
     ): StartResult = executeStart(
         tasks = tasks,
         clientType = clientType,
-        // 小工具/识别链路通常没有任务槽 accountTag；落到 default 分片，
-        // 否则 activate(null) 会清空 snapshot，识别结果也无法落盘，库存页看起来被"清空"。
-        depotAccountTag = DepotRepository.DEFAULT_ACCOUNT_TAG,
         startMessage = context.getString(R.string.runlog_copilot_start),
         successMessage = context.getString(R.string.runlog_copilot_started),
     )
@@ -262,8 +257,7 @@ class MaaCompositionService(
 
     private suspend fun checkPreconditions(
         mode: RunMode,
-        isScheduled: Boolean = false,
-        clientType: String,
+        isScheduled: Boolean = false
     ): StartResult? {
         // 服务连接中时直接拒绝，避免与后台自动 load() 并发触发 LoadResource
         val serviceState = RemoteServiceManager.state.value
@@ -285,9 +279,8 @@ class MaaCompositionService(
             )
         }
 
-        // Load/reload for this segment's client (Official→global etc. must not keep old packs).
-        activityManager.runIfDirty { resourceLoader.load(clientType) }
-        val loaded = resourceLoader.ensureLoaded(clientType)
+        activityManager.runIfDirty { resourceLoader.load() }
+        val loaded = resourceLoader.ensureLoaded()
         if (loaded.isFailure) {
             return failStart(
                 context.getString(R.string.runlog_resource_load_failed), "RESOURCE_ERROR",
@@ -401,7 +394,6 @@ class MaaCompositionService(
         tasks: List<MaaTaskParams>,
         successMessage: String,
         mode: RunMode,
-        clientType: String,
     ): StartResult {
         taskChainStatusTracker.clear()
         // 不清 dropsRefresher：stage 已在 Analyze 完成，会话结束/下次 Analyze 再清
@@ -422,8 +414,7 @@ class MaaCompositionService(
         }
         setRunState(MaaExecutionState.RUNNING)
         if (mode == RunMode.BACKGROUND) {
-            // Watch the segment's client package (not chainState, which may still be previous segment).
-            appWatchdog.startWatching(clientType)
+            appWatchdog.startWatching()
         }
         sessionLogger.appendAndWait(successMessage, LogLevel.SUCCESS)
         return StartResult.Success(maa.GetVersion())
@@ -432,7 +423,6 @@ class MaaCompositionService(
     private suspend fun executeStart(
         tasks: List<MaaTaskParams>,
         clientType: String,
-        depotAccountTag: String? = null,
         startMessage: String,
         successMessage: String,
         isScheduled: Boolean = false,
@@ -442,7 +432,7 @@ class MaaCompositionService(
         setRunState(MaaExecutionState.STARTING)
         sessionLogger.startSession(tasks.map { it.type.value })
         subTaskHandler.resetSessionState()
-        toolboxResultCollector.clearDoubleSyncSession()
+        toolboxResultCollector.onSessionStart()
         onSessionStarted?.invoke()
         sessionLogger.appendAndWait(startMessage, LogLevel.INFO)
         preflightLogs.forEach { (text, level) ->
@@ -451,16 +441,8 @@ class MaaCompositionService(
         sessionLogger.appendAndWait(fetchDeviceMemoryInfo(), LogLevel.INFO)
 
         val mode = appSettings.runMode.value
-        val accountTags = tasks.mapNotNull { it.slot?.accountTag?.takeIf(String::isNotBlank) }.distinct()
-        for (accountTag in accountTags) {
-            depotRepository.activateAccountTagAndAwait(accountTag)
-            operBoxRepository.activateAccountTagAndAwait(accountTag)
-        }
-        val initialAccountTag = tasks.firstOrNull()?.slot?.accountTag ?: depotAccountTag
-        depotRepository.activateAccountTagAndAwait(initialAccountTag)
-        operBoxRepository.activateAccountTagAndAwait(initialAccountTag)
         return withContext(Dispatchers.IO) {
-            checkPreconditions(mode, isScheduled, clientType)?.let { return@withContext it }
+            checkPreconditions(mode, isScheduled)?.let { return@withContext it }
 
             try {
                 useRemoteService { service ->
@@ -473,7 +455,7 @@ class MaaCompositionService(
                         mode,
                         clientType
                     )?.let { return@useRemoteService it }
-                    val result = appendTasksAndStart(maa, tasks, successMessage, mode, clientType)
+                    val result = appendTasksAndStart(maa, tasks, successMessage, mode)
                     if (result is StartResult.Success) {
                         taskChainState.saveLastUsedClientType(clientType)
                     }
@@ -544,16 +526,6 @@ class MaaCompositionService(
         }
     }
 
-    private suspend fun flushUserDataWritesOnStop() {
-        val completed = withTimeoutOrNull(5_000L) {
-            toolboxResultCollector.awaitPendingWrites()
-            true
-        } ?: false
-        if (!completed) {
-            Timber.w("等待用户数据落盘超时；内存快照与待写标记将保留")
-        }
-    }
-
     suspend fun stop(): StopResult {
         setRunState(MaaExecutionState.STOPPING)
         sessionLogger.appendAndWait(context.getString(R.string.runlog_task_stopping), LogLevel.INFO)
@@ -562,12 +534,10 @@ class MaaCompositionService(
             useRemoteService { service ->
                 val maa = service.maaCoreService
                 if (!maa.Running()) {
-                    flushUserDataWritesOnStop()
                     return@useRemoteService finishStop(StopResult.Success)
                 }
 
                 if (!maa.Stop()) {
-                    flushUserDataWritesOnStop()
                     return@useRemoteService finishStop(StopResult.Failed)
                 }
 
@@ -578,7 +548,6 @@ class MaaCompositionService(
                     elapsed += 100
                 }
 
-                flushUserDataWritesOnStop()
                 if (maa.Running()) {
                     finishStop(StopResult.Failed)
                 } else {
@@ -590,7 +559,6 @@ class MaaCompositionService(
 
     private fun finishStop(result: StopResult): StopResult {
         appWatchdog.stopWatching()
-        taskChainState.clearActiveClientType()
         setRunState(MaaExecutionState.IDLE)
         val status = if (result is StopResult.Success) "STOPPED" else "STOP_FAILED"
         sessionLogger.append(

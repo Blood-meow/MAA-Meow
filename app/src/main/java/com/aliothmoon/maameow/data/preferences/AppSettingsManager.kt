@@ -584,6 +584,40 @@ class AppSettingsManager(
         }
     }
 
+    // 后台虚拟显示器模式：游戏漂移自动拉回开关
+    val driftAutoRepinEnabled: StateFlow<Boolean> = settings
+        .map { it.driftAutoRepinEnabled.toBooleanStrictOrNull() ?: true }
+        .distinctUntilChanged()
+        .stateIn(
+            scope, SharingStarted.Eagerly,
+            initialSettings.driftAutoRepinEnabled.toBooleanStrictOrNull() ?: true
+        )
+
+    suspend fun setDriftAutoRepinEnabled(enabled: Boolean) {
+        with(AppSettingsSchema) {
+            context.dataStore.edit { it[driftAutoRepinEnabled] = enabled.toString() }
+        }
+    }
+
+    // 漂移拉回延迟（秒）。合法范围 1~60；非法值回落到 5。
+    val driftAutoRepinDelaySec: StateFlow<Int> = settings
+        .map { coerceDriftAutoRepinDelaySec(it.driftAutoRepinDelaySec) }
+        .distinctUntilChanged()
+        .stateIn(
+            scope, SharingStarted.Eagerly,
+            coerceDriftAutoRepinDelaySec(initialSettings.driftAutoRepinDelaySec)
+        )
+
+    private fun coerceDriftAutoRepinDelaySec(raw: String): Int =
+        raw.toIntOrNull()?.coerceIn(1, 60) ?: 5
+
+    suspend fun setDriftAutoRepinDelaySec(seconds: Int) {
+        val clamped = seconds.coerceIn(1, 60)
+        with(AppSettingsSchema) {
+            context.dataStore.edit { it[driftAutoRepinDelaySec] = clamped.toString() }
+        }
+    }
+
     // Android 任务配置覆盖开关
     val tasksOverrideEnabled: StateFlow<Boolean> = settings
         .map { it.tasksOverrideEnabled.toBooleanStrictOrNull() ?: false }
@@ -659,7 +693,11 @@ class AppSettingsManager(
             }
         }
         .distinctUntilChanged()
-        .stateIn(scope, SharingStarted.Eagerly, parseUseWallpaperColor(initialSettings.useWallpaperColor))
+        .stateIn(
+            scope,
+            SharingStarted.Eagerly,
+            parseUseSystemMonetColor(initialSettings.useSystemMonetColor)
+        )
 
     suspend fun setUseWallpaperColor(enabled: Boolean) {
         context.dataStore.edit {
@@ -690,7 +728,11 @@ class AppSettingsManager(
     val showAchievementSnackbar: StateFlow<Boolean> = settings
         .map { it.showAchievementSnackbar.toBooleanStrictOrNull() ?: true }
         .distinctUntilChanged()
-        .stateIn(scope, SharingStarted.Eagerly, initialSettings.showAchievementSnackbar.toBooleanStrictOrNull() ?: true)
+        .stateIn(
+            scope,
+            SharingStarted.Eagerly,
+            initialSettings.showAchievementSnackbar.toBooleanStrictOrNull() ?: true
+        )
 
     suspend fun setShowAchievementSnackbar(enabled: Boolean) {
         with(AppSettingsSchema) {
@@ -698,85 +740,85 @@ class AppSettingsManager(
         }
     }
 
-    // Bumped when wallpaper file content may change under the same URI path.
-    private val _wallpaperUpdateVersion = MutableStateFlow(0)
-    val wallpaperUpdateVersion: StateFlow<Int> = _wallpaperUpdateVersion.asStateFlow()
+    // ============ 自定义图片背景（仅四个主 Tab 生效）============
 
-    // 自定义壁纸
-    val wallpaperUri: StateFlow<String> = settings
-        .map { it.wallpaperUri }
+    /** 将 0~100 的原始字符串解析为合法百分比 */
+    private fun parsePercent(raw: String, default: Int): Int =
+        raw.toIntOrNull()?.coerceIn(0, 100) ?: default
+
+    val customBackgroundEnabled: StateFlow<Boolean> = settings
+        .map { it.customBackgroundEnabled.toBooleanStrictOrNull() ?: false }
         .distinctUntilChanged()
-        .stateIn(scope, SharingStarted.Eagerly, initialSettings.wallpaperUri)
+        .stateIn(
+            scope, SharingStarted.Eagerly,
+            initialSettings.customBackgroundEnabled.toBooleanStrictOrNull() ?: false
+        )
 
-    suspend fun setWallpaperUri(uri: String) {
+    suspend fun setCustomBackgroundEnabled(enabled: Boolean) {
         with(AppSettingsSchema) {
-            context.dataStore.edit { it[wallpaperUri] = uri }
-        }
-        // Always bump so same-path recrop and clear both refresh collectors.
-        _wallpaperUpdateVersion.value++
-    }
-
-    // 壁纸透明度
-    val wallpaperAlpha: StateFlow<Int> = settings
-        .map { it.wallpaperAlpha.toIntOrNull() ?: 100 }
-        .distinctUntilChanged()
-        .stateIn(scope, SharingStarted.Eagerly, initialSettings.wallpaperAlpha.toIntOrNull() ?: 100)
-
-    suspend fun setWallpaperAlpha(alpha: Int) {
-        with(AppSettingsSchema) {
-            context.dataStore.edit { it[wallpaperAlpha] = alpha.coerceIn(0, 100).toString() }
+            context.dataStore.edit { it[customBackgroundEnabled] = enabled.toString() }
         }
     }
 
-    // 壁纸模糊：0..100%（渲染映射到 0..12dp，见 WallpaperBlur）
-    val wallpaperBlur: StateFlow<Int> = settings
-        .map { WallpaperBlur.parsePercent(it.wallpaperBlur) }
+    val customBackgroundToken: StateFlow<String> = settings
+        .map { it.customBackgroundToken }
         .distinctUntilChanged()
-        .stateIn(scope, SharingStarted.Eagerly, WallpaperBlur.parsePercent(initialSettings.wallpaperBlur))
+        .stateIn(scope, SharingStarted.Eagerly, initialSettings.customBackgroundToken)
 
-    suspend fun setWallpaperBlur(blur: Int) {
+    /** 保存/清除背景时开关与令牌总是成对变更，合并为一次写入避免中间态。 */
+    suspend fun setCustomBackgroundState(enabled: Boolean, token: String) {
         with(AppSettingsSchema) {
             context.dataStore.edit {
-                it[wallpaperBlur] = blur.coerceIn(0, WallpaperBlur.PERCENT_MAX).toString()
-                // User writes are always percent after this change.
-                it[wallpaperBlurIsPercentKey] = true
+                it[customBackgroundEnabled] = enabled.toString()
+                it[customBackgroundToken] = token
             }
         }
     }
 
-    // 壁纸遮罩（scrim）：0..100%，叠在壁纸上的主题 background 半透明层
-    val wallpaperScrim: StateFlow<Int> = settings
-        .map { it.wallpaperScrim.toIntOrNull()?.coerceIn(0, 100) ?: 0 }
+    val customBackgroundImageAlpha: StateFlow<Int> = settings
+        .map { parsePercent(it.customBackgroundImageAlpha, 80) }
         .distinctUntilChanged()
-        .stateIn(scope, SharingStarted.Eagerly, initialSettings.wallpaperScrim.toIntOrNull()?.coerceIn(0, 100) ?: 0)
+        .stateIn(
+            scope,
+            SharingStarted.Eagerly,
+            parsePercent(initialSettings.customBackgroundImageAlpha, 80)
+        )
 
-    suspend fun setWallpaperScrim(scrim: Int) {
+    suspend fun setCustomBackgroundImageAlpha(value: Int) {
         with(AppSettingsSchema) {
-            context.dataStore.edit { it[wallpaperScrim] = scrim.coerceIn(0, 100).toString() }
+            context.dataStore.edit {
+                it[customBackgroundImageAlpha] = value.coerceIn(0, 100).toString()
+            }
         }
     }
 
-    // 壁纸磨砂玻璃
-    // 壁纸文字对比度：独立控制是否基于壁纸亮度调整文字颜色（深动态色）
-    val wallpaperTextContrast: StateFlow<Boolean> = settings
-        .map { it.wallpaperTextContrast.toBoolean() }
+    val customBackgroundScrim: StateFlow<Int> = settings
+        .map { parsePercent(it.customBackgroundScrim, 25) }
         .distinctUntilChanged()
-        .stateIn(scope, SharingStarted.Eagerly, initialSettings.wallpaperTextContrast.toBoolean())
+        .stateIn(
+            scope,
+            SharingStarted.Eagerly,
+            parsePercent(initialSettings.customBackgroundScrim, 25)
+        )
 
-    suspend fun setWallpaperTextContrast(enabled: Boolean) {
+    suspend fun setCustomBackgroundScrim(value: Int) {
         with(AppSettingsSchema) {
-            context.dataStore.edit { it[wallpaperTextContrast] = enabled.toString() }
+            context.dataStore.edit { it[customBackgroundScrim] = value.coerceIn(0, 100).toString() }
         }
     }
 
-    val wallpaperFrostedGlass: StateFlow<Boolean> = settings
-        .map { it.wallpaperFrostedGlass.toBoolean() }
+    val customBackgroundBlur: StateFlow<Int> = settings
+        .map { parsePercent(it.customBackgroundBlur, 0) }
         .distinctUntilChanged()
-        .stateIn(scope, SharingStarted.Eagerly, initialSettings.wallpaperFrostedGlass.toBoolean())
+        .stateIn(
+            scope,
+            SharingStarted.Eagerly,
+            parsePercent(initialSettings.customBackgroundBlur, 0)
+        )
 
-    suspend fun setWallpaperFrostedGlass(enabled: Boolean) {
+    suspend fun setCustomBackgroundBlur(value: Int) {
         with(AppSettingsSchema) {
-            context.dataStore.edit { it[wallpaperFrostedGlass] = enabled.toString() }
+            context.dataStore.edit { it[customBackgroundBlur] = value.coerceIn(0, 100).toString() }
         }
     }
 

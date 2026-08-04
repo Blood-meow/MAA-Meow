@@ -4,36 +4,13 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
 import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
-import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.aliothmoon.maameow.data.model.toolbox.OperBoxOperator
 import com.aliothmoon.maameow.data.preferences.TaskChainState
-import com.aliothmoon.maameow.utils.JsonUtils
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
-import timber.log.Timber
-import java.io.IOException
-import java.util.Base64
-import java.util.concurrent.ConcurrentHashMap
 
-/**
- * 单个账号分桶的干员箱快照。
- *
- * @param owned 已拥有干员
- * @param notOwned 未拥有干员（识别完成时相对全图差集）
- * @param syncTimeMillis 上次完整干员识别时间；0 表示从未识别
- */
 @Serializable
 data class OperBoxSnapshot(
     val owned: List<OperBoxOperator> = emptyList(),
@@ -43,102 +20,27 @@ data class OperBoxSnapshot(
     val hasSynced: Boolean get() = syncTimeMillis > 0L
 }
 
-data class OperBoxAccountSnapshot(
-    val accountTag: String,
-    val snapshot: OperBoxSnapshot,
-)
-
-/**
- * 干员识别结果持久化，按「用户配置档 + 游戏账号标签」分片，与 [DepotRepository] 对称。
- * 空账号不读写，避免多账号场景误把干员箱当全局数据。
- */
+/** 干员箱分片：内存权威，set 同步写内存并排队落盘。 */
 class OperBoxRepository(
-    private val store: DataStore<Preferences>,
-    private val taskChainState: TaskChainState,
+    store: DataStore<Preferences>,
+    taskChainState: TaskChainState,
 ) {
-    private val json = JsonUtils.common
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    private val memoryLock = Any()
+    private val shards = ProfileShardStore(
+        store = store,
+        taskChainState = taskChainState,
+        keyPrefix = KEY_PREFIX,
+        serializer = OperBoxSnapshot.serializer(),
+        empty = ::OperBoxSnapshot,
+    )
 
-    @Volatile
-    private var latestPrefs: Preferences = emptyPreferences()
+    val snapshot: StateFlow<OperBoxSnapshot> get() = shards.snapshot
 
-    private val shards = ConcurrentHashMap<String, OperBoxSnapshot>()
-    private val activeAccountTag = MutableStateFlow<String?>(null)
-    private val _snapshot = MutableStateFlow(OperBoxSnapshot())
-    private val initialLoadComplete = MutableStateFlow(false)
-    val snapshot: StateFlow<OperBoxSnapshot> = _snapshot.asStateFlow()
+    val isLoaded: StateFlow<Boolean> get() = shards.isLoaded
 
-    init {
-        scope.launch {
-            combine(taskChainState.activeProfileId, activeAccountTag, store.data) { profileId, accountTag, prefs ->
-                Triple(profileId, accountTag, prefs)
-            }
-                .catch { e ->
-                    if (e is IOException) {
-                        Timber.e(e, "读取干员箱数据失败")
-                        emit(Triple("", null, emptyPreferences()))
-                    } else {
-                        throw e
-                    }
-                }
-                .collect { (profileId, accountTag, prefs) ->
-                    latestPrefs = prefs
-                    onDiskOrProfileChanged(profileId, accountTag, prefs)
-                    initialLoadComplete.value = true
-                }
-        }
-    }
+    fun start() = shards.start()
 
-    /** 等待 DataStore 首帧，避免应用冷启动时把已有账号桶误判为从未识别。 */
-    suspend fun awaitInitialLoad() {
-        initialLoadComplete.first { it }
-    }
-
-    fun start() {
-        scope.launch {
-            taskChainState.profileDeleted.collect { dropProfile(it) }
-        }
-    }
-    /** 切换当前干员箱分桶。空白账号不绑定干员箱。 */
-    fun activateAccountTag(accountTag: String?) {
-        val tag = normalizeAccountTagOrNull(accountTag)
-        activeAccountTag.value = tag
-        val profileId = taskChainState.activeProfileId.value
-        synchronized(memoryLock) {
-            if (profileId.isEmpty() || tag == null) {
-                _snapshot.value = OperBoxSnapshot()
-                return
-            }
-            val key = shardKey(profileId, tag)
-            val snap = decode(latestPrefs[keyOf(key)] ?: legacyRawIfDefault(profileId, tag, latestPrefs))
-            shards[key] = snap
-            _snapshot.value = snap
-        }
-    }
-
-    /** 启动任务前同步绑定并 hydrate 目标账号，避免结果回调短暂读写上一个账号。 */
-    suspend fun activateAccountTagAndAwait(accountTag: String?) {
-        awaitInitialLoad()
-        val prefs = store.data.first().also { latestPrefs = it }
-        val tag = normalizeAccountTagOrNull(accountTag)
-        activeAccountTag.value = tag
-        val profileId = taskChainState.activeProfileId.value
-        synchronized(memoryLock) {
-            if (profileId.isEmpty() || tag == null) {
-                _snapshot.value = OperBoxSnapshot()
-                return
-            }
-            val key = shardKey(profileId, tag)
-            val snap = decode(prefs[keyOf(key)] ?: legacyRawIfDefault(profileId, tag, prefs))
-            shards[key] = snap
-            _snapshot.value = snap
-        }
-    }
-
-
-    suspend fun replaceAll(owned: List<OperBoxOperator>, notOwned: List<OperBoxOperator>) {
-        editSnapshot {
+    fun set(owned: List<OperBoxOperator>, notOwned: List<OperBoxOperator>) {
+        shards.mutate {
             OperBoxSnapshot(
                 owned = owned,
                 notOwned = notOwned,
@@ -147,156 +49,14 @@ class OperBoxRepository(
         }
     }
 
-    fun syncTimeMillis(accountTag: String?): Long {
-        val profileId = taskChainState.activeProfileId.value
-        if (profileId.isEmpty()) return 0L
-        val tag = normalizeAccountTagOrNull(accountTag) ?: return 0L
-        val key = shardKey(profileId, tag)
-        return synchronized(memoryLock) {
-            val cached = shards[key]
-            if (cached != null) {
-                cached.syncTimeMillis
-            } else {
-                val diskSnap = decode(latestPrefs[keyOf(key)] ?: legacyRawIfDefault(profileId, tag, latestPrefs))
-                shards[key] = diskSnap
-                diskSnap.syncTimeMillis
-            }
-        }
-    }
-
-    suspend fun listAccountSnapshotsForActiveProfile(): List<OperBoxAccountSnapshot> {
-        taskChainState.isLoaded.first { it }
-        val profileId = taskChainState.activeProfileId.value
-        if (profileId.isEmpty()) return emptyList()
-        val prefix = "operbox_${profileId}_"
-        val prefs = store.data.first()
-        latestPrefs = prefs
-        val fromDisk = prefs.asMap().entries.mapNotNull { (prefKey, rawValue) ->
-            val name = prefKey.name
-            if (!name.startsWith(prefix)) return@mapNotNull null
-            val encodedTag = name.removePrefix(prefix)
-            val tag = decodeTag(encodedTag)?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
-            val raw = rawValue as? String ?: return@mapNotNull null
-            val snapshot = decode(raw)
-            val key = shardKey(profileId, tag)
-            synchronized(memoryLock) { shards[key] = snapshot }
-            OperBoxAccountSnapshot(tag, snapshot)
-        }
-        val fromMemory = synchronized(memoryLock) {
-            shards.entries.mapNotNull { (key, snapshot) ->
-                if (!key.startsWith(shardKeyPrefix(profileId))) return@mapNotNull null
-                val encodedTag = key.removePrefix(shardKeyPrefix(profileId))
-                val tag = decodeTag(encodedTag)?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
-                OperBoxAccountSnapshot(tag, snapshot)
-            }
-        }
-        return (fromDisk + fromMemory)
-            .groupBy { it.accountTag }
-            .map { (_, rows) -> rows.last() }
-            .filter { it.snapshot.hasSynced }
-            .sortedBy { it.accountTag }
-    }
-
-    /** 删除当前配置档下指定账号标签的干员箱分片（内存 + 磁盘）。 */
-    suspend fun dropAccount(accountTag: String) {
-        val profileId = taskChainState.activeProfileId.value
-        if (profileId.isEmpty()) return
-        val tag = normalizeAccountTagOrNull(accountTag) ?: return
-        val key = shardKey(profileId, tag)
-        synchronized(memoryLock) {
-            shards.remove(key)
-            if (activeAccountTag.value == tag) {
-                _snapshot.value = OperBoxSnapshot()
-            }
-        }
-        try {
-            store.edit { prefs ->
-                prefs.remove(keyOf(key))
-                if (tag == DepotRepository.DEFAULT_ACCOUNT_TAG || tag.endsWith(":${DepotRepository.DEFAULT_ACCOUNT_TAG}")) {
-                    prefs.remove(stringPreferencesKey("operbox_$profileId"))
-                }
-            }
-        } catch (e: IOException) {
-            Timber.w(e, "删除干员箱账号分片失败: %s / %s", profileId, tag)
-        }
-    }
-
-    suspend fun dropProfile(profileId: String) {
-        if (profileId.isEmpty()) return
-        synchronized(memoryLock) {
-            val prefix = shardKeyPrefix(profileId)
-            shards.keys.removeIf { it.startsWith(prefix) }
-            if (taskChainState.activeProfileId.value == profileId) {
-                _snapshot.value = OperBoxSnapshot()
-            }
-        }
-        try {
-            store.edit { prefs ->
-                prefs.asMap().keys
-                    .filter { it.name.startsWith("operbox_${profileId}_") || it.name == "operbox_$profileId" }
-                    .forEach { prefs.remove(it) }
-            }
-        } catch (e: IOException) {
-            Timber.w(e, "删除干员箱分片失败: %s", profileId)
-        }
-    }
-
-    private fun onDiskOrProfileChanged(profileId: String, accountTag: String?, prefs: Preferences) {
-        if (profileId.isEmpty() || accountTag == null) {
-            synchronized(memoryLock) { _snapshot.value = OperBoxSnapshot() }
-            return
-        }
-        val key = shardKey(profileId, accountTag)
-        val diskSnap = decode(prefs[keyOf(key)] ?: legacyRawIfDefault(profileId, accountTag, prefs))
-        synchronized(memoryLock) {
-            shards[key] = diskSnap
-            if (taskChainState.activeProfileId.value == profileId && activeAccountTag.value == accountTag) {
-                _snapshot.value = diskSnap
-            }
-        }
-    }
-
-    private suspend fun editSnapshot(transform: (OperBoxSnapshot) -> OperBoxSnapshot) {
-        taskChainState.isLoaded.first { it }
-        val profileId = taskChainState.activeProfileId.value
-        if (profileId.isEmpty()) {
-            Timber.w("活跃配置档为空，跳过干员箱写入")
-            return
-        }
-        val accountTag = activeAccountTag.value
-        if (accountTag == null) {
-            // 不绑定账号时跳过落盘，但不要把内存 snapshot 清掉——否则小工具页/库存页会看起来像数据被清空。
-            Timber.w("账号切换为空，跳过干员箱写入")
-            return
-        }
-        val key = shardKey(profileId, accountTag)
-        try {
-            store.edit { prefs ->
-                val current = synchronized(memoryLock) { shards[key] } ?: decode(
-                    prefs[keyOf(key)] ?: legacyRawIfDefault(profileId, accountTag, prefs)
-                )
-                val next = transform(current)
-                prefs[keyOf(key)] = json.encodeToString(next)
-                synchronized(memoryLock) {
-                    shards[key] = next
-                    _snapshot.value = next
-                }
-            }
-        } catch (e: IOException) {
-            Timber.e(e, "写入干员箱分片失败: %s", key)
-        }
-    }
-
-    private fun decode(raw: String?): OperBoxSnapshot {
-        if (raw.isNullOrEmpty()) return OperBoxSnapshot()
-        return runCatching { json.decodeFromString<OperBoxSnapshot>(raw) }
-            .getOrElse {
-                Timber.e(it, "解析干员箱分片失败，回退为空快照")
-                OperBoxSnapshot()
-            }
+    /** 清空当前配置档干员箱（库存页删除）。 */
+    fun clear() {
+        shards.mutate { OperBoxSnapshot() }
     }
 
     companion object {
+        private const val KEY_PREFIX = "operbox_"
+
         private val Context.operBoxStore: DataStore<Preferences> by preferencesDataStore(
             name = "oper_box",
             corruptionHandler = ReplaceFileCorruptionHandler { emptyPreferences() },
@@ -304,30 +64,5 @@ class OperBoxRepository(
 
         fun create(context: Context, taskChainState: TaskChainState) =
             OperBoxRepository(context.operBoxStore, taskChainState)
-
-        private fun normalizeAccountTagOrNull(accountTag: String?): String? =
-            accountTag?.trim()?.takeIf { it.isNotEmpty() }
-
-        private fun shardKey(profileId: String, accountTag: String): String =
-            "${profileId}_${encodeTag(accountTag)}"
-
-        private fun shardKeyPrefix(profileId: String) = "${profileId}_"
-
-        private fun keyOf(shardKey: String) = stringPreferencesKey("operbox_$shardKey")
-
-        private fun legacyRawIfDefault(profileId: String, accountTag: String, prefs: Preferences): String? =
-            if (accountTag == DepotRepository.DEFAULT_ACCOUNT_TAG || accountTag.endsWith(":${DepotRepository.DEFAULT_ACCOUNT_TAG}")) {
-                prefs[stringPreferencesKey("operbox_$profileId")]
-            } else {
-                null
-            }
-
-        private fun encodeTag(tag: String): String = Base64.getUrlEncoder()
-            .withoutPadding()
-            .encodeToString(tag.toByteArray(Charsets.UTF_8))
-
-        private fun decodeTag(encoded: String): String? = runCatching {
-            String(Base64.getUrlDecoder().decode(encoded), Charsets.UTF_8)
-        }.getOrNull()
     }
 }

@@ -33,6 +33,7 @@ import com.aliothmoon.maameow.data.repository.CopilotRepository
 import com.aliothmoon.maameow.data.repository.DepotRepository
 import com.aliothmoon.maameow.data.repository.OperBoxRepository
 import com.aliothmoon.maameow.data.resource.ActivityManager
+import com.aliothmoon.maameow.data.resource.BackgroundImageStore
 import com.aliothmoon.maameow.data.resource.CopilotResourceProvider
 import com.aliothmoon.maameow.data.resource.ItemHelper
 import com.aliothmoon.maameow.data.resource.ItemIconLoader
@@ -104,6 +105,7 @@ val appModule = module {
 
 
     singleOf(::AppSettingsManager)
+    singleOf(::BackgroundImageStore)
     singleOf(::AchievementRepository)
     singleOf(::AchievementReporter)
     singleOf(::ScheduleStrategyRepository)
@@ -148,7 +150,7 @@ val appModule = module {
     singleOf(::MaaEventNotifier)
     singleOf(::MaaNotificationCenter)
 
-    // 仓库 / 干员箱持久化（按配置档 + 账号标签分片）
+    // 仓库 / 干员箱持久化（按配置档分片）
     single { DepotRepository.create(get(), get()) }
     single { OperBoxRepository.create(get(), get()) }
 

@@ -370,8 +370,6 @@ private fun SeriesSection(
     // 锁定时仅影响显示与下发，不写回配置，解锁后用户原选值自动恢复
     val displayedSeries = if (locked) -1 else config.series
 
-
-
     Column(
         verticalArrangement = Arrangement.spacedBy(4.dp),
         modifier = Modifier.fillMaxWidth()

@@ -11,19 +11,18 @@ import androidx.lifecycle.viewModelScope
 import com.aliothmoon.maameow.data.model.toolbox.OperBoxExportFormatter
 import com.aliothmoon.maameow.data.model.toolbox.OperBoxExportLabels
 import com.aliothmoon.maameow.data.model.toolbox.OperBoxOperator
-import com.aliothmoon.maameow.data.repository.DepotAccountSnapshot
 import com.aliothmoon.maameow.data.repository.DepotRepository
 import com.aliothmoon.maameow.data.repository.DepotSnapshot
-import com.aliothmoon.maameow.data.repository.OperBoxAccountSnapshot
 import com.aliothmoon.maameow.data.repository.OperBoxRepository
 import com.aliothmoon.maameow.data.repository.OperBoxSnapshot
 import com.aliothmoon.maameow.data.repository.toSortedItems
 import com.aliothmoon.maameow.data.resource.ItemHelper
 import com.aliothmoon.maameow.data.resource.ItemIconLoader
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
@@ -31,122 +30,79 @@ import java.text.DateFormat
 import java.util.Date
 import kotlin.math.ceil
 import kotlin.math.max
-import kotlin.math.min
 
+/**
+ * 库存数据页：上游已改为「配置档」级分片，一档一份仓库/干员快照。
+ * 本 VM 直接读当前活跃配置档的 snapshot，不再按 accountTag 多账号分桶。
+ */
 class DepotInventoryViewModel(
     private val depotRepository: DepotRepository,
     private val operBoxRepository: OperBoxRepository,
     private val itemHelper: ItemHelper,
     private val itemIconLoader: ItemIconLoader,
 ) : ViewModel() {
-    private val _accounts = MutableStateFlow<List<DepotAccountSnapshot>>(emptyList())
-    val accounts: StateFlow<List<DepotAccountSnapshot>> = _accounts.asStateFlow()
+    val depotSnapshot: StateFlow<DepotSnapshot> = depotRepository.snapshot
+    val operBoxSnapshot: StateFlow<OperBoxSnapshot> = operBoxRepository.snapshot
 
-    private val _operBoxAccounts = MutableStateFlow<List<OperBoxAccountSnapshot>>(emptyList())
-    val operBoxAccounts: StateFlow<List<OperBoxAccountSnapshot>> = _operBoxAccounts.asStateFlow()
+    val items: StateFlow<List<DepotInventoryItemUi>> = depotRepository.snapshot
+        .map { snap -> snap.toItemUiList(itemHelper) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
-    private val _selectedAccountTag = MutableStateFlow<String?>(null)
-    val selectedAccountTag: StateFlow<String?> = _selectedAccountTag.asStateFlow()
+    val drawSummary: StateFlow<DepotDrawSummary> = depotRepository.snapshot
+        .map { it.drawSummary() }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), DepotDrawSummary(0, 0, 0))
 
-    init {
-        refresh()
-    }
-
-    fun refresh() {
+    fun clearAll() {
         viewModelScope.launch {
-            _accounts.value = depotRepository.listAccountSnapshotsForActiveProfile()
-            _operBoxAccounts.value = operBoxRepository.listAccountSnapshotsForActiveProfile()
+            depotRepository.clear()
+            operBoxRepository.clear()
         }
     }
 
-    fun selectAccount(accountTag: String) {
-        _selectedAccountTag.value = accountTag
-    }
-
-    fun clearSelection() {
-        _selectedAccountTag.value = null
-    }
-
-    fun deleteAccount(accountTag: String) {
-        viewModelScope.launch {
-            depotRepository.dropAccount(accountTag)
-            operBoxRepository.dropAccount(accountTag)
-            if (_selectedAccountTag.value == accountTag) {
-                _selectedAccountTag.value = null
-            }
-            refresh()
-        }
-    }
-
-    fun itemsForAccount(accountTag: String): List<DepotInventoryItemUi> {
-        val snapshot = _accounts.value.firstOrNull { it.accountTag == accountTag }?.snapshot ?: return emptyList()
-        return snapshot.items
-            .asSequence()
-            .map { (id, count) ->
-                val info = itemHelper.getItemInfo(id)
-                DepotInventoryItemUi(
-                    id = id,
-                    name = info?.name ?: id,
-                    count = count,
-                    sortId = info?.sortId ?: Int.MAX_VALUE,
-                )
-            }
-            .sortedWith(compareBy<DepotInventoryItemUi> { it.sortId }.thenBy { it.id })
-            .toList()
-    }
-
-    fun depotSnapshot(accountTag: String): DepotSnapshot? =
-        _accounts.value.firstOrNull { it.accountTag == accountTag }?.snapshot
-
-    fun operBoxSnapshot(accountTag: String): OperBoxSnapshot? =
-        _operBoxAccounts.value.firstOrNull { it.accountTag == accountTag }?.snapshot
-
-    fun exportDepotArkPlanner(accountTag: String): String {
-        val snap = depotSnapshot(accountTag) ?: return """{"@type":"@penguin-statistics/depot","items":[]}"""
-        val items = snap.toSortedItems(itemHelper.items.value)
-        val itemsJson = items.joinToString(",") { """{"id":"${it.id}","have":${it.count}}""" }
+    fun exportDepotArkPlanner(): String {
+        val snap = depotSnapshot.value
+        val sorted = snap.toSortedItems(itemHelper.items.value)
+        val itemsJson = sorted.joinToString(",") { """{"id":"${it.id}","have":${it.count}}""" }
         return """{"@type":"@penguin-statistics/depot","items":[$itemsJson]}"""
     }
 
-    fun exportDepotLolicon(accountTag: String): String {
-        val snap = depotSnapshot(accountTag) ?: return "{}"
-        val items = snap.toSortedItems(itemHelper.items.value)
-        return "{${items.joinToString(",") { "\"${it.id}\":${it.count}" }}}"
+    fun exportDepotLolicon(): String {
+        val snap = depotSnapshot.value
+        val sorted = snap.toSortedItems(itemHelper.items.value)
+        return "{${sorted.joinToString(",") { "\"${it.id}\":${it.count}" }}}"
     }
 
-    fun exportOperBoxList(accountTag: String): List<OperBoxOperator> {
-        val snap = operBoxSnapshot(accountTag) ?: return emptyList()
+    fun exportOperBoxList(): List<OperBoxOperator> {
+        val snap = operBoxSnapshot.value
         if (!snap.hasSynced) return emptyList()
         return snap.owned + snap.notOwned
     }
 
-    fun exportOperBoxJson(accountTag: String): String =
-        OperBoxExportFormatter.toJson(exportOperBoxList(accountTag))
+    fun exportOperBoxJson(): String =
+        OperBoxExportFormatter.toJson(exportOperBoxList())
 
-    fun exportOperBoxMarkdown(accountTag: String, labels: OperBoxExportLabels): String =
-        OperBoxExportFormatter.toMarkdown(exportOperBoxList(accountTag), labels)
+    fun exportOperBoxMarkdown(labels: OperBoxExportLabels): String =
+        OperBoxExportFormatter.toMarkdown(exportOperBoxList(), labels)
 
-    fun exportOperBoxCsv(accountTag: String, labels: OperBoxExportLabels): String =
-        OperBoxExportFormatter.toCsv(exportOperBoxList(accountTag), labels)
+    fun exportOperBoxCsv(labels: OperBoxExportLabels): String =
+        OperBoxExportFormatter.toCsv(exportOperBoxList(), labels)
 
     /**
-     * 导出与库存详情页「库存」Tab 同构的网格图：
-     * 图标 + 名称 + x数量，按 sortId 排序。
+     * @param hideAccountTag 兼容旧开关：上游已无 accountTag，开启时图头不写配置档占位名，只留时间与数据
+     * @param titleLabel 图头标题（通常为「当前配置档」或空）
      */
-    /**
-     * @param hideAccountTag true 时不在图头写 accountTag（official 后那串），只留时间与数据摘要
-     */
-    suspend fun renderDepotPng(accountTag: String, hideAccountTag: Boolean = false): ByteArray? = withContext(Dispatchers.Default) {
-        val items = itemsForAccount(accountTag)
-        val snap = depotSnapshot(accountTag)
+    suspend fun renderDepotPng(
+        hideAccountTag: Boolean = false,
+        titleLabel: String = "",
+    ): ByteArray? = withContext(Dispatchers.Default) {
+        val itemList = items.value.ifEmpty { depotSnapshot.value.toItemUiList(itemHelper) }
+        val snap = depotSnapshot.value
         val header = buildList {
-            if (!hideAccountTag) {
-                add(accountTag)
-            }
-            if (snap != null && snap.syncTimeMillis > 0L) {
+            if (!hideAccountTag && titleLabel.isNotBlank()) add(titleLabel)
+            if (snap.syncTimeMillis > 0L) {
                 add(DateFormat.getDateTimeInstance().format(Date(snap.syncTimeMillis)))
             }
-            add("${items.size} items")
+            add("${itemList.size} items")
         }
 
         val columns = 4
@@ -156,8 +112,7 @@ class DepotInventoryViewModel(
         val pad = 24
         val headerLineH = 40
         val headerH = pad + header.size * headerLineH + 12
-
-        val rows = if (items.isEmpty()) 1 else ceil(items.size / columns.toFloat()).toInt()
+        val rows = if (itemList.isEmpty()) 1 else ceil(itemList.size / columns.toFloat()).toInt()
         val width = pad * 2 + columns * cellW + (columns - 1) * gap
         val height = headerH + pad + rows * cellH + max(0, rows - 1) * gap + pad
 
@@ -193,10 +148,10 @@ class DepotInventoryViewModel(
             textAlign = Paint.Align.CENTER
         }
 
-        if (items.isEmpty()) {
+        if (itemList.isEmpty()) {
             canvas.drawText("(empty)", width / 2f, headerH + 80f, namePaint)
         } else {
-            items.forEachIndexed { index, item ->
+            itemList.forEachIndexed { index, item ->
                 val col = index % columns
                 val row = index / columns
                 val left = pad + col * (cellW + gap)
@@ -252,18 +207,13 @@ class DepotInventoryViewModel(
         compressPng(bitmap)
     }
 
-    /**
-     * 导出与库存详情页「干员」Tab 同构的列表：
-     * 稀有度色 + 名称 + E/Lv/潜能（已拥有）。
-     */
-    /**
-     * @param hideAccountTag true 时不在图头写 accountTag（official 后那串），只留时间与数据摘要
-     */
-    suspend fun renderOperBoxPng(accountTag: String, hideAccountTag: Boolean = false): ByteArray? = withContext(Dispatchers.Default) {
-        val snap = operBoxSnapshot(accountTag)
-        val owned = snap?.owned.orEmpty()
-        val notOwned = snap?.notOwned.orEmpty()
-        // 与详情页默认 Tab 一致：优先导出已拥有；若空则未拥有
+    suspend fun renderOperBoxPng(
+        hideAccountTag: Boolean = false,
+        titleLabel: String = "",
+    ): ByteArray? = withContext(Dispatchers.Default) {
+        val snap = operBoxSnapshot.value
+        val owned = snap.owned
+        val notOwned = snap.notOwned
         val opers = if (owned.isNotEmpty()) owned else notOwned
         val section = if (owned.isNotEmpty()) "Owned" else "Not owned"
 
@@ -272,10 +222,8 @@ class DepotInventoryViewModel(
         val gap = 8
         val headerLineH = 40
         val headerLines = buildList {
-            if (!hideAccountTag) {
-                add(accountTag)
-            }
-            if (snap != null && snap.syncTimeMillis > 0L) {
+            if (!hideAccountTag && titleLabel.isNotBlank()) add(titleLabel)
+            if (snap.syncTimeMillis > 0L) {
                 add(DateFormat.getDateTimeInstance().format(Date(snap.syncTimeMillis)))
             }
             add("$section  owned=${owned.size}  notOwned=${notOwned.size}")
@@ -286,7 +234,7 @@ class DepotInventoryViewModel(
 
         val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
-        canvas.drawColor(Color.WHITE) // 导出底必须不透明白，黑底图标抠透后透出这里
+        canvas.drawColor(Color.WHITE)
 
         val titlePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color = Color.BLACK
@@ -333,10 +281,7 @@ class DepotInventoryViewModel(
 
                 rarityPaint.color = rarityColor(op.rarity)
                 canvas.drawText("${op.rarity}★", (pad + 16).toFloat(), top + 40f, rarityPaint)
-
-                val nameX = pad + 80f
-                canvas.drawText(op.name, nameX, top + 40f, namePaint)
-
+                canvas.drawText(op.name, pad + 80f, top + 40f, namePaint)
                 if (op.own) {
                     val meta = "E${op.elite} Lv${op.level}  P${op.potential}"
                     canvas.drawText(meta, (width - pad - 16).toFloat(), top + 40f, metaPaint)
@@ -375,33 +320,36 @@ data class DepotInventoryItemUi(
     val sortId: Int,
 )
 
-internal fun mergeAccountRows(
-    depotAccounts: List<DepotAccountSnapshot>,
-    operBoxAccounts: List<OperBoxAccountSnapshot>,
-): List<DepotAccountSnapshot> {
-    val depotByTag = depotAccounts.associateBy { it.accountTag }
-    return (depotByTag.keys + operBoxAccounts.map { it.accountTag })
-        .distinct()
-        .sorted()
-        .map { tag -> depotByTag[tag] ?: DepotAccountSnapshot(tag, DepotSnapshot()) }
-}
+data class DepotDrawSummary(
+    val total: Int,
+    val orundum: Int,
+    val permits: Int,
+)
 
-fun DepotAccountSnapshot.drawSummary(): DepotDrawSummary {
-    val orundumDraws = snapshot.items[ORUNDUM_ID].orZero() / ORUNDUM_PER_DRAW
-    val permitDraws = snapshot.items[HEADHUNTING_PERMIT_ID].orZero() +
-        snapshot.items[TEN_ROLL_HEADHUNTING_PERMIT_ID].orZero() * TEN_ROLL_DRAW_COUNT
+private fun DepotSnapshot.toItemUiList(itemHelper: ItemHelper): List<DepotInventoryItemUi> =
+    items.asSequence()
+        .map { (id, count) ->
+            val info = itemHelper.getItemInfo(id)
+            DepotInventoryItemUi(
+                id = id,
+                name = info?.name ?: id,
+                count = count,
+                sortId = info?.sortId ?: Int.MAX_VALUE,
+            )
+        }
+        .sortedWith(compareBy<DepotInventoryItemUi> { it.sortId }.thenBy { it.id })
+        .toList()
+
+fun DepotSnapshot.drawSummary(): DepotDrawSummary {
+    val orundumDraws = items[ORUNDUM_ID].orZero() / ORUNDUM_PER_DRAW
+    val permitDraws = items[HEADHUNTING_PERMIT_ID].orZero() +
+        items[TEN_ROLL_HEADHUNTING_PERMIT_ID].orZero() * TEN_ROLL_DRAW_COUNT
     return DepotDrawSummary(
         total = orundumDraws + permitDraws,
         orundum = orundumDraws,
         permits = permitDraws,
     )
 }
-
-data class DepotDrawSummary(
-    val total: Int,
-    val orundum: Int,
-    val permits: Int,
-)
 
 private fun Int?.orZero(): Int = this ?: 0
 private const val ORUNDUM_ID = "4003"

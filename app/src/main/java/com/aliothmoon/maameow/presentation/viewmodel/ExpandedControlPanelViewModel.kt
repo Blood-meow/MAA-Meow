@@ -7,15 +7,10 @@ import com.aliothmoon.maameow.data.model.LogItem
 import com.aliothmoon.maameow.data.model.TaskParamProvider
 import com.aliothmoon.maameow.data.model.TaskTypeInfo
 import com.aliothmoon.maameow.data.preferences.TaskChainState
-import com.aliothmoon.maameow.domain.service.GameMuteCoordinator
 import com.aliothmoon.maameow.domain.service.MaaCompositionService
-import com.aliothmoon.maameow.data.preferences.AppSettingsManager
 import com.aliothmoon.maameow.domain.service.MaaSessionLogger
 import com.aliothmoon.maameow.domain.service.AchievementReporter
 import com.aliothmoon.maameow.domain.usecase.PrepareTaskStartUseCase
-import com.aliothmoon.maameow.domain.usecase.TaskChainPlan
-import com.aliothmoon.maameow.domain.state.MaaExecutionState
-import com.aliothmoon.maameow.R
 import com.aliothmoon.maameow.domain.usecase.TaskStartContext
 import com.aliothmoon.maameow.domain.usecase.TaskStartDecision
 import com.aliothmoon.maameow.domain.usecase.TaskStartMode
@@ -25,8 +20,6 @@ import com.aliothmoon.maameow.presentation.view.panel.FloatingPanelState
 import com.aliothmoon.maameow.presentation.view.panel.PanelDialogConfirmAction
 import com.aliothmoon.maameow.presentation.view.panel.PanelDialogUiState
 import com.aliothmoon.maameow.presentation.view.panel.PanelTab
-import com.aliothmoon.maameow.schedule.data.ScheduleStrategyRepository
-import com.aliothmoon.maameow.schedule.service.ScheduleAlarmManager
 import com.aliothmoon.maameow.utils.i18n.resolve
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -48,10 +41,6 @@ class ExpandedControlPanelViewModel(
     private val overlayController: OverlayController,
     private val sessionLogger: MaaSessionLogger,
     private val achievementReporter: AchievementReporter,
-    private val scheduleRepository: ScheduleStrategyRepository,
-    private val scheduleAlarmManager: ScheduleAlarmManager,
-    private val appSettingsManager: AppSettingsManager,
-    private val gameMuteCoordinator: GameMuteCoordinator,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(FloatingPanelState())
@@ -63,11 +52,7 @@ class ExpandedControlPanelViewModel(
 
     private var pendingStartContext: TaskStartContext? = null
 
-    private var pendingClientPlans: List<TaskChainPlan> = emptyList()
-    private var clientSegmentTotal: Int = 0
-
     init {
-        observeTaskEndForClientQueue()
         viewModelScope.launch {
             overlayController.signal.collect { endState ->
                 Timber.d("Overlay result received: $endState")
@@ -168,15 +153,7 @@ class ExpandedControlPanelViewModel(
 
     fun onDeleteProfile(profileId: String) {
         viewModelScope.launch {
-            chainState.deleteProfile(profileId)
-            val detached = scheduleRepository.detachProfileConfig(profileId)
-            val emptied = scheduleRepository.sanitizeInvalidTargets(
-                profiles = chainState.profiles.value,
-                sequenceConfigs = chainState.sequenceConfigs.value,
-            )
-            (detached + emptied).distinct().forEach { strategyId ->
-                scheduleAlarmManager.cancel(strategyId)
-            }
+            chainState.removeProfile(profileId)
             _state.update { it.copy(selectedNodeId = null) }
         }
     }
@@ -279,7 +256,9 @@ class ExpandedControlPanelViewModel(
             PanelDialogConfirmAction.GO_LOG_AND_STOP -> {
                 onTabChange(PanelTab.LOG)
                 onDialogDismiss()
-                onStopTasks()
+                viewModelScope.launch {
+                    compositionService.stop()
+                }
             }
 
             null -> Unit
@@ -290,119 +269,25 @@ class ExpandedControlPanelViewModel(
         sessionLogger.clearRuntimeLogs()
     }
 
-    /**
-     * User-initiated stop: drop any queued multi-client segments before stop(),
-     * so a RUNNING→IDLE transition (or conflated StateFlow skip of STOPPING) cannot
-     * auto-start the next client segment.
-     */
-    fun onStopTasks() {
-        clearPendingClientSegments()
-        viewModelScope.launch {
-            compositionService.stop()
-        }
-    }
-
-    private fun clearPendingClientSegments() {
-        pendingClientPlans = emptyList()
-        clientSegmentTotal = 0
-    }
-
     fun onStartTasks() {
         launchManualStart(TaskStartContext(mode = TaskStartMode.MANUAL))
-    }
-
-    fun onAddToSequence(profileId: String) {
-        onAddProfilesToSequence(listOf(profileId))
-    }
-
-    fun onAddProfilesToSequence(profileIds: List<String>) {
-        if (profileIds.isEmpty()) return
-        viewModelScope.launch {
-            chainState.addProfilesToSequence(profileIds)
-        }
-    }
-
-    fun onRemoveSequenceEntry(entryId: String) {
-        viewModelScope.launch {
-            chainState.removeSequenceEntry(entryId)
-        }
-    }
-
-    fun onReorderSequence(fromIndex: Int, toIndex: Int) {
-        viewModelScope.launch {
-            runCatching { chainState.reorderSequence(fromIndex, toIndex) }
-                .onFailure { e -> Timber.e(e, "Failed to reorder sequence: ${e.message}") }
-        }
-    }
-
-    fun onSetProfileSequenceEnabled(enabled: Boolean) {
-        viewModelScope.launch {
-            chainState.setProfileSequenceEnabled(enabled)
-        }
-    }
-
-    fun onSwitchSequenceConfig(configId: String) {
-        viewModelScope.launch {
-            chainState.switchSequenceConfig(configId)
-        }
-    }
-
-    fun onCreateSequenceConfig() {
-        viewModelScope.launch {
-            chainState.createSequenceConfig()
-        }
-    }
-
-    fun onRenameSequenceConfig(configId: String, name: String) {
-        viewModelScope.launch {
-            chainState.renameSequenceConfig(configId, name)
-        }
-    }
-
-    fun onDeleteSequenceConfig(configId: String) {
-        viewModelScope.launch {
-            chainState.deleteSequenceConfig(configId)
-            val detached = scheduleRepository.detachSequenceConfig(configId)
-            detached.forEach { strategyId ->
-                scheduleAlarmManager.cancel(strategyId)
-            }
-        }
     }
 
     private fun launchManualStart(context: TaskStartContext) {
         viewModelScope.launch {
             val plan = when (
                 val decision = prepareTaskStart(
-                    chain = chainState.resolveExecutableChain(),
+                    chain = chainState.chain.value,
                     context = context,
                 )
             ) {
                 is TaskStartDecision.Ready -> {
                     pendingStartContext = null
-                    pendingClientPlans = decision.plans.drop(1)
-                    clientSegmentTotal = decision.plans.size
-                    if (decision.plans.size > 1) {
-                        Timber.i(
-                            "Multi-client chain split into %d segments: %s",
-                            decision.plans.size,
-                            decision.plans.joinToString { it.clientType },
-                        )
-                        _effects.send(
-                            UiEffect.toast(
-                                application.getString(
-                                    R.string.task_start_toast_multi_client_segments,
-                                    decision.plans.size,
-                                ),
-                            ),
-                        )
-                    }
                     decision.plan
                 }
 
                 is TaskStartDecision.Blocked -> {
                     pendingStartContext = null
-                    pendingClientPlans = emptyList()
-                    clientSegmentTotal = 0
                     val message = application.resolveTaskStartDecisionMessage(decision)
                     Timber.w("Validation failed: %s", message.resolve(application))
                     showDialog(application.createStartBlockedDialog(message))
@@ -427,39 +312,11 @@ class ExpandedControlPanelViewModel(
             }
             Timber.i("=== End Task JSON List ===")
 
-            val muteRequested = appSettingsManager.muteOnGameLaunch.value
-            if (muteRequested && !gameMuteCoordinator.mute(plan.clientType)) {
-                _effects.send(
-                    UiEffect.toast(R.string.bg_toast_mute_failed),
-                )
-            }
-
-            val allPlans = listOf(plan) + pendingClientPlans
             val result = compositionService.start(
                 tasks = plan.params,
                 clientType = plan.clientType,
-                depotAccountTag = plan.depotAccountTag,
-                preflightLogs = plan.preflightLogs,
-            ) {
-                if (allPlans.size > 1) {
-                    sessionLogger.appendAndWait(
-                        application.getString(
-                            R.string.runlog_client_segments_plan,
-                            allPlans.size,
-                            allPlans.joinToString { it.clientType },
-                        ),
-                    )
-                }
-                sessionLogger.appendAndWait(
-                    application.getString(
-                        R.string.runlog_client_segment_start,
-                        1,
-                        allPlans.size.coerceAtLeast(1),
-                        plan.clientType,
-                        plan.params.size,
-                    ),
-                )
-            }
+                preflightLogs = plan.logs,
+            )
             val message = application.formatStartResult(result)
             if (result is MaaCompositionService.StartResult.Success) {
                 achievementReporter.reportTaskStarted(
@@ -476,107 +333,4 @@ class ExpandedControlPanelViewModel(
             }
         }
     }
-
-    private fun observeTaskEndForClientQueue() {
-        viewModelScope.launch {
-            var prev = compositionService.state.value
-            compositionService.state.collect { current ->
-                // Any stop path enters STOPPING first; clear queue so a later IDLE
-                // cannot be mistaken for a natural segment end. Also covers float-ball /
-                // volume-key stops that call compositionService.stop() outside this VM.
-                if (current == MaaExecutionState.STOPPING) {
-                    clearPendingClientSegments()
-                }
-                // Manual stop: RUNNING → STOPPING → IDLE (prev is STOPPING, no match).
-                // StateFlow may conflate and skip STOPPING; clear-on-STOPPING + onStopTasks
-                // still protect that race.
-                val naturalIdle = prev == MaaExecutionState.RUNNING && current == MaaExecutionState.IDLE
-                val naturalError = prev == MaaExecutionState.RUNNING && current == MaaExecutionState.ERROR
-                if (naturalIdle && pendingClientPlans.isNotEmpty()) {
-                    val remaining = pendingClientPlans
-                    pendingClientPlans = emptyList()
-                    continueClientSegmentQueue(remaining)
-                } else if (naturalError && pendingClientPlans.isNotEmpty()) {
-                    Timber.w("Overlay segment ERROR; drop %d remaining", pendingClientPlans.size)
-                    clearPendingClientSegments()
-                    viewModelScope.launch {
-                        sessionLogger.appendAndWait(
-                            application.getString(
-                                R.string.runlog_client_segment_aborted,
-                                current.name,
-                            ),
-                        )
-                    }
-                }
-                prev = current
-            }
-        }
-    }
-
-    private suspend fun continueClientSegmentQueue(remaining: List<TaskChainPlan>) {
-        val next = remaining.firstOrNull() ?: return
-        val rest = remaining.drop(1)
-        val finishedSegment = (clientSegmentTotal - remaining.size).coerceAtLeast(1)
-        val segmentIndex = (finishedSegment + 1).coerceAtMost(clientSegmentTotal.coerceAtLeast(1))
-        sessionLogger.appendAndWait(
-            application.getString(
-                R.string.runlog_client_segment_next,
-                finishedSegment,
-                next.clientType,
-            ),
-        )
-        _effects.send(
-            UiEffect.toast(
-                application.getString(R.string.task_start_toast_next_client_segment, next.clientType),
-            ),
-        )
-        runCatching { compositionService.stopVirtualDisplay() }
-        val muteRequested = appSettingsManager.muteOnGameLaunch.value
-        if (muteRequested && !gameMuteCoordinator.mute(next.clientType)) {
-            _effects.send(
-                UiEffect.toast(R.string.bg_toast_mute_failed),
-            )
-        }
-        val result = compositionService.start(
-            tasks = next.params,
-            clientType = next.clientType,
-            depotAccountTag = next.depotAccountTag,
-            preflightLogs = next.preflightLogs,
-        ) {
-            sessionLogger.appendAndWait(
-                application.getString(
-                    R.string.runlog_client_segment_start,
-                    segmentIndex,
-                    clientSegmentTotal.coerceAtLeast(1),
-                    next.clientType,
-                    next.params.size,
-                ),
-            )
-        }
-        if (result is MaaCompositionService.StartResult.Success) {
-            pendingClientPlans = rest
-            achievementReporter.reportTaskStarted(
-                taskCount = next.params.size,
-                launchesGame = next.launchesGame,
-                gameAliveBeforeStart = next.gameAliveBeforeStart,
-            )
-            if (rest.isEmpty()) {
-                sessionLogger.appendAndWait(application.getString(R.string.runlog_client_segment_done_all))
-                clientSegmentTotal = 0
-            }
-        } else {
-            pendingClientPlans = emptyList()
-            clientSegmentTotal = 0
-            val message = application.formatStartResult(result)
-            sessionLogger.appendAndWait(
-                application.getString(
-                    R.string.runlog_client_segment_aborted,
-                    message.resolve(application),
-                ),
-            )
-            showDialog(application.createStartFailedDialog(message))
-        }
-    }
-
-
 }

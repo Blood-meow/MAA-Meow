@@ -1,7 +1,10 @@
 package com.aliothmoon.maameow.presentation.viewmodel
 
 import android.app.Application
+import android.graphics.Bitmap
+import android.net.Uri
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aliothmoon.maameow.BuildConfig
@@ -12,6 +15,7 @@ import com.aliothmoon.maameow.data.model.update.UpdateChannel
 import com.aliothmoon.maameow.data.preferences.AppSettingsManager
 import com.aliothmoon.maameow.data.preferences.ConfigBackupManager
 import com.aliothmoon.maameow.data.preferences.TaskChainState
+import com.aliothmoon.maameow.data.resource.BackgroundImageStore
 import com.aliothmoon.maameow.data.resource.ResourceDataManager
 import com.aliothmoon.maameow.domain.models.RemoteBackend
 import com.aliothmoon.maameow.domain.service.AchievementReporter
@@ -42,6 +46,7 @@ class SettingsViewModel(
     private val resourceDataManager: ResourceDataManager,
     private val resourceLoader: MaaResourceLoader,
     private val achievementReporter: AchievementReporter,
+    private val backgroundImageStore: BackgroundImageStore,
 ) : ViewModel() {
 
     // ========== 导入导出 ==========
@@ -72,7 +77,8 @@ class SettingsViewModel(
                 _backupMessage.value = uiTextOf(R.string.settings_export_success)
             } catch (e: Exception) {
                 Timber.e(e, "export config failed")
-                _backupMessage.value = uiTextOf(R.string.settings_export_failed, e.message.orEmpty())
+                _backupMessage.value =
+                    uiTextOf(R.string.settings_export_failed, e.message.orEmpty())
             }
         }
     }
@@ -84,7 +90,8 @@ class SettingsViewModel(
                 _showRestartDialog.value = true
             } catch (e: Exception) {
                 Timber.e(e, "import config failed")
-                _backupMessage.value = uiTextOf(R.string.settings_import_failed, e.message.orEmpty())
+                _backupMessage.value =
+                    uiTextOf(R.string.settings_import_failed, e.message.orEmpty())
             }
         }
     }
@@ -175,8 +182,9 @@ class SettingsViewModel(
         }
     }
 
-    val forceFullscreenOnVirtualDisplay: StateFlow<Boolean> = appSettingsManager.forceFullscreenOnVirtualDisplay
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+    val forceFullscreenOnVirtualDisplay: StateFlow<Boolean> =
+        appSettingsManager.forceFullscreenOnVirtualDisplay
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
     fun setForceFullscreenOnVirtualDisplay(enabled: Boolean) {
         viewModelScope.launch {
@@ -184,7 +192,30 @@ class SettingsViewModel(
         }
     }
 
-    val allowForegroundScheduledTask: StateFlow<Boolean> = appSettingsManager.allowForegroundScheduledTask
+    // 后台虚拟显示器模式：游戏漂移自动拉回开关
+    val driftAutoRepinEnabled: StateFlow<Boolean> =
+        appSettingsManager.driftAutoRepinEnabled
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
+
+    fun setDriftAutoRepinEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            appSettingsManager.setDriftAutoRepinEnabled(enabled)
+        }
+    }
+
+    // 漂移拉回延迟（秒）
+    val driftAutoRepinDelaySec: StateFlow<Int> =
+        appSettingsManager.driftAutoRepinDelaySec
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 5)
+
+    fun setDriftAutoRepinDelaySec(seconds: Int) {
+        viewModelScope.launch {
+            appSettingsManager.setDriftAutoRepinDelaySec(seconds)
+        }
+    }
+
+    val allowForegroundScheduledTask: StateFlow<Boolean> =
+        appSettingsManager.allowForegroundScheduledTask
 
     fun setAllowForegroundScheduledTask(enabled: Boolean) {
         viewModelScope.launch {
@@ -249,7 +280,7 @@ class SettingsViewModel(
             appSettingsManager.setLanguage(resolved)
             AppCompatDelegate.setApplicationLocales(resolved.toLocaleList())
             resourceDataManager.refreshDisplayLanguage(
-                clientType = taskChainState.getClientType(),
+                clientType = taskChainState.clientType,
                 displayLanguage = ResourceDataManager.displayLanguageCode(resolved)
             )
         }
@@ -282,6 +313,7 @@ class SettingsViewModel(
             appSettingsManager.setFontSizeScale(scale)
         }
     }
+
     // 成就 Snackbar 提示开关
     val showAchievementSnackbar: StateFlow<Boolean> = appSettingsManager.showAchievementSnackbar
     fun setShowAchievementSnackbar(enabled: Boolean) {
@@ -290,57 +322,57 @@ class SettingsViewModel(
         }
     }
 
-    // 壁纸更新版本号（由 AppSettingsManager 在 URI 写入后统一递增）
-    val wallpaperUpdateVersion: StateFlow<Int> = appSettingsManager.wallpaperUpdateVersion
+    // ============ 自定义图片背景 ============
+    val customBackgroundEnabled: StateFlow<Boolean> = appSettingsManager.customBackgroundEnabled
+    val customBackgroundImageAlpha: StateFlow<Int> = appSettingsManager.customBackgroundImageAlpha
+    val customBackgroundScrim: StateFlow<Int> = appSettingsManager.customBackgroundScrim
+    val customBackgroundBlur: StateFlow<Int> = appSettingsManager.customBackgroundBlur
+    val backgroundImage: StateFlow<ImageBitmap?> = backgroundImageStore.imageBitmap
 
-    // 自定义壁纸
-    val wallpaperUri: StateFlow<String> = appSettingsManager.wallpaperUri
-    fun setWallpaperUri(uri: String) {
+    fun setCustomBackgroundEnabled(enabled: Boolean) {
         viewModelScope.launch {
-            appSettingsManager.setWallpaperUri(uri)
+            appSettingsManager.setCustomBackgroundEnabled(enabled)
         }
     }
 
-    /** Awaitable write so UI can refresh only after version bump. */
-    suspend fun setWallpaperUriSync(uri: String) {
-        appSettingsManager.setWallpaperUri(uri)
+    /** 把选中的图片复制到缓存目录，返回文件路径；失败返回 null。 */
+    suspend fun prepareBackgroundSource(uri: Uri): String? =
+        backgroundImageStore.prepareSource(uri)
+
+    /** 按 EXIF 方向解码裁剪源图片；失败返回 null。 */
+    suspend fun decodeBackgroundSource(path: String): Bitmap? =
+        backgroundImageStore.decodeSource(path)
+
+    /** 保存裁剪结果并启用背景；返回是否成功。 */
+    suspend fun saveCroppedBackground(bitmap: Bitmap): Boolean =
+        backgroundImageStore.saveCropped(bitmap)
+
+    /** 取消裁剪或保存完成后清理源图片缓存。 */
+    fun discardBackgroundSource() {
+        backgroundImageStore.clearSourceCache()
     }
 
-    val wallpaperAlpha: StateFlow<Int> = appSettingsManager.wallpaperAlpha
-    fun setWallpaperAlpha(alpha: Int) {
-        viewModelScope.launch { appSettingsManager.setWallpaperAlpha(alpha) }
+    fun removeBackgroundImage() {
+        viewModelScope.launch {
+            backgroundImageStore.clear()
+        }
     }
 
-    val wallpaperBlur: StateFlow<Int> = appSettingsManager.wallpaperBlur
-    fun setWallpaperBlur(blur: Int) {
-        viewModelScope.launch { appSettingsManager.setWallpaperBlur(blur) }
+    fun setCustomBackgroundImageAlpha(value: Int) {
+        viewModelScope.launch {
+            appSettingsManager.setCustomBackgroundImageAlpha(value)
+        }
     }
 
-    val wallpaperScrim: StateFlow<Int> = appSettingsManager.wallpaperScrim
-    fun setWallpaperScrim(scrim: Int) {
-        viewModelScope.launch { appSettingsManager.setWallpaperScrim(scrim) }
+    fun setCustomBackgroundScrim(value: Int) {
+        viewModelScope.launch {
+            appSettingsManager.setCustomBackgroundScrim(value)
+        }
     }
 
-    val wallpaperTextContrast: StateFlow<Boolean> = appSettingsManager.wallpaperTextContrast
-
-    fun setWallpaperTextContrast(enabled: Boolean) {
-        viewModelScope.launch { appSettingsManager.setWallpaperTextContrast(enabled) }
-    }
-
-    val wallpaperFrostedGlass: StateFlow<Boolean> = appSettingsManager.wallpaperFrostedGlass
-    fun setWallpaperFrostedGlass(enabled: Boolean) {
-        viewModelScope.launch { appSettingsManager.setWallpaperFrostedGlass(enabled) }
-    }
-
-    /**
-     * Reset wallpaper *appearance* knobs after the image is cleared.
-     * Does not touch [useWallpaperColor] (theme preference, not per-image).
-     */
-    suspend fun resetWallpaperAppearanceDefaults() {
-        appSettingsManager.setWallpaperAlpha(100)
-        appSettingsManager.setWallpaperBlur(0)
-        appSettingsManager.setWallpaperScrim(0)
-        appSettingsManager.setWallpaperTextContrast(false)
-        appSettingsManager.setWallpaperFrostedGlass(false)
+    fun setCustomBackgroundBlur(value: Int) {
+        viewModelScope.launch {
+            appSettingsManager.setCustomBackgroundBlur(value)
+        }
     }
 }

@@ -46,7 +46,7 @@ fun BottomButtons(
             enabled = !isStarting,
             colors = ButtonDefaults.outlinedButtonColors(
                 contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = MaaThemeAlphas.Disabled)
+                disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = MaaThemeAlphas.DISABLED)
             )
         ) {
             Text(stringResource(R.string.panel_bottom_hide))
@@ -62,7 +62,7 @@ fun BottomButtons(
             enabled = !isStarting,
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.primary,
-                disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = MaaThemeAlphas.Disabled)
+                disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = MaaThemeAlphas.DISABLED)
             )
         ) {
             if (isStarting) {

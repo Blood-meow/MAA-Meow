@@ -20,7 +20,6 @@ import io.mockk.mockk
  */
 fun testTaskParamContext(
     clientType: String = "Official",
-    depotAccountTag: String = "Official:test",
     chainAllowsCreditFight: Boolean = false,
     node: TaskChainNode = testTaskChainNode(),
     activityManager: ActivityManager = mockk(relaxed = true),
@@ -32,7 +31,6 @@ fun testTaskParamContext(
     logSink: PreflightLogSink = CollectingPreflightLogSink(),
 ): TaskParamContext = TaskParamContext(
     clientType = clientType,
-    depotAccountTag = depotAccountTag,
     chainAllowsCreditFight = chainAllowsCreditFight,
     node = node,
     activityManager = activityManager,

@@ -1,27 +1,25 @@
 package com.aliothmoon.maameow.presentation.view.background
 
 import android.app.Activity
-import android.content.res.Configuration
 import android.content.pm.ActivityInfo
-
+import android.content.res.Configuration
 import android.graphics.PixelFormat
 import android.view.Surface
 import android.view.SurfaceHolder
 import android.view.SurfaceView
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.layout.aspectRatio
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
-
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -32,13 +30,20 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.automirrored.filled.VolumeOff
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
+import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.NotificationsPaused
+import androidx.compose.material.icons.filled.PowerSettingsNew
+import androidx.compose.material.icons.filled.Screenshot
+import androidx.compose.material.icons.filled.StayCurrentPortrait
+import androidx.compose.material.icons.filled.TouchApp
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -60,19 +65,25 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import androidx.compose.runtime.movableContentOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.view.WindowCompat
@@ -81,53 +92,37 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.aliothmoon.maameow.R
 import com.aliothmoon.maameow.constant.DefaultDisplayConfig
+import com.aliothmoon.maameow.data.preferences.AppSettingsManager
+import com.aliothmoon.maameow.domain.models.RunMode
+import com.aliothmoon.maameow.domain.service.AppWatchdog
 import com.aliothmoon.maameow.domain.service.MaaCompositionService
 import com.aliothmoon.maameow.domain.service.UnifiedStateDispatcher
-import com.aliothmoon.maameow.domain.models.RunMode
 import com.aliothmoon.maameow.domain.state.MaaExecutionState
+import com.aliothmoon.maameow.manager.PermissionManager
+import com.aliothmoon.maameow.overlay.screensaver.ScreenSaverOverlayManager
 import com.aliothmoon.maameow.presentation.LocalInputFocusManager
 import com.aliothmoon.maameow.presentation.components.AdaptiveTaskPromptDialog
 import com.aliothmoon.maameow.presentation.components.ShizukuReadinessGate
-import com.aliothmoon.maameow.presentation.view.panel.PanelHeader
+import com.aliothmoon.maameow.presentation.view.panel.AutoBattlePanel
+import com.aliothmoon.maameow.presentation.view.panel.LocalToolboxFileExporter
 import com.aliothmoon.maameow.presentation.view.panel.LogPanel
 import com.aliothmoon.maameow.presentation.view.panel.PanelDialogType
+import com.aliothmoon.maameow.presentation.view.panel.PanelHeader
 import com.aliothmoon.maameow.presentation.view.panel.PanelTab
 import com.aliothmoon.maameow.presentation.view.panel.TaskListDetailLayout
-import com.aliothmoon.maameow.presentation.view.panel.AutoBattlePanel
+import com.aliothmoon.maameow.presentation.view.panel.ToolboxPanel
+import com.aliothmoon.maameow.presentation.view.panel.rememberSafToolboxFileExporter
 import com.aliothmoon.maameow.presentation.viewmodel.BackgroundTaskViewModel
 import com.aliothmoon.maameow.presentation.viewmodel.CopilotViewModel
 import com.aliothmoon.maameow.presentation.viewmodel.ToolboxTab
 import com.aliothmoon.maameow.presentation.viewmodel.ToolboxViewModel
-import com.aliothmoon.maameow.data.preferences.AppSettingsManager
-import com.aliothmoon.maameow.manager.PermissionManager
-import androidx.compose.ui.input.pointer.PointerEventType
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.unit.Dp
-import com.aliothmoon.maameow.domain.service.AppWatchdog
-import com.aliothmoon.maameow.overlay.screensaver.ScreenSaverOverlayManager
+import com.aliothmoon.maameow.theme.MaaAnimations
+import com.aliothmoon.maameow.theme.MaaThemeAlphas
 import com.aliothmoon.maameow.utils.i18n.asString
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import timber.log.Timber
-import androidx.compose.material.icons.filled.PowerSettingsNew
-import androidx.compose.material.icons.filled.NotificationsPaused
-import androidx.compose.material.icons.filled.Cancel
-import androidx.compose.material.icons.filled.Screenshot
-import androidx.compose.material.icons.filled.StayCurrentPortrait
-import androidx.compose.material.icons.filled.TouchApp
-import androidx.compose.ui.graphics.vector.ImageVector
-
-import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.saveable.rememberSaveable
-import com.aliothmoon.maameow.presentation.view.panel.ToolboxPanel
-import com.aliothmoon.maameow.presentation.view.panel.LocalToolboxFileExporter
-import com.aliothmoon.maameow.presentation.view.panel.rememberSafToolboxFileExporter
-import com.aliothmoon.maameow.theme.MaaAnimations
-import com.aliothmoon.maameow.theme.MaaThemeAlphas
-import androidx.compose.animation.core.tween
-import com.aliothmoon.maameow.theme.overlayBoardColor
 
 @Composable
 fun BackgroundTaskView(
@@ -163,13 +158,9 @@ fun BackgroundTaskView(
     val toolboxDialog by toolboxViewModel.dialog.collectAsStateWithLifecycle()
     val nodes by viewModel.chainState.chain.collectAsStateWithLifecycle()
     val profiles by viewModel.chainState.profiles.collectAsStateWithLifecycle()
-    val activeProfileId by viewModel.chainState.activeProfileId.collectAsStateWithLifecycle()
-    val profileSequence by viewModel.chainState.profileSequence.collectAsStateWithLifecycle()
-    val profileSequenceEnabled by viewModel.chainState.profileSequenceEnabled.collectAsStateWithLifecycle()
-    val sequenceConfigs by viewModel.chainState.sequenceConfigs.collectAsStateWithLifecycle()
-    val activeSequenceConfigId by viewModel.chainState.activeSequenceConfigId.collectAsStateWithLifecycle()
+    val profileId by viewModel.chainState.profileId.collectAsStateWithLifecycle()
     val selectedNode = nodes.find { it.id == state.selectedNodeId }
-    val clientType = remember(nodes) { viewModel.chainState.getClientType() }
+    val clientType = remember(nodes) { viewModel.chainState.clientType }
     val canShowTaskActions = PanelTab.canShowTaskActions(state.current)
 
     val pagerState = rememberPagerState(
@@ -196,6 +187,7 @@ fun BackgroundTaskView(
     val context = LocalContext.current
     val serviceDiedMessage = stringResource(R.string.bg_toast_service_died)
     val appDiedMessage = stringResource(R.string.bg_toast_app_died)
+    val displayDriftMessage = stringResource(R.string.bg_toast_display_drift)
 
     ShizukuReadinessGate()
 
@@ -220,6 +212,14 @@ fun BackgroundTaskView(
         appWatchdog.appDiedEvent.collect {
             Toast.makeText(
                 context, appDiedMessage, Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        appWatchdog.displayDriftEvent.collect {
+            Toast.makeText(
+                context, displayDriftMessage, Toast.LENGTH_LONG
             ).show()
         }
     }
@@ -363,11 +363,7 @@ fun BackgroundTaskView(
                                         isAddingTask = state.isAddingTask,
                                         isProfileMode = state.isProfileMode,
                                         profiles = profiles,
-                                        activeProfileId = activeProfileId,
-                                        sequenceConfigs = sequenceConfigs,
-                                        activeSequenceConfigId = activeSequenceConfigId,
-                                        sequence = profileSequence,
-                                        sequenceEnabled = profileSequenceEnabled,
+                                        activeProfileId = profileId,
                                         clientType = clientType,
                                         onNodeEnabledChange = viewModel::onNodeEnabledChange,
                                         onNodeSelected = viewModel::onNodeSelected,
@@ -378,40 +374,18 @@ fun BackgroundTaskView(
                                         onConfigChange = { config ->
                                             val nodeId = selectedNode?.id
                                                 ?: return@TaskListDetailLayout
-                                            viewModel.onNodeConfigChange(
-                                                nodeId, config
-                                            )
+                                            viewModel.onNodeConfigChange(nodeId, config)
                                         },
-                                        onAddNode = { viewModel.onAddNode(it) },
-                                        onRemoveNode = { viewModel.onRemoveNode(it) },
-                                        onDuplicateNode = { viewModel.onDuplicateNode(it) },
-                                        onRenameNode = { id, name ->
-                                            viewModel.onRenameNode(id, name)
-                                        },
-                                        onSwitchProfile = { viewModel.onSwitchProfile(it) },
-                                        onRenameProfile = { id, name ->
-                                            viewModel.onRenameProfile(id, name)
-                                        },
-                                        onDuplicateProfile = { viewModel.onDuplicateProfile(it) },
-                                        onDeleteProfile = { viewModel.onDeleteProfile(it) },
-                                        onCreateProfile = { viewModel.onCreateProfile() },
-                                        onReorderProfile = { from, to ->
-                                            viewModel.onReorderProfile(from, to)
-                                        },
-                                        onAddProfilesToSequence = { viewModel.onAddProfilesToSequence(it) },
-                                        onRemoveSequenceEntry = { viewModel.onRemoveSequenceEntry(it) },
-                                        onReorderSequence = { from, to ->
-                                            viewModel.onReorderSequence(from, to)
-                                        },
-                                        onSwitchSequenceConfig = { viewModel.onSwitchSequenceConfig(it) },
-                                        onCreateSequenceConfig = { viewModel.onCreateSequenceConfig() },
-                                        onRenameSequenceConfig = { id, name ->
-                                            viewModel.onRenameSequenceConfig(id, name)
-                                        },
-                                        onDeleteSequenceConfig = { viewModel.onDeleteSequenceConfig(it) },
-                                        onSequenceEnabledChange = {
-                                            viewModel.onSetProfileSequenceEnabled(it)
-                                        },
+                                        onAddNode = viewModel::onAddNode,
+                                        onRemoveNode = viewModel::onRemoveNode,
+                                        onDuplicateNode = viewModel::onDuplicateNode,
+                                        onRenameNode = viewModel::onRenameNode,
+                                        onSwitchProfile = viewModel::onSwitchProfile,
+                                        onRenameProfile = viewModel::onRenameProfile,
+                                        onDuplicateProfile = viewModel::onDuplicateProfile,
+                                        onDeleteProfile = viewModel::onDeleteProfile,
+                                        onCreateProfile = viewModel::onCreateProfile,
+                                        onReorderProfile = viewModel::onReorderProfile,
                                         modifier = Modifier.fillMaxSize(),
                                         wrapDetailInCard = true,
                                     )
@@ -526,7 +500,7 @@ fun BackgroundTaskView(
                                                             alpha = 0.12f,
                                                         ),
                                                         contentColor = MaterialTheme.colorScheme.onSurface.copy(
-                                                            alpha = MaaThemeAlphas.Disabled,
+                                                            alpha = MaaThemeAlphas.DISABLED,
                                                         ),
                                                     )
                                                 } else {
@@ -613,7 +587,7 @@ fun BackgroundTaskView(
                                                         alpha = 0.12f
                                                     ),
                                                     contentColor = MaterialTheme.colorScheme.onSurface.copy(
-                                                        alpha = MaaThemeAlphas.Disabled
+                                                        alpha = MaaThemeAlphas.DISABLED
                                                     ),
                                                 )
                                             } else {
@@ -629,20 +603,7 @@ fun BackgroundTaskView(
                                                     strokeWidth = 2.dp
                                                 )
                                             } else {
-                                                // 与 resolve 可执行语义接近：启用且序列非空，且至少一条引用存在
-                                                val startLabelRes =
-                                                    if (state.current == PanelTab.TASKS &&
-                                                        profileSequenceEnabled &&
-                                                        profileSequence.isNotEmpty() &&
-                                                        profileSequence.any { entry ->
-                                                            profiles.any { it.id == entry.profileId }
-                                                        }
-                                                    ) {
-                                                        R.string.task_btn_start_sequence
-                                                    } else {
-                                                        R.string.task_btn_start
-                                                    }
-                                                Text(stringResource(startLabelRes))
+                                                Text(stringResource(R.string.task_btn_start))
                                             }
                                         }
 
@@ -807,7 +768,7 @@ fun BackgroundTaskView(
                     Icon(
                         imageVector = Icons.Default.Close,
                         contentDescription = stringResource(R.string.task_close_preview_cd),
-                        tint = MaterialTheme.colorScheme.surfaceContainerLowest.copy(alpha = 0.7f),
+                        tint = Color.White.copy(alpha = 0.7f),
                         modifier = Modifier.size(28.dp)
                     )
                 }
@@ -935,8 +896,11 @@ private fun BackgroundMoreActionsOverlay(
                     interactionSource = cardInteractionSource, indication = null, onClick = {}),
             shape = RoundedCornerShape(4.dp),
             colors = CardDefaults.cardColors(
-                containerColor = overlayBoardColor()
-            )) {
+                containerColor = MaterialTheme.colorScheme.surface
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+            border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.outlineVariant)
+        ) {
             Column(modifier = Modifier.padding(10.dp)) {
                 // 标题与快速操作组
                 Text(

@@ -69,6 +69,21 @@ data class AppSettings(
     @PrefKey(default = "false") val forceFullscreenOnVirtualDisplay: String = "false",
 
     /**
+     * 后台虚拟显示器模式下，游戏漂移到主屏时是否自动拉回。
+     * 部分 ROM（如 One UI / B 服 U8 SDK）会在启动或登录切换时把游戏挪回主屏，
+     * 启用后 AppWatchdog 会周期检测并尝试把任务移回虚拟显示器。
+     */
+    @PrefKey(default = "true") val driftAutoRepinEnabled: String = "true",
+
+    /**
+     * 检测到漂移后等待多少秒再拉回（默认 5）。
+     * 游戏启动后常有一段「登录弹窗 / SDK 鉴权」窗口期，立刻拉回会被游戏视为异常并
+     * 重复弹出登录流程。留足延迟窗口让瞬态漂移自行回落，仅对持续漂移才介入。
+     * 合法范围 1~60 秒。
+     */
+    @PrefKey(default = "5") val driftAutoRepinDelaySec: String = "5",
+
+    /**
      * 是否启用 Android 特化任务覆盖（overrides/resource/tasks/tasks.json）
      * 启用后该目录作为最高优先级覆盖层，在加载链末位加载
      */
@@ -92,22 +107,20 @@ data class AppSettings(
     /** 是否显示成就解锁时的 Snackbar 提示 */
     @PrefKey(default = "true") val showAchievementSnackbar: String = "true",
 
-    /** 自定义壁纸 URI（content:// 或 file://），空串表示未设置 */
-    @PrefKey(default = "") val wallpaperUri: String = "",
-
-    /** 壁纸透明度 0~100，默认 100 */
-    @PrefKey(default = "100") val wallpaperAlpha: String = "100",
-
-    /** 壁纸模糊半径 0~12，默认 0 */
-    @PrefKey(default = "0") val wallpaperBlur: String = "0",
+    /** 是否启用主界面自定义图片背景（仅四个主 Tab 生效） */
+    @PrefKey(default = "false") val customBackgroundEnabled: String = "false",
 
     /**
-     * 壁纸遮罩（scrim）强度 0~100，默认 0。
-     * 在壁纸上叠一层主题 background 半透明色，提升前景可读性。
+     * 图片文件固定存放在 filesDir/backgrounds/bg.jpg，路径本身无需持久化。
      */
-    @PrefKey(default = "0") val wallpaperScrim: String = "0",
+    @PrefKey(default = "") val customBackgroundToken: String = "",
 
-    /** 壁纸磨砂玻璃效果：组件背景半透明透出壁纸，默认 false */
-    @PrefKey(default = "false") val wallpaperTextContrast: String = "false",
-    @PrefKey(default = "false") val wallpaperFrostedGlass: String = "false",
+    /** 背景图不透明度 0~100（默认 80） */
+    @PrefKey(default = "80") val customBackgroundImageAlpha: String = "80",
+
+    /** 背景遮罩强度 0~100（默认 25，用于保证前景文字可读性） */
+    @PrefKey(default = "25") val customBackgroundScrim: String = "25",
+
+    /** 背景模糊强度 0~100（默认 0，仅 API 31+ 生效） */
+    @PrefKey(default = "0") val customBackgroundBlur: String = "0",
 )

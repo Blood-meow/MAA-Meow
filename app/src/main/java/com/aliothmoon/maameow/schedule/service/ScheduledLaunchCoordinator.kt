@@ -1,6 +1,5 @@
 package com.aliothmoon.maameow.schedule.service
-import android.content.Context
-import com.aliothmoon.maameow.R
+
 import com.aliothmoon.maameow.data.preferences.AppSettingsManager
 import com.aliothmoon.maameow.data.preferences.TaskChainState
 import com.aliothmoon.maameow.domain.models.RunMode
@@ -23,6 +22,8 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+
+
 class ScheduledLaunchCoordinator(
     private val scope: CoroutineScope,
     private val scheduleRepository: ScheduleStrategyRepository,
@@ -30,9 +31,7 @@ class ScheduledLaunchCoordinator(
     private val appSettingsManager: AppSettingsManager,
     private val chainState: TaskChainState,
     private val triggerLogger: ScheduleTriggerLogger,
-    private val appContext: Context,
 ) {
-    private val appCtx get() = appContext.applicationContext
     private val _countdownState = MutableStateFlow<CountdownState>(CountdownState.Idle)
     val countdownState: StateFlow<CountdownState> = _countdownState.asStateFlow()
 
@@ -102,16 +101,12 @@ class ScheduledLaunchCoordinator(
 
         triggerLogger.append("收到启动请求: ${request.strategyName}")
 
-if (hasPendingFlow()) {
+        if (hasPendingFlow()) {
             if (request.forceStart) {
                 triggerLogger.append("强制启动: 清除当前待处理流程")
                 clearFlow()
             } else {
-                reject(
-                    request,
-                    ExecutionResult.SKIPPED_BUSY,
-                    appCtx.getString(R.string.schedule_msg_busy_pending),
-                )
+                reject(request, ExecutionResult.SKIPPED_BUSY, "已有定时任务正在处理中")
                 return
             }
         }
@@ -125,72 +120,36 @@ if (hasPendingFlow()) {
                 compositionService.stop()
                 compositionService.stopVirtualDisplay()
             } else {
-                reject(
-                    request,
-                    ExecutionResult.SKIPPED_BUSY,
-                    appCtx.getString(R.string.schedule_msg_busy),
-                )
+                reject(request, ExecutionResult.SKIPPED_BUSY, "有任务正在运行")
                 return
             }
         }
+
         val isForegroundMode = appSettingsManager.runMode.value == RunMode.FOREGROUND
         val allowForeground = appSettingsManager.allowForegroundScheduledTask.value
         if (isForegroundMode && !allowForeground) {
             reject(
                 request,
                 ExecutionResult.FAILED_VALIDATION,
-                appCtx.getString(R.string.schedule_msg_foreground_mode_blocked),
+                "当前运行模式不是后台模式，且未开启“允许前台定时任务”开关"
             )
             return
         }
+
         triggerLogger.append("等待任务配置加载...")
         chainState.isLoaded.filter { it }.first()
-        // 预检只读：真正启动时 startTasksInternal 再 switch/resolve
-        val enabledNodes = if (request.useSequence) {
-            val seq = chainState.sequenceConfigs.value.find { it.id == request.sequenceConfigId }
-            if (seq == null) {
-                reject(
-                    request,
-                    ExecutionResult.FAILED_VALIDATION,
-                    appCtx.getString(R.string.schedule_msg_sequence_deleted),
-                )
-                return
-            }
-            triggerLogger.append(appCtx.getString(R.string.schedule_msg_using_sequence, seq.name))
-            chainState.resolveExecutableChain(
-                sequence = seq.entries,
-                sequenceEnabled = true,
-                fallbackToActive = false,
-            ).filter { it.enabled }
-        } else {
-            val profile = chainState.profiles.value.find { it.id == request.profileId }
-            if (profile == null) {
-                reject(
-                    request,
-                    ExecutionResult.FAILED_VALIDATION,
-                    appCtx.getString(R.string.schedule_msg_profile_deleted),
-                )
-                return
-            }
-            triggerLogger.append(appCtx.getString(R.string.schedule_msg_using_profile, profile.name))
-            val source =
-                if (request.profileId == chainState.activeProfileId.value) {
-                    chainState.chain.value
-                } else {
-                    profile.chain
-                }
-            source.filter { it.enabled }
+        if (chainState.profileId.value != request.profileId) {
+            triggerLogger.append("切换任务配置: ${request.profileId}")
+            chainState.switchProfile(request.profileId)
         }
+        if (chainState.profileId.value != request.profileId) {
+            reject(request, ExecutionResult.FAILED_VALIDATION, "关联的任务配置已被删除")
+            return
+        }
+
+        val enabledNodes = chainState.chain.value.filter { it.enabled }
         if (enabledNodes.isEmpty()) {
-            reject(
-                request,
-                ExecutionResult.FAILED_VALIDATION,
-                if (request.useSequence) {
-                    appCtx.getString(R.string.schedule_msg_sequence_no_tasks)
-                } else {
-                    appCtx.getString(R.string.schedule_msg_profile_no_tasks)
-                },
-            )
+            reject(request, ExecutionResult.FAILED_VALIDATION, "关联的任务配置中没有启用任务")
             return
         }
 
@@ -224,7 +183,6 @@ if (hasPendingFlow()) {
                     CountdownState.Counting(
                         strategyName = request.strategyName,
                         remainingSeconds = remaining,
-                        useSequence = request.useSequence,
                     )
                 }
                 delay(1000)
@@ -256,9 +214,7 @@ if (hasPendingFlow()) {
             result = result,
             message = message,
         )
-        _feedbackMessages.tryEmit(
-            appCtx.getString(R.string.schedule_msg_feedback, request.strategyName, message),
-        )
+        _feedbackMessages.tryEmit("定时任务「${request.strategyName}」: $message")
     }
 
     private suspend fun finishFlow(

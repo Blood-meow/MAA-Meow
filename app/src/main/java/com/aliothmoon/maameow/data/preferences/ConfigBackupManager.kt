@@ -2,7 +2,6 @@ package com.aliothmoon.maameow.data.preferences
 
 import com.aliothmoon.maameow.constant.OFFICIAL_SHIZUKU_PACKAGE
 import com.aliothmoon.maameow.data.model.InfrastConfig
-import com.aliothmoon.maameow.data.model.TaskChainNode
 import com.aliothmoon.maameow.data.model.TaskProfile
 import com.aliothmoon.maameow.data.notification.NotificationSettings
 import com.aliothmoon.maameow.data.notification.NotificationSettingsManager
@@ -43,12 +42,8 @@ class ConfigBackupManager(
             appSettings = appSettingsManager.settings.first().sanitized(),
             notificationSettings = notificationSettingsManager.settings.first().sanitized(),
             taskProfiles = taskChainState.profiles.value.map { it.sanitized() },
-            activeProfileId = taskChainState.activeProfileId.value,
+            activeProfileId = taskChainState.profileId.value,
             scheduleStrategies = scheduleStrategyRepository.strategies.value,
-            profileSequence = taskChainState.profileSequence.value,
-            profileSequenceEnabled = taskChainState.profileSequenceEnabled.value,
-            sequenceConfigs = taskChainState.sequenceConfigs.value,
-            activeSequenceConfigId = taskChainState.activeSequenceConfigId.value,
         )
         outputStream.bufferedWriter().use { writer ->
             writer.write(json.encodeToString(ConfigBackup.serializer(), backup))
@@ -66,48 +61,40 @@ class ConfigBackupManager(
         require(backup.version <= CURRENT_VERSION) {
             "不支持的备份版本: ${backup.version}，当前最高支持: $CURRENT_VERSION"
         }
-        appSettingsManager.setSettingsPreservingWallpaper(backup.appSettings.normalizedForImport())
-        notificationSettingsManager.updateSettings(backup.notificationSettings)
-        taskChainState.importProfiles(
-            profiles = backup.taskProfiles,
-            activeId = backup.activeProfileId,
-            sequence = backup.profileSequence,
-            sequenceEnabled = backup.profileSequenceEnabled,
-            sequenceConfigs = backup.sequenceConfigs,
-            activeSequenceConfigId = backup.activeSequenceConfigId,
+        // 自定义背景的开关与令牌指向本机文件，导入其他设备的配置时保留本机值。
+        val localSettings = appSettingsManager.settings.first()
+        appSettingsManager.setSettings(
+            backup.appSettings.normalizedForImport().copy(
+                customBackgroundEnabled = localSettings.customBackgroundEnabled,
+                customBackgroundToken = localSettings.customBackgroundToken,
+            )
         )
+        notificationSettingsManager.updateSettings(backup.notificationSettings)
+        taskChainState.importProfiles(backup.taskProfiles, backup.activeProfileId)
 
-        // 先取消旧闹钟，再导入；并禁用目标缺失/空链的策略，避免噪音闹钟
+        // 先取消旧闹钟，再导入并重新注册
         val oldStrategies = scheduleStrategyRepository.strategies.value
         oldStrategies.forEach { scheduleAlarmManager.cancel(it.id) }
         scheduleStrategyRepository.importStrategies(backup.scheduleStrategies)
-        val orphaned = scheduleStrategyRepository.sanitizeInvalidTargets(
-            profiles = taskChainState.profiles.value,
-            sequenceConfigs = taskChainState.sequenceConfigs.value,
-        )
-        orphaned.forEach { scheduleAlarmManager.cancel(it) }
-        scheduleAlarmManager.rescheduleAll(scheduleStrategyRepository.strategies.value)
+        scheduleAlarmManager.rescheduleAll(backup.scheduleStrategies)
     }
 
     companion object {
         const val CURRENT_VERSION = 1
 
+        /**
+         * 导出时剥离设备本地字段：CDK 属敏感信息；
+         * 自定义背景的开关与令牌对应本机 filesDir 下的图片文件，在其他设备上不存在。
+         */
         private fun AppSettings.sanitized() = copy(
             mirrorChyanCdk = "",
-            // Device-local wallpaper path/files must never leave this device.
-            wallpaperUri = "",
-            wallpaperAlpha = "100",
-            wallpaperBlur = "0",
-            wallpaperScrim = "0",
-            wallpaperTextContrast = "false",
-            wallpaperFrostedGlass = "false",
-            // Keep export free of wallpaper theme coupling; import preserves local value.
-            useWallpaperColor = "false",
+            customBackgroundEnabled = "false",
+            customBackgroundToken = "",
         )
 
         /**
          * 导入时对已废弃或非法的旧值做归一化，避免后续读取时违反非空约束。
-          */
+         */
         private fun AppSettings.normalizedForImport() = copy(
             shizukuLaunchPackage = shizukuLaunchPackage.ifBlank { OFFICIAL_SHIZUKU_PACKAGE }
         )

@@ -65,7 +65,7 @@ class ProfileShardStore<T : Any>(
 
     /** 同步改内存并排队落盘。 */
     fun mutate(transform: (T) -> T) {
-        val profileId = taskChainState.activeProfileId.value
+        val profileId = taskChainState.profileId.value
         if (profileId.isEmpty()) {
             Timber.w("活跃配置档为空，跳过写入: %s", keyPrefix)
             return
@@ -185,12 +185,12 @@ class ProfileShardStore<T : Any>(
     private inner class DerivedActiveSnapshot : StateFlow<T> {
         private val changes: Flow<T> = combine(
             _shards,
-            taskChainState.activeProfileId,
+            taskChainState.profileId,
         ) { shards, profileId -> shards[profileId] ?: empty() }
 
         override val value: T
             get() = run {
-                val id = taskChainState.activeProfileId.value
+                val id = taskChainState.profileId.value
                 if (id.isEmpty()) return empty()
                 _shards.value[id] ?: empty()
             }

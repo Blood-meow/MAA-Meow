@@ -1,11 +1,8 @@
 package com.aliothmoon.maameow.presentation.view.panel
 
-import androidx.compose.ui.graphics.Color
 import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -32,8 +29,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.aliothmoon.maameow.R
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.aliothmoon.maameow.R
 import com.aliothmoon.maameow.data.preferences.AppSettingsManager
 import com.aliothmoon.maameow.domain.models.RunMode
 import com.aliothmoon.maameow.domain.service.MaaCompositionService
@@ -65,7 +62,7 @@ fun ExpandedControlPanel(
     copilotViewModel: CopilotViewModel = viewModel(),
     toolboxViewModel: ToolboxViewModel = koinInject(),
     service: MaaCompositionService = koinInject(),
-    appSettings: AppSettingsManager = koinInject()
+    appSettings: AppSettingsManager = koinInject(),
 ) {
     val uiState by viewModel.state.collectAsStateWithLifecycle()
     val maaState by service.state.collectAsStateWithLifecycle()
@@ -73,13 +70,9 @@ fun ExpandedControlPanel(
 
     val nodes by viewModel.chainState.chain.collectAsStateWithLifecycle()
     val profiles by viewModel.chainState.profiles.collectAsStateWithLifecycle()
-    val activeProfileId by viewModel.chainState.activeProfileId.collectAsStateWithLifecycle()
-    val profileSequence by viewModel.chainState.profileSequence.collectAsStateWithLifecycle()
-    val profileSequenceEnabled by viewModel.chainState.profileSequenceEnabled.collectAsStateWithLifecycle()
-    val sequenceConfigs by viewModel.chainState.sequenceConfigs.collectAsStateWithLifecycle()
-    val activeSequenceConfigId by viewModel.chainState.activeSequenceConfigId.collectAsStateWithLifecycle()
+    val profileId by viewModel.chainState.profileId.collectAsStateWithLifecycle()
     val selectedNode = nodes.find { it.id == uiState.selectedNodeId }
-    val clientType = remember(nodes) { viewModel.chainState.getClientType() }
+    val clientType = remember(nodes) { viewModel.chainState.clientType }
     val inputFocusManager = LocalInputFocusManager.current
     val context = LocalContext.current
 
@@ -115,7 +108,11 @@ fun ExpandedControlPanel(
         }
     }
 
-    Box(modifier = modifier.fillMaxSize().clearFocusOnBlankTap()) {
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .clearFocusOnBlankTap()
+    ) {
         Card(
             modifier = Modifier
                 .fillMaxSize()
@@ -125,7 +122,7 @@ fun ExpandedControlPanel(
                 ),
             shape = RoundedCornerShape(4.dp),
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainerLowest
+                containerColor = MaterialTheme.colorScheme.surface
             )
         ) {
             Column(
@@ -152,7 +149,7 @@ fun ExpandedControlPanel(
                     beyondViewportPageCount = 1
                 ) { page ->
                     when (page) {
-                        0 -> { // PanelTab.ONE_KEY_TASKS / TASKS
+                        0 -> { // PanelTab.ONE_KEY_TASKS
                             TaskListDetailLayout(
                                 nodes = nodes,
                                 selectedNode = selectedNode,
@@ -161,11 +158,7 @@ fun ExpandedControlPanel(
                                 isAddingTask = uiState.isAddingTask,
                                 isProfileMode = uiState.isProfileMode,
                                 profiles = profiles,
-                                activeProfileId = activeProfileId,
-                                sequenceConfigs = sequenceConfigs,
-                                activeSequenceConfigId = activeSequenceConfigId,
-                                sequence = profileSequence,
-                                sequenceEnabled = profileSequenceEnabled,
+                                activeProfileId = profileId,
                                 clientType = clientType,
                                 onNodeEnabledChange = viewModel::onNodeEnabledChange,
                                 onNodeSelected = viewModel::onNodeSelected,
@@ -174,8 +167,9 @@ fun ExpandedControlPanel(
                                 onToggleAddingTask = viewModel::onToggleAddingTask,
                                 onToggleProfileMode = viewModel::onToggleProfileMode,
                                 onConfigChange = { config ->
-                                    val nodeId = selectedNode?.id ?: return@TaskListDetailLayout
-                                    viewModel.onNodeConfigChange(nodeId, config)
+                                    selectedNode?.id?.let {
+                                        viewModel.onNodeConfigChange(it, config)
+                                    }
                                 },
                                 onAddNode = viewModel::onAddNode,
                                 onRemoveNode = viewModel::onRemoveNode,
@@ -187,14 +181,6 @@ fun ExpandedControlPanel(
                                 onDeleteProfile = viewModel::onDeleteProfile,
                                 onCreateProfile = viewModel::onCreateProfile,
                                 onReorderProfile = viewModel::onReorderProfile,
-                                onAddProfilesToSequence = viewModel::onAddProfilesToSequence,
-                                onRemoveSequenceEntry = viewModel::onRemoveSequenceEntry,
-                                onReorderSequence = viewModel::onReorderSequence,
-                                onSwitchSequenceConfig = viewModel::onSwitchSequenceConfig,
-                                onCreateSequenceConfig = viewModel::onCreateSequenceConfig,
-                                onRenameSequenceConfig = viewModel::onRenameSequenceConfig,
-                                onDeleteSequenceConfig = viewModel::onDeleteSequenceConfig,
-                                onSequenceEnabledChange = viewModel::onSetProfileSequenceEnabled,
                                 modifier = Modifier.fillMaxSize(),
                             )
                         }
@@ -237,20 +223,7 @@ fun ExpandedControlPanel(
                                 else -> viewModel.onStartTasks()
                             }
                         },
-                        isStarting = maaState == MaaExecutionState.STARTING,
-                        // 与后台页一致：任务 Tab + 启用且非空，且至少一条引用存在
-                        startLabelRes = if (
-                            uiState.currentTab == PanelTab.TASKS &&
-                            profileSequenceEnabled &&
-                            profileSequence.isNotEmpty() &&
-                            profileSequence.any { entry ->
-                                profiles.any { it.id == entry.profileId }
-                            }
-                        ) {
-                            R.string.task_btn_start_sequence
-                        } else {
-                            R.string.panel_bottom_start
-                        },
+                        isStarting = maaState == MaaExecutionState.STARTING
                     )
                 }
             }

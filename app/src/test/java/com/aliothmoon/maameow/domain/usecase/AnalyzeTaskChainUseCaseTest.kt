@@ -2,6 +2,7 @@ package com.aliothmoon.maameow.domain.usecase
 
 import com.aliothmoon.maameow.constant.Packages
 import com.aliothmoon.maameow.data.model.AwardConfig
+import com.aliothmoon.maameow.data.model.DepotMaintainConfig
 import com.aliothmoon.maameow.data.model.FightConfig
 import com.aliothmoon.maameow.data.model.RoguelikeConfig
 import com.aliothmoon.maameow.data.model.TaskChainNode
@@ -9,12 +10,19 @@ import com.aliothmoon.maameow.data.model.UserDataUpdateConfig
 import com.aliothmoon.maameow.data.model.WakeUpConfig
 import com.aliothmoon.maameow.data.preferences.TaskChainState
 import com.aliothmoon.maameow.data.repository.DepotRepository
+import com.aliothmoon.maameow.data.repository.DepotSnapshot
 import com.aliothmoon.maameow.data.repository.OperBoxRepository
+import com.aliothmoon.maameow.data.repository.OperBoxSnapshot
 import com.aliothmoon.maameow.data.resource.CharacterInfo
 import com.aliothmoon.maameow.data.resource.ResourceDataManager
+import com.aliothmoon.maameow.domain.models.SeriesLock
 import com.aliothmoon.maameow.maa.task.MaaTaskType
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkObject
+import io.mockk.unmockkObject
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -26,11 +34,19 @@ import org.junit.Test
 class AnalyzeTaskChainUseCaseTest {
 
     private val taskChainState = mockk<TaskChainState> {
-        every { getClientType() } returns "Official"
+        every { clientType } returns "Official"
     }
     private val resourceDataManager = mockk<ResourceDataManager>(relaxed = true)
-    private val operBoxRepository = mockk<OperBoxRepository>(relaxed = true)
-    private val depotRepository = mockk<DepotRepository>(relaxed = true)
+    private val operBoxRepository = mockk<OperBoxRepository>(relaxed = true) {
+        every { snapshot } returns MutableStateFlow(OperBoxSnapshot())
+        every { isLoaded } returns MutableStateFlow(true)
+    }
+    private val depotRepository = mockk<DepotRepository>(relaxed = true) {
+        every { snapshot } returns MutableStateFlow(DepotSnapshot())
+        // isLoaded 必须显式给 —— relaxed mock 的 StateFlow 不会 emit，
+        // 分析阶段开头的 `isLoaded.first { it }` 会挂死
+        every { isLoaded } returns MutableStateFlow(true)
+    }
     private val useCase = AnalyzeTaskChainUseCase(
         taskChainState = taskChainState,
         resourceDataManager = resourceDataManager,
@@ -38,10 +54,11 @@ class AnalyzeTaskChainUseCaseTest {
         depotRepository = depotRepository,
         operBoxRepository = operBoxRepository,
         itemHelper = mockk(relaxed = true),
+        dropsRefresher = mockk(relaxed = true),
     )
 
     @Test
-    fun returnsBlocked_whenNoTaskIsEnabled() {
+    fun returnsBlocked_whenNoTaskIsEnabled() = runBlocking {
         val result = useCase(
             listOf(TaskChainNode(name = "领取奖励", enabled = false, config = AwardConfig()))
         )
@@ -55,183 +72,78 @@ class AnalyzeTaskChainUseCaseTest {
     }
 
     @Test
-    fun returnsReady_withTwoPlans_whenContiguousClientsDiffer() {
+    fun returnsBlocked_whenWakeUpClientTypesConflict() = runBlocking {
         val result = useCase(
             listOf(
                 TaskChainNode(
                     name = "开始唤醒1",
                     order = 1,
                     enabled = true,
-                    config = WakeUpConfig(clientType = "Official", startGameEnabled = true),
-                ),
-                TaskChainNode(
-                    name = "领取奖励",
-                    order = 2,
-                    enabled = true,
-                    config = AwardConfig(),
+                    config = WakeUpConfig(clientType = "Official"),
                 ),
                 TaskChainNode(
                     name = "开始唤醒2",
-                    order = 3,
-                    enabled = true,
-                    config = WakeUpConfig(clientType = "Bilibili", startGameEnabled = true),
-                ),
-                TaskChainNode(
-                    name = "领取奖励2",
-                    order = 4,
-                    enabled = true,
-                    config = AwardConfig(),
-                ),
-            )
-        )
-
-        val ready = result as AnalyzeTaskChainResult.Ready
-        assertEquals(2, ready.plans.size)
-        assertEquals("Official", ready.plans[0].clientType)
-        assertEquals(2, ready.plans[0].params.size)
-        assertEquals("Bilibili", ready.plans[1].clientType)
-        assertEquals(2, ready.plans[1].params.size)
-        assertEquals(Packages["Official"], ready.plans[0].gamePackageName)
-        assertEquals(Packages["Bilibili"], ready.plans[1].gamePackageName)
-    }
-
-    @Test
-    fun returnsReady_withOnePlan_whenSameClientSwitchesAccount() {
-        val result = useCase(
-            listOf(
-                TaskChainNode(
-                    name = "账号1",
-                    order = 1,
-                    enabled = true,
-                    config = WakeUpConfig(clientType = "Official", accountName = "1"),
-                ),
-                TaskChainNode(
-                    name = "更新数据1",
                     order = 2,
                     enabled = true,
-                    config = UserDataUpdateConfig(updateDepot = true, updateOperBox = false),
+                    config = WakeUpConfig(clientType = "Bilibili"),
                 ),
-                TaskChainNode(
-                    name = "账号2",
-                    order = 3,
-                    enabled = true,
-                    config = WakeUpConfig(clientType = "Official", accountName = "2"),
-                ),
-                TaskChainNode(
-                    name = "更新数据2",
-                    order = 4,
-                    enabled = true,
-                    config = UserDataUpdateConfig(updateDepot = true, updateOperBox = false),
-                ),
-            )
-        )
-
-        val ready = result as AnalyzeTaskChainResult.Ready
-        assertEquals(1, ready.plans.size)
-        assertEquals("Official", ready.plan.clientType)
-        assertEquals("Official:1", ready.plan.depotAccountTag)
-        assertEquals(listOf("账号1", "更新数据1", "账号2", "更新数据2"), ready.plan.enabledNodes.map { it.name })
-        assertEquals(
-            listOf("Official:1", "Official:2"),
-            ready.plan.params.filter { it.type == MaaTaskType.DEPOT }.map { it.accountTag },
-        )
-    }
-
-    @Test
-    fun returnsBlocked_whenClientBlocksAreInterleaved() {
-        val result = useCase(
-            listOf(
-                TaskChainNode(
-                    name = "官服账号1-A",
-                    order = 1,
-                    enabled = true,
-                    config = WakeUpConfig(clientType = "Official", accountName = "1"),
-                ),
-                TaskChainNode(
-                    name = "B服账号2",
-                    order = 2,
-                    enabled = true,
-                    config = WakeUpConfig(clientType = "Bilibili", accountName = "2"),
-                ),
-                TaskChainNode(
-                    name = "官服账号1-B",
-                    order = 3,
-                    enabled = true,
-                    config = WakeUpConfig(clientType = "Official", accountName = "1"),
-                ),
-            )
-        )
-
-        val blocked = result as AnalyzeTaskChainResult.Blocked
-        assertEquals(AnalyzeTaskChainFailureReason.INTERLEAVED_CLIENT_TYPES, blocked.reason)
-        assertEquals(listOf("Official", "Bilibili"), blocked.clientTypes)
-    }
-
-    @Test
-    fun returnsBlocked_whenSameClientAppearsAfterAnotherClient() {
-        val result = useCase(
-            listOf(
-                TaskChainNode(
-                    name = "官服账号1",
-                    order = 1,
-                    enabled = true,
-                    config = WakeUpConfig(clientType = "Official", accountName = "1"),
-                ),
-                TaskChainNode(
-                    name = "B服账号2",
-                    order = 2,
-                    enabled = true,
-                    config = WakeUpConfig(clientType = "Bilibili", accountName = "2"),
-                ),
-                TaskChainNode(
-                    name = "官服账号3",
-                    order = 3,
-                    enabled = true,
-                    config = WakeUpConfig(clientType = "Official", accountName = "3"),
-                ),
-            )
-        )
-
-        val blocked = result as AnalyzeTaskChainResult.Blocked
-        assertEquals(AnalyzeTaskChainFailureReason.INTERLEAVED_CLIENT_TYPES, blocked.reason)
-        assertEquals(listOf("Official", "Bilibili"), blocked.clientTypes)
-    }
-
-    @Test
-    fun returnsBlocked_whenWeeklyScheduleFiltersOutAllTasks() {
-        val disabledEveryDay = mapOf(
-            "MONDAY" to false,
-            "TUESDAY" to false,
-            "WEDNESDAY" to false,
-            "THURSDAY" to false,
-            "FRIDAY" to false,
-            "SATURDAY" to false,
-            "SUNDAY" to false,
-        )
-
-        val result = useCase(
-            listOf(
-                TaskChainNode(
-                    name = "理智作战",
-                    enabled = true,
-                    config = FightConfig(
-                        useWeeklySchedule = true,
-                        weeklySchedule = disabledEveryDay,
-                    ),
-                )
             )
         )
 
         assertEquals(
             AnalyzeTaskChainResult.Blocked(
-                reason = AnalyzeTaskChainFailureReason.NO_EXECUTABLE_TASKS,
+                reason = AnalyzeTaskChainFailureReason.CONFLICTING_CLIENT_TYPES,
+                clientTypes = listOf("Official", "Bilibili"),
             ),
             result
         )
     }
 
     @Test
-    fun returnsReadyPlan_withClientTypePackageAndLaunchFlag() {
+    fun returnsBlocked_whenWeeklyScheduleFiltersOutAllTasks() = runBlocking {
+        // SeriesLock 按日期生效（2026-08-01 起对官服/B服返回 true），会向预检日志追加警告；
+        // mock 掉避免断言结果随墙钟日期变化
+        mockkObject(SeriesLock)
+        try {
+            every { SeriesLock.isLocked(any(), any()) } returns false
+            every { SeriesLock.isLocked(any()) } returns false
+
+            val disabledEveryDay = mapOf(
+                "MONDAY" to false,
+                "TUESDAY" to false,
+                "WEDNESDAY" to false,
+                "THURSDAY" to false,
+                "FRIDAY" to false,
+                "SATURDAY" to false,
+                "SUNDAY" to false,
+            )
+
+            val result = useCase(
+                listOf(
+                    TaskChainNode(
+                        name = "理智作战",
+                        enabled = true,
+                        config = FightConfig(
+                            useWeeklySchedule = true,
+                            weeklySchedule = disabledEveryDay,
+                        ),
+                    )
+                )
+            )
+
+            assertEquals(
+                AnalyzeTaskChainResult.Blocked(
+                    reason = AnalyzeTaskChainFailureReason.NO_EXECUTABLE_TASKS,
+                ),
+                result
+            )
+        } finally {
+            unmockkObject(SeriesLock)
+        }
+    }
+
+    @Test
+    fun returnsReadyPlan_withClientTypePackageAndLaunchFlag() = runBlocking {
         val result = useCase(
             listOf(
                 TaskChainNode(
@@ -253,16 +165,15 @@ class AnalyzeTaskChainUseCaseTest {
         )
 
         val ready = result as AnalyzeTaskChainResult.Ready
-        assertEquals(1, ready.plans.size)
         assertEquals("Official", ready.plan.clientType)
         assertEquals(Packages["Official"], ready.plan.gamePackageName)
         assertTrue(ready.plan.launchesGame)
-        assertEquals(2, ready.plan.enabledNodes.size)
+        assertEquals(2, ready.plan.nodes.size)
         assertEquals(2, ready.plan.params.size)
     }
 
     @Test
-    fun returnsReadyPlan_withDefaultClientType_whenNoWakeUpTaskExists() {
+    fun returnsReadyPlan_withDefaultClientType_whenNoWakeUpTaskExists() = runBlocking {
         val result = useCase(
             listOf(
                 TaskChainNode(
@@ -281,7 +192,7 @@ class AnalyzeTaskChainUseCaseTest {
     }
 
     @Test
-    fun roguelikeCoreChar_normalizedToSimplifiedChinese_beforeDispatch() {
+    fun roguelikeCoreChar_normalizedToSimplifiedChinese_beforeDispatch() = runBlocking {
         // 繁中服选了繁中名,下发前须反查归一化为简中名(MaaCore core_char 仅认简中名)
         every { resourceDataManager.getCharacterByNameOrAlias("維什戴爾") } returns
             CharacterInfo(name = "维什戴尔")
@@ -305,19 +216,11 @@ class AnalyzeTaskChainUseCaseTest {
     }
 
     @Test
-    fun userDataUpdate_bothDue_setsUnlockDoubleSyncWithoutSideEffect() {
-        // 从未同步 → 双 due；flag 仅进 plan，UseCase 本身不解锁成就
+    fun userDataUpdate_neverSynced_expandsToBothRecognitions() = runBlocking {
         val result = useCase(
             listOf(
                 TaskChainNode(
-                    name = "开始唤醒",
-                    order = 0,
-                    enabled = true,
-                    config = WakeUpConfig(clientType = "Official", accountName = "1"),
-                ),
-                TaskChainNode(
                     name = "更新数据",
-                    order = 1,
                     enabled = true,
                     config = UserDataUpdateConfig(),
                 )
@@ -327,36 +230,61 @@ class AnalyzeTaskChainUseCaseTest {
         val ready = result as AnalyzeTaskChainResult.Ready
         assertEquals(
             listOf(MaaTaskType.OPER_BOX, MaaTaskType.DEPOT),
-            ready.plan.params.map { it.type }.filter { it == MaaTaskType.OPER_BOX || it == MaaTaskType.DEPOT },
+            ready.plan.params.map { it.type },
         )
-        assertTrue(ready.plan.unlockDoubleSync)
     }
 
+    /**
+     * 「更新数据」与「库存保持（任务开始前更新库存）」相邻时只保留一次仓库识别；
+     * 中间隔着别的任务则不合并 —— 那段时间库存确实可能变化。
+     */
     @Test
-    fun userDataUpdate_onlyOneSideDue_doesNotSetUnlockDoubleSync() {
+    fun adjacentDepotRecognitions_areDeduplicated() = runBlocking {
         val result = useCase(
             listOf(
                 TaskChainNode(
-                    name = "开始唤醒",
-                    order = 0,
+                    name = "更新数据",
                     enabled = true,
-                    config = WakeUpConfig(clientType = "Official", accountName = "1"),
+                    order = 0,
+                    config = UserDataUpdateConfig(updateOperBox = false, updateDepot = true),
                 ),
                 TaskChainNode(
-                    name = "更新数据",
-                    order = 1,
+                    name = "库存保持",
                     enabled = true,
-                    // 干员刚同步过但间隔为每次 → 两侧仍都 due；改用仅开仓库验证单侧
+                    order = 1,
+                    config = DepotMaintainConfig(updateDepot = true, plans = emptyList()),
+                ),
+            )
+        )
+
+        val ready = result as AnalyzeTaskChainResult.Ready
+        assertEquals(listOf(MaaTaskType.DEPOT), ready.plan.params.map { it.type })
+    }
+
+    @Test
+    fun nonAdjacentDepotRecognitions_areKept() = runBlocking {
+        val result = useCase(
+            listOf(
+                TaskChainNode(
+                    name = "更新数据",
+                    enabled = true,
+                    order = 0,
                     config = UserDataUpdateConfig(updateOperBox = false, updateDepot = true),
-                )
+                ),
+                TaskChainNode(name = "领取奖励", enabled = true, order = 1, config = AwardConfig()),
+                TaskChainNode(
+                    name = "库存保持",
+                    enabled = true,
+                    order = 2,
+                    config = DepotMaintainConfig(updateDepot = true, plans = emptyList()),
+                ),
             )
         )
 
         val ready = result as AnalyzeTaskChainResult.Ready
         assertEquals(
-            listOf(MaaTaskType.DEPOT),
-            ready.plan.params.map { it.type }.filter { it == MaaTaskType.OPER_BOX || it == MaaTaskType.DEPOT },
+            listOf(MaaTaskType.DEPOT, MaaTaskType.AWARD, MaaTaskType.DEPOT),
+            ready.plan.params.map { it.type },
         )
-        assertFalse(ready.plan.unlockDoubleSync)
     }
 }

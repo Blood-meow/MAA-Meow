@@ -8,11 +8,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aliothmoon.maameow.R
 import com.aliothmoon.maameow.data.model.TaskProfile
-import com.aliothmoon.maameow.data.model.TaskSequenceConfig
 import com.aliothmoon.maameow.data.preferences.TaskChainState
 import com.aliothmoon.maameow.schedule.data.ScheduleStrategyRepository
 import com.aliothmoon.maameow.schedule.model.ScheduleStrategy
-import com.aliothmoon.maameow.schedule.model.ScheduleTargetKind
 import com.aliothmoon.maameow.schedule.model.ScheduleType
 import com.aliothmoon.maameow.schedule.service.ScheduleAlarmManager
 import com.aliothmoon.maameow.utils.i18n.UiText
@@ -42,10 +40,7 @@ data class ScheduleEditUiState(
     val intervalHours: Int = 0,
     // 通用
     val profiles: List<TaskProfile> = emptyList(),
-    val sequenceConfigs: List<TaskSequenceConfig> = emptyList(),
-    val targetKind: ScheduleTargetKind = ScheduleTargetKind.PROFILE,
     val selectedProfileId: String? = null,
-    val selectedSequenceConfigId: String? = null,
     val forceStart: Boolean = false,
     val isSaving: Boolean = false,
     val saveSuccess: Boolean = false,
@@ -69,10 +64,9 @@ class ScheduleEditViewModel(
     /** 加载已有策略（编辑模式），或初始化默认选择（新建模式） */
     fun loadStrategy(context: Context, id: String?) {
         viewModelScope.launch {
-            // 等待 Profile / 任务链配置数据加载完成
+            // 等待 Profile 数据加载完成
             taskChainState.isLoaded.filter { it }.first()
             val profiles = taskChainState.profiles.value
-            val sequenceConfigs = taskChainState.sequenceConfigs.value
 
             if (id != null) {
                 repository.isLoaded.filter { it }.first()
@@ -82,7 +76,6 @@ class ScheduleEditViewModel(
                     strategyId = id
                     existingStrategy = strategy
                     val totalMinutes = strategy.intervalMinutes ?: 0
-                    val kind = strategy.targetKind
                     _state.value = ScheduleEditUiState(
                         isNew = false,
                         strategyId = id,
@@ -94,13 +87,7 @@ class ScheduleEditViewModel(
                         intervalDays = totalMinutes / (24 * 60),
                         intervalHours = (totalMinutes % (24 * 60)) / 60,
                         profiles = profiles,
-                        sequenceConfigs = sequenceConfigs,
-                        targetKind = kind,
-                        selectedProfileId = strategy.profileId.takeIf { it.isNotEmpty() }
-                            ?: profiles.firstOrNull()?.id,
-                        selectedSequenceConfigId = strategy.sequenceConfigId.takeIf { it.isNotEmpty() }
-                            ?: sequenceConfigs.firstOrNull()?.id
-                            ?: taskChainState.activeSequenceConfigId.value.takeIf { it.isNotEmpty() },
+                        selectedProfileId = strategy.profileId,
                         forceStart = strategy.forceStart,
                     )
                     return@launch
@@ -115,14 +102,7 @@ class ScheduleEditViewModel(
             _state.value = ScheduleEditUiState(
                 name = defaultName,
                 profiles = profiles,
-                sequenceConfigs = sequenceConfigs,
-                targetKind = ScheduleTargetKind.PROFILE,
-                selectedProfileId = taskChainState.activeProfileId.value.ifEmpty {
-                    profiles.firstOrNull()?.id
-                },
-                selectedSequenceConfigId = taskChainState.activeSequenceConfigId.value.ifEmpty {
-                    sequenceConfigs.firstOrNull()?.id
-                },
+                selectedProfileId = taskChainState.profileId.value.ifEmpty { profiles.firstOrNull()?.id }
             )
         }
     }
@@ -147,26 +127,8 @@ class ScheduleEditViewModel(
         _state.update { it.copy(intervalHours = hours.coerceIn(0, 23)) }
     }
 
-    fun onTargetKindChanged(kind: ScheduleTargetKind) {
-        _state.update { it.copy(targetKind = kind) }
-    }
-
     fun onSelectProfile(profileId: String) {
-        _state.update {
-            it.copy(
-                targetKind = ScheduleTargetKind.PROFILE,
-                selectedProfileId = profileId,
-            )
-        }
-    }
-
-    fun onSelectSequenceConfig(configId: String) {
-        _state.update {
-            it.copy(
-                targetKind = ScheduleTargetKind.SEQUENCE,
-                selectedSequenceConfigId = configId,
-            )
-        }
+        _state.update { it.copy(selectedProfileId = profileId) }
     }
 
     fun onToggleAllDays() {
@@ -221,42 +183,9 @@ class ScheduleEditViewModel(
             _state.update { it.copy(errorMessage = uiTextOf(R.string.schedule_error_name_required)) }
             return
         }
-        when (current.targetKind) {
-            ScheduleTargetKind.PROFILE -> {
-                if (current.selectedProfileId == null) {
-                    _state.update {
-                        it.copy(errorMessage = uiTextOf(R.string.schedule_error_profile_required))
-                    }
-                    return
-                }
-                val profile = current.profiles.find { it.id == current.selectedProfileId }
-                val hasRunnable = profile?.chain?.any { it.enabled } == true
-                if (!hasRunnable) {
-                    _state.update {
-                        it.copy(errorMessage = uiTextOf(R.string.schedule_error_profile_empty))
-                    }
-                    return
-                }
-            }
-            ScheduleTargetKind.SEQUENCE -> {
-                if (current.selectedSequenceConfigId.isNullOrEmpty()) {
-                    _state.update {
-                        it.copy(errorMessage = uiTextOf(R.string.schedule_error_sequence_required))
-                    }
-                    return
-                }
-                val seq = current.sequenceConfigs.find { it.id == current.selectedSequenceConfigId }
-                val hasRunnable = seq?.entries?.any { entry ->
-                    val profile = current.profiles.find { it.id == entry.profileId }
-                    profile?.chain?.any { it.enabled } == true
-                } == true
-                if (!hasRunnable) {
-                    _state.update {
-                        it.copy(errorMessage = uiTextOf(R.string.schedule_error_sequence_empty))
-                    }
-                    return
-                }
-            }
+        if (current.selectedProfileId == null) {
+            _state.update { it.copy(errorMessage = uiTextOf(R.string.schedule_error_profile_required)) }
+            return
         }
         when (current.scheduleType) {
             ScheduleType.FIXED_TIME -> {
@@ -291,15 +220,6 @@ class ScheduleEditViewModel(
                     current.intervalDays * 24 * 60 + current.intervalHours * 60
                 } else null
 
-                val profileId = when (current.targetKind) {
-                    ScheduleTargetKind.PROFILE -> current.selectedProfileId.orEmpty()
-                    ScheduleTargetKind.SEQUENCE -> ""
-                }
-                val sequenceConfigId = when (current.targetKind) {
-                    ScheduleTargetKind.PROFILE -> ""
-                    ScheduleTargetKind.SEQUENCE -> current.selectedSequenceConfigId.orEmpty()
-                }
-
                 val strategy = existingStrategy?.copy(
                     name = current.name.trim(),
                     scheduleType = current.scheduleType,
@@ -307,9 +227,7 @@ class ScheduleEditViewModel(
                     executionTimes = current.executionTimes,
                     startTimeMs = current.startTimeMs,
                     intervalMinutes = intervalMinutes,
-                    profileId = profileId,
-                    sequenceConfigId = sequenceConfigId,
-                    targetKind = current.targetKind,
+                    profileId = current.selectedProfileId,
                     forceStart = current.forceStart,
                 ) ?: ScheduleStrategy(
                     id = strategyId ?: UUID.randomUUID().toString(),
@@ -320,9 +238,7 @@ class ScheduleEditViewModel(
                     executionTimes = current.executionTimes,
                     startTimeMs = current.startTimeMs,
                     intervalMinutes = intervalMinutes,
-                    profileId = profileId,
-                    sequenceConfigId = sequenceConfigId,
-                    targetKind = current.targetKind,
+                    profileId = current.selectedProfileId,
                     forceStart = current.forceStart,
                 )
 
