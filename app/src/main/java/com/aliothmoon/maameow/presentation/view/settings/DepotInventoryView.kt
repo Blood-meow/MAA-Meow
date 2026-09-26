@@ -53,6 +53,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.DragIndicator
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Inventory2
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -80,6 +81,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -97,10 +99,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
@@ -135,11 +139,15 @@ import com.aliothmoon.maameow.presentation.view.panel.rememberOperBoxExportLabel
 import com.aliothmoon.maameow.presentation.view.panel.rememberSafToolboxFileExporter
 import com.aliothmoon.maameow.presentation.viewmodel.DepotInventoryCellUi
 import com.aliothmoon.maameow.presentation.viewmodel.DepotInventoryViewModel
+import com.aliothmoon.maameow.presentation.viewmodel.DepotFarmingOrderRow
+import com.aliothmoon.maameow.presentation.viewmodel.DepotFarmingOrderSection
 import com.aliothmoon.maameow.presentation.viewmodel.DepotMaintainPlanUi
 import com.aliothmoon.maameow.presentation.viewmodel.DepotPlanContext
 import com.aliothmoon.maameow.presentation.viewmodel.DepotPngLabels
 import com.aliothmoon.maameow.presentation.viewmodel.DepotProfileRow
 import com.aliothmoon.maameow.presentation.viewmodel.OperBoxPngLabels
+import com.aliothmoon.maameow.presentation.viewmodel.depotCellKey
+import com.aliothmoon.maameow.presentation.viewmodel.farmingOrderSections
 import com.aliothmoon.maameow.presentation.viewmodel.groupForDisplay
 import com.aliothmoon.maameow.theme.LocalReduceMotion
 import com.aliothmoon.maameow.theme.MaaAnimatedVisibility
@@ -152,6 +160,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
+import sh.calvin.reorderable.ReorderableColumn
+import sh.calvin.reorderable.ReorderableListItemScope
 import java.text.DateFormat
 import java.util.Date
 import kotlin.math.roundToInt
@@ -538,6 +548,7 @@ private fun DepotProfileDetailView(
     viewModel: DepotInventoryViewModel,
 ) {
     val cells by viewModel.cells.collectAsStateWithLifecycle()
+    val plans by viewModel.maintainPlans.collectAsStateWithLifecycle()
     val operBox by viewModel.operBoxSnapshot.collectAsStateWithLifecycle()
     val planContext by viewModel.planContext.collectAsStateWithLifecycle()
     // 存格子的 key 而不是物品 id：同一物品配了多条计划时会有多格，按 id 找只会拿到第一格
@@ -617,8 +628,15 @@ private fun DepotProfileDetailView(
 
             InventoryDetailBody(
                 cells = cells,
+                plans = plans,
                 operBox = operBox,
                 onCellClick = { planSheetCellKey = it.key },
+                // 刷取顺序页点一行也回到同一格的面板：那里只有计划，得按格子 key 找回它那一格
+                onPlanClick = { plan ->
+                    val key = depotCellKey(plan.itemId, plan.nodeId, plan.planIndex)
+                    if (cells.any { it.key == key }) planSheetCellKey = key
+                },
+                onReorderPlans = viewModel::setPlanOrder,
             )
         }
     }
@@ -642,11 +660,14 @@ private fun DepotProfileDetailView(
 @Composable
 private fun InventoryDetailBody(
     cells: List<DepotInventoryCellUi>,
+    plans: List<DepotMaintainPlanUi>,
     operBox: OperBoxSnapshot,
     onCellClick: (DepotInventoryCellUi) -> Unit,
+    onPlanClick: (DepotMaintainPlanUi) -> Unit,
+    onReorderPlans: (String, List<Int>) -> Unit,
     iconLoader: ItemIconLoader = koinInject(),
 ) {
-    val pagerState = rememberPagerState(pageCount = { 2 })
+    val pagerState = rememberPagerState(pageCount = { 3 })
     val scope = rememberCoroutineScope()
     // 放在 pager 外面：pager 会把滑走的页面回收掉，放里面一滑回来选择就没了
     var operBoxTab by remember { mutableIntStateOf(0) }
@@ -655,6 +676,7 @@ private fun InventoryDetailBody(
     val pageLabels = listOf(
         stringResource(R.string.depot_inventory_tab_items),
         stringResource(R.string.depot_inventory_tab_operators),
+        stringResource(R.string.depot_inventory_tab_order),
     )
     Column(modifier = Modifier.fillMaxSize()) {
         DetailPageTabs(
@@ -678,10 +700,17 @@ private fun InventoryDetailBody(
                     onToggleEmpty = { emptyCollapsed = !emptyCollapsed },
                 )
 
-                else -> OperBoxPage(
+                1 -> OperBoxPage(
                     snapshot = operBox,
                     selectedTab = operBoxTab,
                     onTabChange = { operBoxTab = it },
+                )
+
+                else -> DepotFarmingOrderPage(
+                    plans = plans,
+                    iconLoader = iconLoader,
+                    onPlanClick = onPlanClick,
+                    onReorder = onReorderPlans,
                 )
             }
         }
@@ -1079,6 +1108,231 @@ private fun OperBoxPage(
     }
 }
 
+// ============================== 三级：刷取顺序 ==============================
+
+/**
+ * 刷取顺序：把库存保持计划按要刷的先后排开，拖右侧手柄换位。
+ *
+ * 顺序就是执行顺序 —— 链上节点顺序 × 节点内计划顺序，和运行日志逐条跑下去的顺序一致。
+ * 行号是**这一页可见计划**的第几条（未选物品的计划不在这页，所以节点里有那种计划时，
+ * 行号会比运行日志里的 `#N` 小；那种计划本来也跑不了）。
+ * 已集齐的照样列在这里、也参与排序（以后抬高目标就按这个位置来），但执行时会被跳过，
+ * 所以标绿；未集齐的才是真要去刷的，用正常前景色。
+ *
+ * @param onReorder 松手后写回：节点 ID + 该段计划在节点 `plans` 里的新下标顺序
+ */
+@Composable
+private fun DepotFarmingOrderPage(
+    plans: List<DepotMaintainPlanUi>,
+    iconLoader: ItemIconLoader,
+    onPlanClick: (DepotMaintainPlanUi) -> Unit,
+    onReorder: (String, List<Int>) -> Unit,
+) {
+    if (plans.isEmpty()) {
+        DetailEmptyText(R.string.depot_inventory_order_empty)
+        return
+    }
+    // 只有落手（onSettle）那一次才改这份；拖动期间由库自己拿 offset 摆位
+    var sections by remember(plans) { mutableStateOf(plans.farmingOrderSections()) }
+    val haptic = LocalHapticFeedback.current
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(
+                horizontal = MaaDesignTokens.Spacing.md,
+                vertical = MaaDesignTokens.Spacing.xs,
+            ),
+        verticalArrangement = Arrangement.spacedBy(MaaDesignTokens.Spacing.xs),
+    ) {
+        Text(
+            text = stringResource(R.string.depot_inventory_order_hint),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        sections.forEach { section ->
+            // 节点 ID 单独取出来：落手回调要按它回查当时的 sections，不能闭包住组合时那一份
+            val nodeId = section.nodeId
+            FarmingOrderSectionHeader(section)
+            // 这里用 ReorderableColumn 而不是 Lazy 那一版：Lazy 版要求每滑过一格就把数据重排一次，
+            // 一次拖动能把整页重组几十遍（图标也跟着重开取图），滑起来就是一卡一卡的。
+            // 这一版拖动期间只动它自己内部的 offset，而且是画的时候才读（不走重组），
+            // 等到落手、位移动画播完，才回调一次 onSettle。后台任务列表用的就是它。
+            //
+            // 一段一个 ReorderableColumn：跨段拖动会把计划挪进另一个库存保持节点、
+            // 连带换掉那个节点的药/石/连战设置，不是这一页该做的事；分开之后跨段在结构上就拖不过去。
+            ReorderableColumn(
+                list = section.rows,
+                onSettle = { from, to ->
+                    val current = sections.firstOrNull { it.nodeId == nodeId } ?: return@ReorderableColumn
+                    val rows = current.rows.toMutableList().also { it.add(to, it.removeAt(from)) }
+                    // 先换本地这份：库已经把它摆到位了，数据不跟着换就会停在拖过去的样子。
+                    // 同时写回磁盘，等 plans 重新发一遍再对齐
+                    sections = sections.map { if (it.nodeId == nodeId) it.copy(rows = rows) else it }
+                    onReorder(nodeId, rows.map { it.plan.planIndex })
+                },
+                verticalArrangement = Arrangement.spacedBy(MaaDesignTokens.Spacing.sm),
+            ) { _, row, isDragging ->
+                // key 让重排时这一组的组合能整体挪过去而不是重建：
+                // 重建的话 ItemIcon 的 produceState 会从 null 重来，图标闪一下
+                key(orderKey(row)) {
+                    ReorderableItem {
+                        DepotFarmingOrderRow(
+                            row = row,
+                            isDragging = isDragging,
+                            iconLoader = iconLoader,
+                            onClick = { onPlanClick(row.plan) },
+                            onDragStarted = {
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            },
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+/** 一段的标题：节点名，没启用的再补一句「不会执行」。 */
+@Composable
+private fun FarmingOrderSectionHeader(section: DepotFarmingOrderSection) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = MaaDesignTokens.Spacing.sm),
+        verticalArrangement = Arrangement.spacedBy(2.dp),
+    ) {
+        Text(
+            text = section.nodeName,
+            style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.SemiBold,
+        )
+        if (!section.nodeEnabled) {
+            Text(
+                text = stringResource(R.string.depot_inventory_plan_node_disabled),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error,
+            )
+        }
+    }
+}
+
+/**
+ * 拖拽用的稳定 key：同一物品可能配了多条计划，得带上节点与下标。
+ *
+ * 行、分段标题、提示行各用各的前缀：标题是 `order-head-<节点>`、行是 `order-row-<节点>-<下标>`，
+ * 两者拼出来永远不同。以前行前缀写成 `order-<节点>-<下标>`，只要有个节点的 ID 正好是
+ * 「另一个节点的 ID + '-' + 下标」，标题就会和某一行撞 key —— LazyColumn 撞 key 是直接抛异常。
+ * 节点 ID 一般是 UUID，撞不上，但导入的配置里可能是任意字符串，没必要留着这条隐患。
+ */
+private fun orderKey(row: DepotFarmingOrderRow): String =
+    "order-row-${row.plan.nodeId}-${row.plan.planIndex}"
+
+/**
+ * 刷取顺序里的一行：序号 + 图标 + 名称/进度 + 去向，最右是拖拽手柄。
+ *
+ * 只有手柄能拖，行的其余区域保持点击语义（点开同一格的面板改目标）。
+ */
+@Composable
+private fun ReorderableListItemScope.DepotFarmingOrderRow(
+    row: DepotFarmingOrderRow,
+    isDragging: Boolean,
+    iconLoader: ItemIconLoader,
+    onClick: () -> Unit,
+    onDragStarted: () -> Unit,
+) {
+    val plan = row.plan
+    // 已集齐的会被跳过，标绿；未集齐的才是真要去刷的，用正常前景色；
+    // 其余是「配了也跑不起来」，按错误色标出来
+    val accent = when (plan.outcome) {
+        DepotPlanOutcome.Enough -> LogColorRole.SUCCESS.themedColor()
+        DepotPlanOutcome.Runnable -> MaterialTheme.colorScheme.onSurface
+        else -> MaterialTheme.colorScheme.error
+    }
+    Surface(
+        shape = RoundedCornerShape(MaaDesignTokens.CornerRadius.inner),
+        color = if (isDragging) {
+            MaterialTheme.colorScheme.surfaceVariant
+        } else {
+            MaterialTheme.colorScheme.surface
+        },
+        border = BorderStroke(
+            1.dp,
+            if (isDragging) {
+                MaterialTheme.colorScheme.primary
+            } else {
+                MaterialTheme.colorScheme.outlineVariant
+            },
+        ),
+        shadowElevation = if (isDragging) 4.dp else 0.dp,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = MaaDesignTokens.Spacing.sm, end = 2.dp, top = 4.dp, bottom = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(MaaDesignTokens.Spacing.sm),
+        ) {
+            Text(
+                text = "${row.no}",
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.End,
+                // 只给下限：定死 18dp 时三位数会折行，把整行撑高
+                modifier = Modifier.widthIn(min = 18.dp),
+            )
+            ItemIcon(
+                itemId = plan.itemId,
+                contentDescription = plan.itemName,
+                size = 32.dp,
+                loader = iconLoader,
+            )
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = plan.itemName,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = accent,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    text = stringResource(
+                        R.string.depot_inventory_maintain_progress,
+                        plan.target,
+                        plan.current,
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+            Text(
+                text = planOutcomeLabel(plan, short = true),
+                style = MaterialTheme.typography.bodyMedium,
+                color = accent,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                textAlign = TextAlign.End,
+                modifier = Modifier.widthIn(max = 104.dp),
+            )
+            Icon(
+                imageVector = Icons.Default.DragIndicator,
+                contentDescription = stringResource(R.string.depot_inventory_order_drag),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier
+                    .size(32.dp)
+                    .draggableHandle(onDragStarted = { onDragStarted() })
+                    .padding(6.dp),
+            )
+        }
+    }
+}
+
 @Composable
 private fun DetailEmptyText(textRes: Int) {
     Text(
@@ -1392,24 +1646,41 @@ private fun DepotMaintainPlanSheet(
 /** 已保存计划里那些「配了也跑不起来」的原因，与运行日志同一套口径。 */
 @Composable
 private fun PlanOutcomeHint(plan: DepotMaintainPlanUi) {
-    val text = when (plan.outcome) {
-        DepotPlanOutcome.NoItem -> stringResource(R.string.depot_inventory_maintain_no_item)
-        DepotPlanOutcome.ZeroTarget -> stringResource(R.string.depot_inventory_maintain_zero_target)
-        DepotPlanOutcome.StageRequired ->
-            stringResource(R.string.depot_inventory_maintain_stage_required)
-
-        DepotPlanOutcome.StageClosed ->
-            stringResource(R.string.depot_inventory_maintain_stage_closed, plan.plan.stage)
-
-        // 能跑的计划，缺口由 PlanDraftProgress 按草稿实时算
-        DepotPlanOutcome.Enough, DepotPlanOutcome.Runnable -> return
-    }
+    // 能跑的计划，缺口由 DepotPlanFields 按草稿实时算
+    if (plan.outcome == DepotPlanOutcome.Enough || plan.outcome == DepotPlanOutcome.Runnable) return
     Text(
-        text = text,
+        text = planOutcomeLabel(plan),
         style = MaterialTheme.typography.bodySmall,
         color = MaterialTheme.colorScheme.error,
     )
 }
+
+/**
+ * 一条计划的去向文案：会去刷 → 缺多少；已集齐 → 已够；其余是配了也跑不起来的原因。
+ *
+ * @param short 列表里的窄格子用短标签（「关卡未开放」）；面板里带上关卡号，
+ *   省得用户再回去对是哪一关
+ */
+@Composable
+private fun planOutcomeLabel(plan: DepotMaintainPlanUi, short: Boolean = false): String =
+    when (plan.outcome) {
+        DepotPlanOutcome.NoItem -> stringResource(R.string.depot_inventory_maintain_no_item)
+        DepotPlanOutcome.ZeroTarget ->
+            stringResource(R.string.depot_inventory_maintain_zero_target)
+
+        DepotPlanOutcome.StageRequired ->
+            stringResource(R.string.depot_inventory_maintain_stage_required)
+
+        DepotPlanOutcome.StageClosed -> if (short) {
+            stringResource(R.string.depot_inventory_order_stage_closed)
+        } else {
+            stringResource(R.string.depot_inventory_maintain_stage_closed, plan.plan.stage)
+        }
+
+        DepotPlanOutcome.Enough -> stringResource(R.string.depot_inventory_maintain_enough)
+        DepotPlanOutcome.Runnable ->
+            stringResource(R.string.depot_inventory_maintain_need, plan.need)
+    }
 
 // ============================== 导出 ==============================
 

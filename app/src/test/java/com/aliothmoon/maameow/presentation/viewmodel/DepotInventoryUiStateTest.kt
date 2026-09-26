@@ -11,12 +11,14 @@ import com.aliothmoon.maameow.data.resource.ItemInfo
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
  * 覆盖库存页真正参与渲染与写回的那几个纯函数：[toUi] / [unmetIn] / [depotPlans] /
- * [firstDepotNode] / [toPlanContext] / [buildInventoryCells] / [groupForDisplay]。
+ * [firstDepotNode] / [toPlanContext] / [buildInventoryCells] / [groupForDisplay] /
+ * [farmingOrderSections] / [applyPlanOrder]。
  *
  * 它们原来是 private，测试只能自己重算一遍 need/outcome，等于在测测试；
  * 现在抽成 internal 的顶层函数，测的就是线上跑的那份。
@@ -168,6 +170,7 @@ class DepotInventoryUiStateTest {
             .toUi(node(id = "n1", enabled = false), 3, DepotSnapshot(), emptyMap()) { true }
 
         assertEquals("n1", ui.nodeId)
+        assertEquals("库存保持", ui.nodeName)
         assertFalse(ui.node.nodeEnabled)
         assertEquals(3, ui.planIndex)
         // 物品查不到时回退成 ID，别显示空白
@@ -266,6 +269,96 @@ class DepotInventoryUiStateTest {
         )
     }
 
+    // ========== 刷取顺序 ==========
+
+    /** 分段照搬执行顺序：链上节点顺序 × 节点内计划顺序 */
+    @Test
+    fun farmingOrderSections_keepsChainOrderAndNumbersWithinNode() {
+        val snap = DepotSnapshot(items = mapOf("30011" to 12))
+        val plans = listOf(
+            plan(dropId = "30011", dropCount = 50)
+                .toUi(node(id = "a"), 0, snap, emptyMap()) { true },
+            plan(dropId = "30012", dropCount = 20)
+                .toUi(node(id = "a"), 1, snap, emptyMap()) { true },
+            plan(dropId = "30013", dropCount = 5)
+                .toUi(node(id = "b", name = "夜间库存"), 0, snap, emptyMap()) { true },
+        )
+
+        val sections = plans.farmingOrderSections()
+
+        assertEquals(listOf("a", "b"), sections.map { it.nodeId })
+        assertEquals(listOf("库存保持", "夜间库存"), sections.map { it.nodeName })
+        assertEquals(listOf("30011", "30012"), sections[0].rows.map { it.plan.itemId })
+        // 序号按节点各排各的，与运行日志里的 #N 同一口径
+        assertEquals(listOf(1, 2), sections[0].rows.map { it.no })
+        assertEquals(listOf(1), sections[1].rows.map { it.no })
+    }
+
+    /** 未启用的节点也要列出来，否则那些计划在这一页既看不到也排不了 */
+    @Test
+    fun farmingOrderSections_keepsDisabledNode() {
+        val plans = listOf(
+            plan().toUi(node(id = "off", enabled = false), 0, DepotSnapshot(), emptyMap()) { true },
+        )
+
+        val sections = plans.farmingOrderSections()
+
+        assertEquals(1, sections.size)
+        assertFalse(sections.single().nodeEnabled)
+    }
+
+    /**
+     * 未选物品的占位计划不出现在刷取顺序页，重排后必须留在原位 ——
+     * 按可见下标裁剪重排会把占位挤走，用户没碰过的计划也跟着错位。
+     */
+    @Test
+    fun applyPlanOrder_movesOnlyListedSlots() {
+        val plans = listOf(
+            plan(dropId = "a"),
+            plan(dropId = ""),
+            plan(dropId = "b"),
+            plan(dropId = "c"),
+        )
+
+        // 可见的三条占着下标 0/2/3，从「a b c」拖成「c a b」
+        val reordered = applyPlanOrder(plans, listOf(3, 0, 2))
+
+        // 占位那条留在下标 1，可见的三条在原位上换序
+        assertEquals(listOf("c", "", "a", "b"), reordered.map { it.dropId })
+    }
+
+    /** 下标重复、越界或与当前长度对不上（期间被别处改过）都整笔放弃 */
+    @Test
+    fun applyPlanOrder_rejectsInconsistentOrder() {
+        val plans = listOf(plan(dropId = "a"), plan(dropId = "b"))
+
+        assertSame(plans, applyPlanOrder(plans, listOf(0, 5)))
+        assertSame(plans, applyPlanOrder(plans, listOf(1, 1)))
+        assertSame(plans, applyPlanOrder(plans, listOf(0, 1, 2)))
+    }
+
+    @Test
+    fun applyPlanOrder_keepsListWhenOrderUnchanged() {
+        val plans = listOf(plan(dropId = "a"), plan(dropId = "b"))
+
+        assertEquals(listOf("a", "b"), applyPlanOrder(plans, listOf(0, 1)).map { it.dropId })
+    }
+
+    /**
+     * 刷取顺序页点一行要按 [depotCellKey] 找回它那一格的面板，
+     * 这个 key 必须和 [buildInventoryCells] 造格子时用的是同一个 —— 两边各拼一份的话，
+     * 改了一边就会变成「点上去没反应」，而且不报错。
+     */
+    @Test
+    fun depotCellKey_matchesTheKeyBuildInventoryCellsMakes() {
+        val snap = DepotSnapshot(items = mapOf("30011" to 12))
+        val ui = plan(dropCount = 50).toUi(node(id = "n1"), 2, snap, emptyMap()) { true }
+
+        val cells = buildInventoryCells(snap, emptyMap(), listOf("30011"), listOf(ui))
+
+        assertEquals(depotCellKey(itemId = "30011", nodeId = "n1", planIndex = 2), cells.single().key)
+    }
+
     // ========== 夹具 ==========
 
     private fun plan(
@@ -276,9 +369,10 @@ class DepotInventoryUiStateTest {
 
     private fun node(
         id: String = "node",
+        name: String = "库存保持",
         enabled: Boolean = true,
         config: TaskParamProvider = DepotMaintainConfig(plans = listOf(plan())),
-    ) = TaskChainNode(id = id, name = "库存保持", enabled = enabled, config = config)
+    ) = TaskChainNode(id = id, name = name, enabled = enabled, config = config)
 
     private fun info(id: String, name: String) =
         ItemInfo(id = id, name = name, icon = "", sortId = id.toIntOrNull() ?: 0)

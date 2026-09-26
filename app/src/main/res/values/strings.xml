@@ -416,8 +416,13 @@
     <string name="depot_inventory_empty_operators">该配置档暂无干员数据，请执行一次干员数据更新</string>
     <string name="depot_inventory_tab_items">库存</string>
     <string name="depot_inventory_tab_operators">干员</string>
+    <string name="depot_inventory_tab_order">刷取顺序</string>
     <string name="depot_inventory_section_unmet">未集齐（%1$d）</string>
     <string name="depot_inventory_section_empty">库存为 0（%1$d）</string>
+    <string name="depot_inventory_order_hint">已集齐的会跳过；拖动右侧手柄调整刷取顺序</string>
+    <string name="depot_inventory_order_drag">拖动排序</string>
+    <string name="depot_inventory_order_empty">还没有库存保持计划。到「库存」页点物品就能加一条。</string>
+    <string name="depot_inventory_order_stage_closed">关卡未开放</string>
     <string name="depot_inventory_png_items">%1$d 项</string>
     <string name="depot_inventory_png_empty">（空）</string>
     <string name="depot_inventory_png_oper_summary">已拥有 %1$d · 未拥有 %2$d</string>
