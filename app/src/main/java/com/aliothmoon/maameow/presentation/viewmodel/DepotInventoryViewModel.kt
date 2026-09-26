@@ -54,7 +54,7 @@ import kotlin.math.sqrt
  * 的键一致；列表页只读各档汇总，详情页才展开明细。
  *
  * 库存明细与「库存保持」计划合并成同一批格子（[cells]）：物品的当前库存就是保持计划的进度，
- * 分成「未集齐」与「已集齐/无需保持」两组展示，点格子可直接改该物品的目标库存。
+ * 分成「有库存 / 未集齐 / 库存为 0」三段展示，点格子可直接改该物品的目标库存。
  */
 class DepotInventoryViewModel(
     private val depotRepository: DepotRepository,
@@ -67,8 +67,6 @@ class DepotInventoryViewModel(
 
     val profiles: StateFlow<List<TaskProfile>> = taskChainState.profiles
 
-    val activeProfileId: StateFlow<String> = taskChainState.profileId
-
     /** "" = 停在列表页；非空 = 已进入某档详情 */
     private val manualSelection = MutableStateFlow("")
 
@@ -78,6 +76,19 @@ class DepotInventoryViewModel(
         combine(taskChainState.profiles, selectedProfileId) { list, id ->
             list.firstOrNull { it.id == id }
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    init {
+        // 选中的配置档被删掉时退回列表页：留在详情页会是一个空网格，
+        // 点保存也只会走到「配置档不存在」那条静默放弃的分支
+        viewModelScope.launch {
+            taskChainState.profiles.collect { list ->
+                val current = manualSelection.value
+                if (current.isNotEmpty() && list.none { it.id == current }) {
+                    manualSelection.value = ""
+                }
+            }
+        }
+    }
 
     /** 进入三级详情；只改本页选中项，不动全局活跃档，避免「看一眼」产生副作用。 */
     fun selectProfile(profileId: String) {
@@ -125,12 +136,6 @@ class DepotInventoryViewModel(
             map[id] ?: OperBoxSnapshot()
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), OperBoxSnapshot())
 
-    /** 纯仓库明细（导出用，不含保持计划里那些仓库还没有的物品）。 */
-    val items: StateFlow<List<DepotInventoryItemUi>> =
-        combine(depotSnapshot, itemHelper.items) { snap, itemMap ->
-            snap.toItemUiList(itemMap)
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
-
     /**
      * 所选配置档任务链里所有「库存保持」计划。
      *
@@ -146,42 +151,35 @@ class DepotInventoryViewModel(
                         activityManager.isStageOpen(it)
                     }
                 }
+                    // 没选物品的计划连物品都算不上，配置页已经在报「未选物品」，
+                    // 别在库存网格里留一个没有图标没有名字的空格子
+                    .filter { it.itemId.isNotBlank() }
             }
-                // 没选物品的计划连物品都算不上，配置页已经在报「未选物品」，
-                // 别在库存网格里留一个没有图标没有名字的空格子
-                .filter { it.itemId.isNotBlank() }
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     /**
-     * 库存格子 = 仓库现有物品 ∪ 保持计划里的物品。
+     * 库存格子 = 仓库识别认得出的全部物品 ∪ 仓库现有物品 ∪ 保持计划里的物品。
      *
-     * 计划物品即便仓库里一条记录都没有（识别不到 = 0）也要出现，
-     * 否则「缺多少」这件事在最需要看的时候反而没有格子。
-     * 抽卡资源（合成玉/寻访凭证/十连寻访凭证）不是可刷材料，不出格子。
+     * 识别集合取 [ItemHelper.depotItems]（索引里 `classifyType == "MATERIAL"`），
+     * 与 Core 建模板缓存用的那份同源；**不能取 [ItemHelper.dropItems]**——那是关卡掉落列表，
+     * 会把声望（博士经验）、龙门币这类根本进不了仓库的东西画成一格。
+     *
+     * 库里一条记录都没有的材料也要出格子（图标压淡），否则「这个材料我到底有没有」
+     * 只能靠数格子猜；计划里的物品即便识别不到（= 0）也要出现，否则「缺多少」
+     * 在最需要看的时候反而没有格子。
      */
-    val cells: StateFlow<List<DepotInventoryCellUi>> =
-        combine(depotSnapshot, itemHelper.items, maintainPlans) { snap, itemMap, plans ->
-            val planByItem = plans.groupBy { it.itemId }.mapValues { entry -> entry.value.first() }
-            val ids = LinkedHashSet<String>(snap.items.keys).apply { addAll(planByItem.keys) }
-            ids.filterNot { it in DRAW_ITEM_IDS }
-                .map { id ->
-                    val info = itemMap[id]
-                    DepotInventoryCellUi(
-                        id = id,
-                        name = info?.name ?: id,
-                        count = snap.items[id] ?: 0,
-                        sortId = info?.sortId ?: Int.MAX_VALUE,
-                        plan = planByItem[id],
-                    )
-                }.sortedWith(compareBy({ it.sortId }, { it.id }))
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+    val cells: StateFlow<List<DepotInventoryCellUi>> = combine(
+        depotSnapshot,
+        itemHelper.items,
+        itemHelper.depotItems,
+        maintainPlans,
+    ) { snap, itemMap, depotItems, plans ->
+        buildInventoryCells(snap, itemMap, depotItems.map { it.id }, plans)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
-    /** 新建计划时要知道的所属节点状态（只用来提示任务没启用）。 */
+    /** 新建计划时要知道的所属节点状态（只用来提示任务没启用、以及显不显示药/石）。 */
     val planContext: StateFlow<DepotPlanContext> = selectedProfile
-        .map { profile ->
-            val node = profile?.chain?.firstDepotNode()
-            DepotPlanContext(nodeEnabled = node?.enabled ?: true)
-        }
+        .map { profile -> profile?.chain?.firstDepotNode()?.toPlanContext() ?: DepotPlanContext() }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), DepotPlanContext())
 
     /**
@@ -221,6 +219,8 @@ class DepotInventoryViewModel(
     /** 清空指定配置档的仓库与干员数据（非活跃档也能清）。 */
     fun clearProfile(profileId: String) {
         if (profileId.isEmpty()) return
+        // 配置档已经删掉时别再写分片：会把 profileDeleted 清过的 key 又建回来
+        if (taskChainState.profiles.value.none { it.id == profileId }) return
         depotRepository.clear(profileId)
         operBoxRepository.clear(profileId)
     }
@@ -254,11 +254,13 @@ class DepotInventoryViewModel(
     /**
      * @param hideProfileLabel 为 true 时图头不写配置档名，只留时间与数据
      * @param titleLabel 图头标题（通常为配置档名）
+     * @param labels 图里的文案，由界面用 stringResource 解析后传进来（ViewModel 不碰 Context）
      */
     suspend fun renderDepotPng(
         profileId: String,
         hideProfileLabel: Boolean = false,
         titleLabel: String = "",
+        labels: DepotPngLabels,
     ): ByteArray? = withContext(Dispatchers.Default) {
         val snap = snapshotOf(profileId)
         val itemList = snap.toItemUiList(itemHelper.items.value)
@@ -267,7 +269,7 @@ class DepotInventoryViewModel(
             if (snap.syncTimeMillis > 0L) {
                 add(DateFormat.getDateTimeInstance().format(Date(snap.syncTimeMillis)))
             }
-            add("${itemList.size} items")
+            add(labels.itemsCountFormat.format(itemList.size))
         }
 
         val columns = 4
@@ -319,9 +321,21 @@ class DepotInventoryViewModel(
             typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
             textAlign = Paint.Align.CENTER
         }
+        // 图标底板与占位色在循环外建一次，别按格子数 new
+        val plate = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.WHITE
+            style = Paint.Style.FILL
+        }
+        val iconPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            isFilterBitmap = true
+            isDither = true
+        }
+        val placeholder = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.parseColor("#D0D0D0")
+        }
 
         if (itemList.isEmpty()) {
-            canvas.drawText("(empty)", width / 2f, headerH + 80f, namePaint)
+            canvas.drawText(labels.empty, width / 2f, headerH + 80f, namePaint)
         } else {
             itemList.forEachIndexed { index, item ->
                 val col = index % columns
@@ -340,38 +354,19 @@ class DepotInventoryViewModel(
                 val iconSize = 88
                 val iconLeft = left + (cellW - iconSize) / 2
                 val iconTop = top + 14
+                val dst = RectF(
+                    iconLeft.toFloat(),
+                    iconTop.toFloat(),
+                    (iconLeft + iconSize).toFloat(),
+                    (iconTop + iconSize).toFloat(),
+                )
                 if (icon != null && !icon.isRecycled) {
-                    val dst = RectF(
-                        iconLeft.toFloat(),
-                        iconTop.toFloat(),
-                        (iconLeft + iconSize).toFloat(),
-                        (iconTop + iconSize).toFloat(),
-                    )
                     // 先铺不透明白底，再画黑转透明后的图标，透出白底不发黑
-                    val plate = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-                        color = Color.WHITE
-                        style = Paint.Style.FILL
-                    }
                     canvas.drawRoundRect(dst, 8f, 8f, plate)
-                    val iconPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-                        isFilterBitmap = true
-                        isDither = true
-                    }
                     canvas.drawBitmap(icon, null, dst, iconPaint)
                     icon.recycle()
                 } else {
-                    val ph = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.parseColor("#D0D0D0") }
-                    canvas.drawRoundRect(
-                        RectF(
-                            iconLeft.toFloat(),
-                            iconTop.toFloat(),
-                            (iconLeft + iconSize).toFloat(),
-                            (iconTop + iconSize).toFloat(),
-                        ),
-                        8f,
-                        8f,
-                        ph,
-                    )
+                    canvas.drawRoundRect(dst, 8f, 8f, placeholder)
                 }
 
                 val cx = left + cellW / 2f
@@ -384,16 +379,18 @@ class DepotInventoryViewModel(
         compressPng(bitmap)
     }
 
+    /**
+     * 干员图导出 owned + notOwned 两段，与 JSON / Markdown / CSV 的口径一致；
+     * 只画 owned 会让人以为未拥有的干员不在数据里。
+     */
     suspend fun renderOperBoxPng(
         profileId: String,
         hideProfileLabel: Boolean = false,
         titleLabel: String = "",
+        labels: OperBoxPngLabels,
     ): ByteArray? = withContext(Dispatchers.Default) {
         val snap = operBoxRepository.snapshots.value[profileId] ?: OperBoxSnapshot()
-        val owned = snap.owned
-        val notOwned = snap.notOwned
-        val opers = if (owned.isNotEmpty()) owned else notOwned
-        val section = if (owned.isNotEmpty()) "Owned" else "Not owned"
+        val opers = snap.toExportList()
 
         val pad = 24
         val rowH = 64
@@ -404,7 +401,7 @@ class DepotInventoryViewModel(
             if (snap.syncTimeMillis > 0L) {
                 add(DateFormat.getDateTimeInstance().format(Date(snap.syncTimeMillis)))
             }
-            add("$section  owned=${owned.size}  notOwned=${notOwned.size}")
+            add(labels.summaryFormat.format(snap.owned.size, snap.notOwned.size))
         }
         val headerH = pad + headerLines.size * headerLineH + 8
         val width = 900
@@ -451,7 +448,7 @@ class DepotInventoryViewModel(
         }
 
         if (opers.isEmpty()) {
-            canvas.drawText("(empty)", pad.toFloat(), headerH + 48f, namePaint)
+            canvas.drawText(labels.empty, pad.toFloat(), headerH + 48f, namePaint)
         } else {
             opers.forEachIndexed { index, op ->
                 val top = headerH + index * (rowH + gap)
@@ -467,7 +464,7 @@ class DepotInventoryViewModel(
                 canvas.drawText("${op.rarity}★", (pad + 16).toFloat(), top + 40f, rarityPaint)
                 canvas.drawText(op.name, pad + 80f, top + 40f, namePaint)
                 if (op.own) {
-                    val meta = "E${op.elite} Lv${op.level}  P${op.potential}"
+                    val meta = labels.operMetaFormat.format(op.elite, op.level, op.potential)
                     canvas.drawText(meta, (width - pad - 16).toFloat(), top + 40f, metaPaint)
                 }
             }
@@ -486,16 +483,30 @@ class DepotInventoryViewModel(
     }
 
     private fun compressPng(bitmap: Bitmap): ByteArray? {
-        return ByteArrayOutputStream().use { out ->
-            if (!bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)) {
-                bitmap.recycle()
-                return null
+        return try {
+            ByteArrayOutputStream().use { out ->
+                if (!bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)) null else out.toByteArray()
             }
+        } finally {
             bitmap.recycle()
-            out.toByteArray()
         }
     }
 }
+
+/** 导出图里的文案；ViewModel 不碰 Context，由界面用 stringResource 解析后传进来。 */
+data class DepotPngLabels(
+    /** 例：「12 项」 */
+    val itemsCountFormat: String,
+    val empty: String,
+)
+
+data class OperBoxPngLabels(
+    /** 例：「已拥有 120 · 未拥有 230」 */
+    val summaryFormat: String,
+    val empty: String,
+    /** 例：「E2 Lv90 P6」 */
+    val operMetaFormat: String,
+)
 
 /**
  * 导出位图的整体缩放系数。
@@ -534,7 +545,7 @@ data class DepotProfileRow(
 /** 一条「库存保持」计划在所属配置档下的进度。 */
 data class DepotMaintainPlanUi(
     val nodeId: String,
-    val nodeEnabled: Boolean,
+    val node: DepotPlanContext,
     /** 在该节点 plans 里的下标，0 起；写回时按它定位 */
     val planIndex: Int,
     val plan: DepotMaintainPlan,
@@ -551,6 +562,8 @@ data class DepotMaintainPlanUi(
 
 /** 三级库存网格的一格：库存数量 + 该物品的保持计划（没有则为 null）。 */
 data class DepotInventoryCellUi(
+    /** 同一物品配了多条计划时会有多格，用节点 + 下标区分 */
+    val key: String,
     val id: String,
     val name: String,
     val count: Int,
@@ -560,9 +573,81 @@ data class DepotInventoryCellUi(
     val unmet: Boolean get() = plan?.unmet == true
 }
 
-/** 新建计划时要带上的节点状态；[nodeEnabled] 为 false 时面板会提示任务没启用。 */
+/** 新建计划时要带上的节点状态：节点没启用时面板要提示「保存了也不会跑」 */
 data class DepotPlanContext(
     val nodeEnabled: Boolean = true,
+)
+
+/** 网格的三段：有库存 → 未集齐 → 库存为 0（最后一段画得很淡） */
+data class DepotCellGroups(
+    val stocked: List<DepotInventoryCellUi>,
+    val unmet: List<DepotInventoryCellUi>,
+    val empty: List<DepotInventoryCellUi>,
+)
+
+internal fun List<DepotInventoryCellUi>.groupForDisplay(): DepotCellGroups {
+    val (unmet, rest) = partition { it.unmet }
+    val (stocked, empty) = rest.partition { it.count > 0 }
+    return DepotCellGroups(stocked, unmet, empty)
+}
+
+/**
+ * 网格内容 = 仓库识别认得出的全部物品 ∪ 快照里的物品 ∪ 计划里的物品。
+ *
+ * 快照那一支可能超出识别集合：Core 除了 MATERIAL 也会报合成玉、寻访凭证这类资源。
+ * 报什么就显示什么，这里不再按物品种类过滤。
+ *
+ * 同一物品配了多条计划时一条一格：执行侧会挨个跑，格子少一条就会和二级页的
+ * 「N 项未集齐」对不上，也会有一条计划在这一页改不到。
+ */
+internal fun buildInventoryCells(
+    snapshot: DepotSnapshot,
+    itemMap: Map<String, ItemInfo>,
+    depotItemIds: List<String>,
+    plans: List<DepotMaintainPlanUi>,
+): List<DepotInventoryCellUi> {
+    val plansByItem = plans.groupBy { it.itemId }
+    val ids = LinkedHashSet<String>(depotItemIds.size + snapshot.items.size).apply {
+        addAll(depotItemIds)
+        addAll(snapshot.items.keys)
+        addAll(plansByItem.keys)
+    }
+    return ids.asSequence()
+        .flatMap { id ->
+            val info = itemMap[id]
+            val count = snapshot.items[id] ?: 0
+            val itemPlans = plansByItem[id].orEmpty()
+            if (itemPlans.isEmpty()) {
+                sequenceOf(toCell(key = id, id = id, info = info, count = count, plan = null))
+            } else {
+                itemPlans.asSequence().map { plan ->
+                    toCell(
+                        key = "$id#${plan.nodeId}#${plan.planIndex}",
+                        id = id,
+                        info = info,
+                        count = count,
+                        plan = plan,
+                    )
+                }
+            }
+        }
+        .sortedWith(compareBy({ it.sortId }, { it.id }, { it.plan?.planIndex ?: -1 }))
+        .toList()
+}
+
+private fun toCell(
+    key: String,
+    id: String,
+    info: ItemInfo?,
+    count: Int,
+    plan: DepotMaintainPlanUi?,
+) = DepotInventoryCellUi(
+    key = key,
+    id = id,
+    name = info?.name ?: id,
+    count = count,
+    sortId = info?.sortId ?: Int.MAX_VALUE,
+    plan = plan,
 )
 
 internal fun DepotMaintainPlan.toUi(
@@ -575,7 +660,7 @@ internal fun DepotMaintainPlan.toUi(
     val current = snap.items[dropId] ?: 0
     return DepotMaintainPlanUi(
         nodeId = node.id,
-        nodeEnabled = node.enabled,
+        node = node.toPlanContext(),
         planIndex = index,
         plan = this,
         itemId = dropId,
@@ -586,6 +671,9 @@ internal fun DepotMaintainPlan.toUi(
         outcome = depotPlanOutcome(this, current, isStageOpen),
     )
 }
+
+internal fun TaskChainNode.toPlanContext(): DepotPlanContext =
+    DepotPlanContext(nodeEnabled = enabled)
 
 internal fun DepotMaintainPlan.unmetIn(snap: DepotSnapshot): Boolean {
     val current = snap.items[dropId] ?: 0
@@ -604,8 +692,6 @@ internal fun List<TaskChainNode>.firstDepotNode(): TaskChainNode? =
 
 internal fun DepotSnapshot.toItemUiList(itemMap: Map<String, ItemInfo>): List<DepotInventoryItemUi> =
     items.asSequence()
-        // 合成玉/寻访凭证/十连寻访凭证不是可刷材料，也不参与库存保持，不进 UI 列表
-        .filter { (id, _) -> id !in DRAW_ITEM_IDS }
         .map { (id, count) ->
             val info = itemMap[id]
             DepotInventoryItemUi(
@@ -617,14 +703,3 @@ internal fun DepotSnapshot.toItemUiList(itemMap: Map<String, ItemInfo>): List<De
         }
         .sortedWith(compareBy<DepotInventoryItemUi> { it.sortId }.thenBy { it.id })
         .toList()
-
-private const val ORUNDUM_ID = "4003"
-private const val HEADHUNTING_PERMIT_ID = "7003"
-private const val TEN_ROLL_HEADHUNTING_PERMIT_ID = "7004"
-
-/** 抽卡资源：库存页不展示（导出仍按原始数据走，别在这里过滤）。 */
-private val DRAW_ITEM_IDS = setOf(
-    ORUNDUM_ID,
-    HEADHUNTING_PERMIT_ID,
-    TEN_ROLL_HEADHUNTING_PERMIT_ID,
-)

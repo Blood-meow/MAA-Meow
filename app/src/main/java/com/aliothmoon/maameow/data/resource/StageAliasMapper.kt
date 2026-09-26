@@ -62,7 +62,8 @@ object StageAliasMapper {
         val normalized = normalizeFullWidth(input)
         val upperInput = normalized.uppercase()
 
-        // 1. 先检查别名表（别名表中的 key 可能是中文，直接用原始输入匹配）
+        // 1. 先检查别名表（用归一化后的输入匹配：中文键不受全角转半角影响，
+        //    英文键则能吃掉全角输入法敲出来的 ＣＥ）
         stageAliases[normalized]?.let { return it }
         // 也检查大写版本
         stageAliases[upperInput]?.let { return it }

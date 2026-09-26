@@ -192,6 +192,11 @@
     <string name="depot_inventory_tab_items">Inventory</string>
     <string name="depot_inventory_tab_operators">Operators</string>
     <string name="depot_inventory_section_unmet">Not stocked yet (%1$d)</string>
+    <string name="depot_inventory_section_empty">Not in stock (%1$d)</string>
+    <string name="depot_inventory_png_items">%1$d items</string>
+    <string name="depot_inventory_png_empty">(empty)</string>
+    <string name="depot_inventory_png_oper_summary">Owned %1$d · Not owned %2$d</string>
+    <string name="depot_inventory_png_oper_meta">E%1$d · Lv%2$d · P%3$d</string>
     <string name="depot_inventory_sync_time">Updated: %1$s</string>
     <string name="depot_inventory_export">Export</string>
     <string name="depot_inventory_delete">Clear</string>
@@ -220,8 +225,6 @@
     <string name="depot_inventory_plan_new">New depot maintain plan</string>
     <string name="depot_inventory_plan_current">In stock: %1$d</string>
     <string name="depot_inventory_plan_unsupported">This item cannot be farmed, so depot maintain is unavailable</string>
-    <string name="depot_inventory_plan_stage">Stage</string>
-    <string name="depot_inventory_plan_stage_pick">Pick from stage list</string>
     <string name="depot_inventory_plan_stage_custom">Custom stage</string>
     <string name="depot_inventory_plan_node_disabled">This task is disabled, so the plan will not run</string>
     <string name="depot_inventory_plan_save">Save</string>

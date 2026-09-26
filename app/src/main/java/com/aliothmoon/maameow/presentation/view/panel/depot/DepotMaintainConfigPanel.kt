@@ -67,26 +67,17 @@ import com.aliothmoon.maameow.data.repository.DepotRepository
 import com.aliothmoon.maameow.data.resource.ActivityManager
 import com.aliothmoon.maameow.data.resource.ItemHelper
 import com.aliothmoon.maameow.data.resource.StageGroup
-import com.aliothmoon.maameow.domain.enums.UiUsageConstants
 import com.aliothmoon.maameow.presentation.components.CheckBoxWithExpandableTip
 import com.aliothmoon.maameow.presentation.components.CheckBoxWithLabel
-import com.aliothmoon.maameow.presentation.components.INumericField
 import com.aliothmoon.maameow.presentation.components.InlineActionRow
 import com.aliothmoon.maameow.presentation.components.InlineConfirmPanel
 import com.aliothmoon.maameow.presentation.components.SectionHeader
-import com.aliothmoon.maameow.presentation.view.panel.common.GroupedStageButtonGroup
-import com.aliothmoon.maameow.presentation.view.panel.common.ItemButtonGroup
-import com.aliothmoon.maameow.presentation.view.panel.common.StageInputField
-import com.aliothmoon.maameow.presentation.view.panel.common.StageRow
 import com.aliothmoon.maameow.presentation.view.panel.common.stageDisplayName
 import com.aliothmoon.maameow.theme.LocalReduceMotion
 import com.aliothmoon.maameow.theme.MaaAnimatedVisibility
 import com.aliothmoon.maameow.theme.MaaMotion
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
-
-/** 目标库存上限，对齐 WPF NumericUpDown 的 Maximum */
-private const val MAX_TARGET_INVENTORY = 1145141919
 
 @Composable
 fun DepotMaintainConfigPanel(
@@ -98,24 +89,14 @@ fun DepotMaintainConfigPanel(
     activityManager: ActivityManager = koinInject(),
 ) {
     val snapshot by depotRepository.snapshot.collectAsStateWithLifecycle()
-    val dropItems by itemHelper.dropItems.collectAsStateWithLifecycle()
+    // 物品下拉用「仓库识别认得出的那份」，名字映射用全表：老计划里可能存着已经不在
+    // 列表里的 id，全表兜底才不会又显示成 ID
+    val itemIndex by itemHelper.items.collectAsStateWithLifecycle()
     val activityStages by activityManager.activityStages.collectAsStateWithLifecycle()
 
-    // 排除「当期剿灭」：库存保持按材料刷取，剿灭无指定掉落。对齐上游 RefreshStageList
-    // 另排除「当前/上次」不知道打哪关就算不出缺口，选了必被 toTaskParams 拒掉
-    val stageGroups = remember(activityStages) {
-        activityManager.getMergedStageGroups()
-            .map { group ->
-                group.copy(stages = group.stages.filterNot {
-                    it.code == "Annihilation" || it.code.isEmpty()
-                })
-            }
-            .filter { it.stages.isNotEmpty() }
-    }
-    val stageCodes = remember(stageGroups) {
-        stageGroups.flatMap { group -> group.stages.map { it.code } }
-    }
-    val itemNameMap = remember(dropItems) { dropItems.associate { it.id to it.name } }
+    val stageGroups = rememberDepotStageGroups(activityManager)
+    val stageCodes = remember(stageGroups) { stageGroups.allStageCodes() }
+    val itemNameMap = remember(itemIndex) { itemIndex.mapValues { it.value.name } }
     val planOutcomes = remember(config.plans, snapshot, activityStages) {
         config.plans.map { plan ->
             depotPlanOutcome(plan, snapshot.items[plan.dropId] ?: 0) {
@@ -123,8 +104,7 @@ fun DepotMaintainConfigPanel(
             }
         }
     }
-    val itemIds =
-        if (dropItems.isNotEmpty()) dropItems.map { it.id } else UiUsageConstants.dropItems
+    val itemIds = rememberDepotItemIds(itemHelper)
 
     // 展开态是纯 UI 局部状态，不持久化；删除时重映射下标，避免落到相邻计划。
     val expandedIndices = remember { mutableStateListOf<Int>() }
@@ -721,78 +701,19 @@ private fun PlanCard(
 
             MaaAnimatedVisibility(visible = expanded) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    if (customStageCode) {
-                        StageRow(onRemove = null) {
-                            StageInputField(
-                                value = plan.stage,
-                                onValueChange = { onPlanChange(plan.copy(stage = it)) },
-                                label = stringResource(R.string.panel_fight_primary_stage_label),
-                                placeholder = stringResource(R.string.panel_fight_primary_stage_placeholder),
-                                stageCodes = stageCodes,
-                                modifier = Modifier.weight(1f)
-                            )
-                        }
-                    } else {
-                        GroupedStageButtonGroup(
-                            label = stringResource(R.string.panel_fight_primary_stage_label),
-                            selectedValue = plan.stage,
-                            stageGroups = stageGroups,
-                            onItemSelected = { onPlanChange(plan.copy(stage = it)) })
-                    }
-
-                    ItemButtonGroup(
-                        label = stringResource(R.string.panel_fight_material),
-                        selectedValue = plan.dropId,
-                        items = itemIds,
-                        onItemSelected = { onPlanChange(plan.copy(dropId = it)) },
-                        displayMapper = { id -> itemNameMap[id] ?: id })
-
-                    INumericField(
-                        value = plan.dropCount,
-                        onValueChange = { onPlanChange(plan.copy(dropCount = it)) },
-                        label = stringResource(R.string.panel_depot_target_inventory),
-                        // 展开时 dropCount <= 0 会被按 ERROR 拒绝，UI 不该放行 0
-                        minimum = 1,
-                        maximum = MAX_TARGET_INVENTORY,
-                        modifier = Modifier.fillMaxWidth()
+                    // 字段本体与库存数据页共用一份，见 DepotPlanFields
+                    DepotPlanFields(
+                        plan = plan,
+                        onPlanChange = onPlanChange,
+                        stageGroups = stageGroups,
+                        stageCodes = stageCodes,
+                        customStageCode = customStageCode,
+                        onCustomStageSelected = {},
+                        showMedicine = showMedicine,
+                        showStone = showStone,
+                        itemIds = itemIds,
+                        itemNameMap = itemNameMap,
                     )
-
-                    // 任务级总开关关掉时整行隐藏，勾选值原样留着，重新打开即恢复
-                    if (showMedicine) {
-                        CheckBoxWithLabel(
-                            checked = plan.useMedicine,
-                            onCheckedChange = { onPlanChange(plan.copy(useMedicine = it)) },
-                            label = stringResource(R.string.panel_fight_use_medicine),
-                        )
-                        MaaAnimatedVisibility(visible = plan.useMedicine) {
-                            INumericField(
-                                value = plan.medicineCount,
-                                onValueChange = { onPlanChange(plan.copy(medicineCount = it)) },
-                                label = stringResource(R.string.panel_fight_use_medicine_count),
-                                minimum = 0,
-                                maximum = 999,
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                        }
-                    }
-
-                    if (showStone) {
-                        CheckBoxWithLabel(
-                            checked = plan.useStone,
-                            onCheckedChange = { onPlanChange(plan.copy(useStone = it)) },
-                            label = stringResource(R.string.panel_stone_use),
-                        )
-                        MaaAnimatedVisibility(visible = plan.useStone) {
-                            INumericField(
-                                value = plan.stoneCount,
-                                onValueChange = { onPlanChange(plan.copy(stoneCount = it)) },
-                                label = stringResource(R.string.panel_depot_stone_count),
-                                minimum = 0,
-                                maximum = 999,
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                        }
-                    }
 
                     HorizontalDivider()
 

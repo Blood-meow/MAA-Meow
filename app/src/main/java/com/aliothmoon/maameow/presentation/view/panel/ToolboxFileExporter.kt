@@ -55,9 +55,13 @@ fun rememberShareToolboxFileExporter(
     val failedMsg = stringResource(R.string.toolbox_export_file_failed)
     return remember(context, scope, exportService, chooserTitle, failedMsg) {
         object : ToolboxFileExporter {
-            override fun export(prefix: String, content: String, fileType: ToolboxExportFileType) {
+            override fun export(
+                fileNamePrefix: String,
+                content: String,
+                fileType: ToolboxExportFileType,
+            ) {
                 scope.launch {
-                    val intent = exportService.buildShareIntent(prefix, content, fileType)
+                    val intent = exportService.buildShareIntent(fileNamePrefix, content, fileType)
                     if (intent != null) {
                         context.startActivity(
                             Intent.createChooser(intent, chooserTitle)
@@ -70,12 +74,12 @@ fun rememberShareToolboxFileExporter(
             }
 
             override fun exportBytes(
-                prefix: String,
+                fileNamePrefix: String,
                 bytes: ByteArray,
                 fileType: ToolboxExportFileType,
             ) {
                 scope.launch {
-                    val intent = exportService.buildShareIntentBytes(prefix, bytes, fileType)
+                    val intent = exportService.buildShareIntentBytes(fileNamePrefix, bytes, fileType)
                     if (intent != null) {
                         context.startActivity(
                             Intent.createChooser(intent, chooserTitle)
@@ -122,20 +126,24 @@ fun rememberSafToolboxFileExporter(
     }
     return remember(launcher, exportService) {
         object : ToolboxFileExporter {
-            override fun export(prefix: String, content: String, fileType: ToolboxExportFileType) {
+            override fun export(
+                fileNamePrefix: String,
+                content: String,
+                fileType: ToolboxExportFileType,
+            ) {
                 pendingBytes = null
                 pendingContent = content
-                launcher.launch(exportService.makeFileName(prefix, fileType))
+                launcher.launch(exportService.makeFileName(fileNamePrefix, fileType))
             }
 
             override fun exportBytes(
-                prefix: String,
+                fileNamePrefix: String,
                 bytes: ByteArray,
                 fileType: ToolboxExportFileType,
             ) {
                 pendingContent = null
                 pendingBytes = bytes
-                launcher.launch(exportService.makeFileName(prefix, fileType))
+                launcher.launch(exportService.makeFileName(fileNamePrefix, fileType))
             }
         }
     }

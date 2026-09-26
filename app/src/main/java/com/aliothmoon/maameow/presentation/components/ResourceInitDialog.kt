@@ -188,7 +188,9 @@ private fun ExtractProgressBar(
             drawContent()
             val rtl = layoutDirection == LayoutDirection.Rtl
             val sweepWidth = size.width * 0.2f
-            val center = size.width * if (rtl) 1f - shimmerPos else shimmerPos
+            // RTL 下从右往左扫，别写成 `size.width * if (rtl) 1f - shimmerPos`——
+            // 那是 (width * 1f) - shimmerPos，靠 shimmerPos 的取值凑巧才等价
+            val center = size.width * (if (rtl) 1f - shimmerPos else shimmerPos)
             fun sweep(color: Color) = Brush.horizontalGradient(
                 colors = listOf(Color.Transparent, color, Color.Transparent),
                 startX = center - sweepWidth,

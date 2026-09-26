@@ -1,0 +1,298 @@
+package com.aliothmoon.maameow.presentation.viewmodel
+
+import com.aliothmoon.maameow.data.model.DepotMaintainConfig
+import com.aliothmoon.maameow.data.model.DepotMaintainPlan
+import com.aliothmoon.maameow.data.model.DepotPlanOutcome
+import com.aliothmoon.maameow.data.model.MallConfig
+import com.aliothmoon.maameow.data.model.TaskChainNode
+import com.aliothmoon.maameow.data.model.TaskParamProvider
+import com.aliothmoon.maameow.data.repository.DepotSnapshot
+import com.aliothmoon.maameow.data.resource.ItemInfo
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
+import org.junit.Test
+
+/**
+ * 覆盖库存页真正参与渲染与写回的那几个纯函数：[toUi] / [unmetIn] / [depotPlans] /
+ * [firstDepotNode] / [toPlanContext] / [buildInventoryCells] / [groupForDisplay]。
+ *
+ * 它们原来是 private，测试只能自己重算一遍 need/outcome，等于在测测试；
+ * 现在抽成 internal 的顶层函数，测的就是线上跑的那份。
+ */
+class DepotInventoryUiStateTest {
+
+    // ========== 网格内容 ==========
+
+    /** 库里一条记录都没有的材料也要出格子，否则「有没有」只能靠数格子猜 */
+    @Test
+    fun buildInventoryCells_addsDepotItemsMissingFromSnapshot() {
+        val cells = buildInventoryCells(
+            snapshot = DepotSnapshot(items = mapOf("30011" to 7)),
+            itemMap = mapOf("30011" to info("30011", "源岩"), "30061" to info("30061", "破损装置")),
+            depotItemIds = listOf("30011", "30061"),
+            plans = emptyList(),
+        )
+
+        assertEquals(listOf("30011", "30061"), cells.map { it.id })
+        assertEquals(7, cells.first { it.id == "30011" }.count)
+        assertEquals(0, cells.first { it.id == "30061" }.count)
+    }
+
+    /** 快照里的物品即便超出识别集合也照样出格：Core 除了 MATERIAL 也会报合成玉、寻访凭证 */
+    @Test
+    fun buildInventoryCells_keepsSnapshotItemsOutsideDepotSet() {
+        val cells = buildInventoryCells(
+            snapshot = DepotSnapshot(items = mapOf("4003" to 72_000, "30011" to 7)),
+            itemMap = mapOf("4003" to info("4003", "合成玉"), "30011" to info("30011", "源岩")),
+            depotItemIds = listOf("30011"),
+            plans = emptyList(),
+        )
+
+        // 合成玉 sortId 4003 < 源岩 30011，按 sortId 排在前面
+        assertEquals(listOf("4003", "30011"), cells.map { it.id })
+        assertEquals(72_000, cells.first { it.id == "4003" }.count)
+    }
+
+    /** 同一物品配了多条计划就出多格：执行侧会挨个跑，格子少一条就和二级页的计数对不上 */
+    @Test
+    fun buildInventoryCells_oneCellPerPlanForDuplicates() {
+        val snap = DepotSnapshot(items = mapOf("30011" to 12))
+        val plans = listOf(
+            plan(dropCount = 50).toUi(node(), 0, snap, emptyMap()) { true },
+            plan(dropCount = 100).toUi(node(), 1, snap, emptyMap()) { true },
+        )
+
+        val cells = buildInventoryCells(snap, emptyMap(), emptyList(), plans)
+
+        assertEquals(2, cells.size)
+        assertEquals(listOf(50, 100), cells.map { it.plan?.target })
+        assertEquals(2, cells.map { it.key }.distinct().size)
+    }
+
+    /** 计划里的物品即便仓库里没有也要出现，否则「缺多少」在最需要看的时候反而没格子 */
+    @Test
+    fun buildInventoryCells_keepsPlannedItemWithoutSnapshot() {
+        val plans = listOf(
+            plan(dropCount = 50).toUi(node(), 0, DepotSnapshot(), emptyMap()) { true },
+        )
+
+        val cells = buildInventoryCells(DepotSnapshot(), emptyMap(), emptyList(), plans)
+
+        assertEquals(listOf("30011"), cells.map { it.id })
+        assertEquals(0, cells.single().count)
+        assertTrue(cells.single().unmet)
+    }
+
+    @Test
+    fun groupForDisplay_splitsIntoStockedUnmetAndEmpty() {
+        val snap = DepotSnapshot(items = mapOf("30011" to 60, "30012" to 12, "30061" to 0))
+        val cells = buildInventoryCells(
+            snapshot = snap,
+            itemMap = emptyMap(),
+            depotItemIds = listOf("30011", "30012", "30061", "30062"),
+            plans = listOf(
+                // 目标 50、现有 12 → 未集齐
+                plan(dropId = "30012", dropCount = 50)
+                    .toUi(node(), 0, snap, emptyMap()) { true },
+                // 目标 50、现有 60 → 已够，算「有库存」
+                plan(dropId = "30011", dropCount = 50)
+                    .toUi(node(), 1, snap, emptyMap()) { true },
+            ),
+        )
+
+        val groups = cells.groupForDisplay()
+
+        assertEquals(listOf("30011"), groups.stocked.map { it.id })
+        assertEquals(listOf("30012"), groups.unmet.map { it.id })
+        assertEquals(listOf("30061", "30062"), groups.empty.map { it.id })
+    }
+
+    // ========== 计划与进度 ==========
+
+    @Test
+    fun toUi_readsCurrentFromSnapshotAndComputesNeed() {
+        val ui = plan(dropCount = 50, stage = "1-7")
+            .toUi(node(), 0, DepotSnapshot(items = mapOf("30011" to 12)), emptyMap()) { true }
+
+        assertEquals(12, ui.current)
+        assertEquals(50, ui.target)
+        assertEquals(38, ui.need)
+        assertEquals(DepotPlanOutcome.Runnable, ui.outcome)
+        assertTrue(ui.unmet)
+    }
+
+    @Test
+    fun toUi_missingItemCountsAsZero() {
+        val ui = plan(dropCount = 50, stage = "1-7")
+            .toUi(node(), 0, DepotSnapshot(), emptyMap()) { true }
+
+        assertEquals(0, ui.current)
+        assertEquals(50, ui.need)
+        assertTrue(ui.unmet)
+    }
+
+    @Test
+    fun toUi_enoughStockClampsNeedToZero() {
+        val ui = plan(dropCount = 50, stage = "1-7")
+            .toUi(node(), 0, DepotSnapshot(items = mapOf("30011" to 60)), emptyMap()) { true }
+
+        assertEquals(0, ui.need)
+        assertEquals(DepotPlanOutcome.Enough, ui.outcome)
+        assertFalse(ui.unmet)
+    }
+
+    /** 目标为 0 的计划会被执行侧按「目标为 0」拒掉，不该算成缺货 */
+    @Test
+    fun toUi_zeroTargetIsNotUnmet() {
+        val ui = plan(dropCount = 0, stage = "1-7")
+            .toUi(node(), 0, DepotSnapshot(), emptyMap()) { true }
+
+        assertEquals(DepotPlanOutcome.ZeroTarget, ui.outcome)
+        assertFalse(ui.unmet)
+        assertFalse(plan(dropCount = 0).unmetIn(DepotSnapshot()))
+    }
+
+    @Test
+    fun toUi_stageClosedFollowsActivityManager() {
+        val ui = plan(dropCount = 50, stage = "1-7")
+            .toUi(node(), 0, DepotSnapshot(), emptyMap()) { false }
+
+        assertEquals(DepotPlanOutcome.StageClosed, ui.outcome)
+    }
+
+    @Test
+    fun toUi_carriesNodeStateAndPlanIndex() {
+        val ui = plan(dropCount = 50, stage = "1-7")
+            .toUi(node(id = "n1", enabled = false), 3, DepotSnapshot(), emptyMap()) { true }
+
+        assertEquals("n1", ui.nodeId)
+        assertFalse(ui.node.nodeEnabled)
+        assertEquals(3, ui.planIndex)
+        // 物品查不到时回退成 ID，别显示空白
+        assertEquals("30011", ui.itemName)
+    }
+
+    /** 库存页只关心节点启没启用（没启用时提示「保存了也不会跑」），药石在配置页配 */
+    @Test
+    fun toPlanContext_readsNodeEnabled() {
+        assertFalse(node(id = "n1", enabled = false).toPlanContext().nodeEnabled)
+        assertTrue(node().toPlanContext().nodeEnabled)
+    }
+
+    @Test
+    fun unmetIn_isFalseWhenStockReachesTarget() {
+        assertFalse(plan(dropCount = 50).unmetIn(DepotSnapshot(items = mapOf("30011" to 50))))
+        assertTrue(plan(dropCount = 50).unmetIn(DepotSnapshot(items = mapOf("30011" to 49))))
+    }
+
+    /** 没选物品的计划在配置页已经有提示，网格里不该再多一个空格子 */
+    @Test
+    fun depotPlans_skipsPlansWithoutItem() {
+        val chain = listOf(
+            node(id = "a", config = DepotMaintainConfig(plans = listOf(plan(dropId = "")))),
+            node(id = "b", config = DepotMaintainConfig(plans = listOf(plan(), plan()))),
+        )
+
+        assertEquals(2, chain.depotPlans().size)
+    }
+
+    @Test
+    fun depotPlans_ignoresNonDepotNodes() {
+        val chain = listOf(
+            TaskChainNode(id = "a", name = "信用收支", config = MallConfig()),
+            node(id = "b", config = DepotMaintainConfig(plans = listOf(plan()))),
+        )
+
+        assertEquals(1, chain.depotPlans().size)
+    }
+
+    /** 写回落点与 TaskChainState.updateDepotMaintainPlans 的选取必须一致：启用优先 */
+    @Test
+    fun firstDepotNode_prefersEnabledNode() {
+        val disabled = node(id = "disabled", enabled = false, config = DepotMaintainConfig())
+        val enabled = node(id = "enabled", enabled = true, config = DepotMaintainConfig())
+
+        assertEquals("enabled", listOf(disabled, enabled).firstDepotNode()?.id)
+        assertEquals("disabled", listOf(disabled).firstDepotNode()?.id)
+        assertNull(
+            listOf(TaskChainNode(id = "other", name = "信用收支", config = MallConfig()))
+                .firstDepotNode()
+        )
+    }
+
+    @Test
+    fun cellUi_withoutPlanIsSettled() {
+        val cell = cell(id = "30011", count = 7, plan = null)
+
+        assertFalse(cell.unmet)
+    }
+
+    @Test
+    fun cellUi_followsItsPlan() {
+        val cell = cell(
+            id = "30011",
+            count = 7,
+            plan = plan(dropCount = 50, stage = "1-7")
+                .toUi(node(), 0, DepotSnapshot(items = mapOf("30011" to 7)), emptyMap()) { true },
+        )
+
+        assertTrue(cell.unmet)
+        assertEquals(43, cell.plan?.need)
+    }
+
+    /** 导出列表按快照原样来：识别报了什么就画什么，不按物品种类裁剪 */
+    @Test
+    fun itemUiList_keepsSnapshotItemsOutsideDepotSet() {
+        val snapshot = DepotSnapshot(
+            items = mapOf(
+                "4003" to 72_000,
+                "7003" to 3,
+                "7004" to 1,
+                "30011" to 7,
+            ),
+        )
+        val itemMap = mapOf(
+            "4003" to info("4003", "合成玉"),
+            "7003" to info("7003", "寻访凭证"),
+            "7004" to info("7004", "十连寻访凭证"),
+            "30011" to info("30011", "源岩"),
+        )
+
+        assertEquals(
+            listOf("4003", "7003", "7004", "30011"),
+            snapshot.toItemUiList(itemMap).map { it.id },
+        )
+    }
+
+    // ========== 夹具 ==========
+
+    private fun plan(
+        dropId: String = "30011",
+        dropCount: Int = 50,
+        stage: String = "1-7",
+    ) = DepotMaintainPlan(stage = stage, dropId = dropId, dropCount = dropCount)
+
+    private fun node(
+        id: String = "node",
+        enabled: Boolean = true,
+        config: TaskParamProvider = DepotMaintainConfig(plans = listOf(plan())),
+    ) = TaskChainNode(id = id, name = "库存保持", enabled = enabled, config = config)
+
+    private fun info(id: String, name: String) =
+        ItemInfo(id = id, name = name, icon = "", sortId = id.toIntOrNull() ?: 0)
+
+    private fun cell(
+        id: String,
+        count: Int,
+        plan: DepotMaintainPlanUi?,
+    ) = DepotInventoryCellUi(
+        key = id,
+        id = id,
+        name = id,
+        count = count,
+        sortId = id.toIntOrNull() ?: 0,
+        plan = plan,
+    )
+}

@@ -286,6 +286,8 @@ private fun CollapsibleRowTrailing(
  *
  * 例如：龙门币 → CE-6，经验 → LS-6
  *
+ * @param commitOnChange 为 true 时每敲一下就原样回写（别名不在这里映射，留给调用方
+ *   在读取时做），因为面板里有「保存」按钮，只靠失焦提交会漏掉最后一次输入
  */
 @Composable
 internal fun StageInputField(
@@ -294,7 +296,8 @@ internal fun StageInputField(
     label: String,
     placeholder: String,
     stageCodes: List<String>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    commitOnChange: Boolean = false
 ) {
     var textValue by remember(value) { mutableStateOf(value) }
     var showConvertedHint by remember { mutableStateOf(false) }
@@ -305,6 +308,8 @@ internal fun StageInputField(
             value = textValue,
             onValueChange = { newValue ->
                 textValue = newValue
+                // 原样回写：这里映射别名的话，敲「龙门币」敲到一半就被替换成 CE-6 了
+                if (commitOnChange) onValueChange(newValue)
                 // 检查是否是已知别名，显示转换提示
                 val mapped = StageAliasMapper.mapToStageCode(newValue, stageCodes)
                 if (mapped != newValue.uppercase() && newValue.isNotBlank()) {

@@ -417,6 +417,11 @@
     <string name="depot_inventory_tab_items">库存</string>
     <string name="depot_inventory_tab_operators">干员</string>
     <string name="depot_inventory_section_unmet">未集齐（%1$d）</string>
+    <string name="depot_inventory_section_empty">库存为 0（%1$d）</string>
+    <string name="depot_inventory_png_items">%1$d 项</string>
+    <string name="depot_inventory_png_empty">（空）</string>
+    <string name="depot_inventory_png_oper_summary">已拥有 %1$d · 未拥有 %2$d</string>
+    <string name="depot_inventory_png_oper_meta">精英 %1$d · %2$d 级 · 潜 %3$d</string>
     <string name="depot_inventory_sync_time">更新时间：%1$s</string>
     <string name="depot_inventory_export">导出</string>
     <string name="depot_inventory_delete">清空</string>
@@ -445,8 +450,6 @@
     <string name="depot_inventory_plan_new">新建库存保持计划</string>
     <string name="depot_inventory_plan_current">当前库存 %1$d</string>
     <string name="depot_inventory_plan_unsupported">该物品不能作为刷取目标，无法设置库存保持</string>
-    <string name="depot_inventory_plan_stage">关卡</string>
-    <string name="depot_inventory_plan_stage_pick">从关卡列表选择</string>
     <string name="depot_inventory_plan_stage_custom">自定义关卡</string>
     <string name="depot_inventory_plan_node_disabled">该任务未启用，计划不会执行</string>
     <string name="depot_inventory_plan_save">保存</string>

@@ -80,7 +80,10 @@ class ItemIconLoader(
         }.getOrNull()
     }
 
-    /** 与 UI doProcess 一致：RGB 全 0 的像素 alpha 清零，黑底变透明。 */
+    /**
+     * 模板 item 图底是黑的，抠成透明；UI 与导出共用同一段像素处理。
+     * see ItemListHelper.ProcessBlackToTransparent
+     */
     private fun processBlackToTransparentInPlace(bitmap: Bitmap) {
         val width = bitmap.width
         val height = bitmap.height
@@ -103,20 +106,7 @@ class ItemIconLoader(
         val bitmap = BitmapFactory.decodeFile(file.absolutePath, options) ?: return null
 
         return try {
-            val width = bitmap.width
-            val height = bitmap.height
-            val pixels = IntArray(width * height)
-
-            bitmap.getPixels(pixels, 0, width, 0, 0, width, height)
-
-            for (i in pixels.indices) {
-                if (pixels[i] and 0x00FFFFFF == 0) {
-                    pixels[i] = 0
-                }
-            }
-
-            bitmap.setPixels(pixels, 0, width, 0, 0, width, height)
-
+            processBlackToTransparentInPlace(bitmap)
             bitmap.asImageBitmap()
         } catch (e: Exception) {
             bitmap.recycle()

@@ -18,13 +18,29 @@ class ItemHelper(
 
     private val _items = MutableStateFlow<Map<String, ItemInfo>>(emptyMap())
     private val _dropItems = MutableStateFlow<List<ItemInfo>>(emptyList())
+    private val _depotItems = MutableStateFlow<List<ItemInfo>>(emptyList())
 
     /**  (itemId -> ItemInfo) */
     val items: StateFlow<Map<String, ItemInfo>> = _items.asStateFlow()
+
+    /**
+     * 关卡掉落可选的物品，按 ID 排。
+     *
+     * 这是**战斗**那边的口径（对齐 WPF `FightSettingsUserControlModel._excludedValues`），
+     * 里面有声望（博士经验）、龙门币这类永远不进仓库的东西，
+     * 别拿它当仓库物品列表——见 [depotItems]。
+     */
     val dropItems: StateFlow<List<ItemInfo>> = _dropItems.asStateFlow()
 
-    /** 是否已经拿到过一份非空索引；为 false 时界面只能把物品回退成 ID */
-    val isLoaded: Boolean get() = _items.value.isNotEmpty()
+    /**
+     * 仓库识别认得出的物品，= 索引里 `classifyType == "MATERIAL"` 的全部条目，按 `sortId` 排。
+     *
+     * 严格对齐 MaaCore：`ItemConfig::parse` 只把 MATERIAL 收进有序表，
+     * `DepotImageAnalyzer::prepare_cached_templates` 正是拿这份表建模板缓存的，
+     * 所以「仓库里能识别出来的」就等于这一份——声望（NONE）、龙门币 / 合成玉（NORMAL）
+     * 一个都不在里面。库存页、库存保持的物品列表都用它。
+     */
+    val depotItems: StateFlow<List<ItemInfo>> = _depotItems.asStateFlow()
 
     /**
      * 关卡不可掉落的材料排除列表
@@ -36,8 +52,20 @@ class ItemHelper(
         /** 没有独立资源档的客户端，只有根目录那一份索引 */
         const val DEFAULT_CLIENT = "Official"
 
-        /** 有 global 资源档的客户端；与 ResourceDataManager.CLIENT_LANGUAGE_MAPPER 同集合 */
-        private val GLOBAL_CLIENTS = setOf("txwy", "YoStarEN", "YoStarJP", "YoStarKR")
+        /** 索引里材料条目的 `classifyType`，仓库识别只认这一类 */
+        private const val MATERIAL_CLASSIFY = "MATERIAL"
+
+        /**
+         * 有 global 资源档的客户端。
+         *
+         * 从 [ResourceDataManager] 的资源目录表反推，别再抄一份名单：
+         * 那边加了新服而这里忘了加，物品名会静默退回中文。
+         */
+        private val GLOBAL_CLIENTS: Set<String> = ResourceDataManager.CLIENT_LANGUAGE_MAPPER
+            .filterValues { language ->
+                ResourceDataManager.CLIENT_DIRECTORY_MAPPER[language].orEmpty().isNotEmpty()
+            }
+            .keys
 
         private val excludedValues = setOf(
             "3213", "3223", "3233", "3243", // 双芯片
@@ -60,9 +88,9 @@ class ItemHelper(
     /**
      * 读取物品索引。
      *
-     * 全球服那份覆盖根目录那份：物品名要跟客户端语言走，而根目录那份条目更全
-     * （新素材先上国服）。两份合并取并集，既不会因为选了国际服丢 ID，
-     * 也不会把中文名带到国际服。
+     * 两份索引取并集，同 ID 以客户端那份为准：根目录那份条目更全（新素材先上国服），
+     * 客户端那份语言对。所以选了国际服之后，国际服有的 ID 用国际服的名字，
+     * 国际服还没有的 ID 退回根目录那份的中文名——总比显示成一串数字强。
      *
      * 解析不出来时**保留上一份可用数据**——直接清空会让界面整局把所有物品
      * 显示成 ID，比留着旧名字更糟。
@@ -83,6 +111,10 @@ class ItemHelper(
                 .filter { it.id.all { c -> c.isDigit() } }  // WPF: int.TryParse
                 .filter { it.id !in excludedValues }
                 .sortedBy { it.id }  // WPF: string.Compare Ordinal
+            // Core 那边 sortId 相同就是 `std::ranges::sort` 的不稳定序，这里补个 id 兜底
+            _depotItems.value = parsed.values
+                .filter { it.classifyType == MATERIAL_CLASSIFY }
+                .sortedWith(compareBy({ it.sortId }, { it.id }))
         }
         return true
     }
