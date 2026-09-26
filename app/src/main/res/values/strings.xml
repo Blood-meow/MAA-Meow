@@ -399,10 +399,58 @@
 
     <!-- settings: data section -->
     <string name="settings_section_data">数据管理</string>
+    <string name="settings_depot_inventory_title">库存数据</string>
+    <string name="settings_depot_inventory_desc">查看各配置档的仓库与干员数据</string>
     <string name="settings_export_config_title">导出配置</string>
     <string name="settings_export_config_desc">将所有设置和任务配置导出为文件</string>
     <string name="settings_import_config_title">导入配置</string>
     <string name="settings_import_config_desc">从文件恢复设置和任务配置</string>
+
+    <!-- depot inventory page -->
+    <string name="depot_inventory_title">库存数据</string>
+    <string name="depot_inventory_detail_title">配置档数据</string>
+    <string name="depot_inventory_profile_active">活跃</string>
+    <string name="depot_inventory_empty_profiles">暂无配置档</string>
+    <string name="depot_inventory_empty_profile">该配置档暂无库存数据。请在小工具中执行一次仓库/干员识别。</string>
+    <string name="depot_inventory_empty_items">该配置档暂无库存明细</string>
+    <string name="depot_inventory_empty_operators">该配置档暂无干员数据，请执行一次干员数据更新</string>
+    <string name="depot_inventory_tab_items">库存</string>
+    <string name="depot_inventory_tab_operators">干员</string>
+    <string name="depot_inventory_section_unmet">未集齐（%1$d）</string>
+    <string name="depot_inventory_sync_time">更新时间：%1$s</string>
+    <string name="depot_inventory_export">导出</string>
+    <string name="depot_inventory_delete">清空</string>
+    <string name="depot_inventory_delete_title">清空库存数据</string>
+    <string name="depot_inventory_delete_message">确定清空配置档「%1$s」的仓库与干员数据吗？此操作不可撤销。</string>
+    <string name="depot_inventory_delete_confirm">清空</string>
+    <string name="depot_inventory_export_title">导出 %1$s</string>
+    <string name="depot_inventory_export_depot">导出仓库数据</string>
+    <string name="depot_inventory_export_operbox">导出干员数据</string>
+    <string name="depot_inventory_export_arkplanner">企鹅物流 / ArkPlanner（JSON）</string>
+    <string name="depot_inventory_export_lolicon">Lolicon（JSON）</string>
+    <string name="depot_inventory_export_image">导出为图片（PNG）</string>
+    <string name="depot_inventory_export_hide_profile">隐藏配置档名</string>
+    <string name="depot_inventory_export_hide_profile_hint">PNG 图头不写配置档名，只保留时间与数据</string>
+    <string name="depot_inventory_maintain_title">库存保持计划</string>
+    <string name="depot_inventory_maintain_progress">目标 %1$d / 当前 %2$d</string>
+    <string name="depot_inventory_maintain_need">缺 %1$d</string>
+    <string name="depot_inventory_maintain_enough">已够</string>
+    <string name="depot_inventory_maintain_no_item">未选物品</string>
+    <string name="depot_inventory_maintain_zero_target">目标为 0</string>
+    <string name="depot_inventory_maintain_stage_required">未设关卡</string>
+    <string name="depot_inventory_maintain_stage_closed">关卡未开放（%1$s）</string>
+    <string name="depot_inventory_maintain_none">未设置库存保持</string>
+    <string name="depot_inventory_maintain_all_done">库存保持：已全部集齐</string>
+    <string name="depot_inventory_maintain_unmet_count">库存保持：%1$d 项未集齐</string>
+    <string name="depot_inventory_plan_new">新建库存保持计划</string>
+    <string name="depot_inventory_plan_current">当前库存 %1$d</string>
+    <string name="depot_inventory_plan_unsupported">该物品不能作为刷取目标，无法设置库存保持</string>
+    <string name="depot_inventory_plan_stage">关卡</string>
+    <string name="depot_inventory_plan_stage_pick">从关卡列表选择</string>
+    <string name="depot_inventory_plan_stage_custom">自定义关卡</string>
+    <string name="depot_inventory_plan_node_disabled">该任务未启用，计划不会执行</string>
+    <string name="depot_inventory_plan_save">保存</string>
+    <string name="depot_inventory_plan_remove">移除计划</string>
 
     <!-- settings: achievement section -->
     <string name="settings_section_achievement">成就</string>

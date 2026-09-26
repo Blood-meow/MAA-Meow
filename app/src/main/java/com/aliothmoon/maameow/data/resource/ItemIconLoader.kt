@@ -3,6 +3,7 @@ package com.aliothmoon.maameow.data.resource
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.LruCache
+import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import com.aliothmoon.maameow.data.config.MaaPathConfig
@@ -18,7 +19,11 @@ import java.util.concurrent.ConcurrentHashMap
  *  ItemListHelper.GetItemImage / ProcessBlackToTransparent
  *
  *  {resourceDir}/template/items/{itemId}.png
+ *
+ * [Stable]：只有私有缓存，没有会参与组合的可变状态，
+ * 标上之后调用它的格子才可能被跳过重组。
  */
+@Stable
 class ItemIconLoader(
     private val pathConfig: MaaPathConfig
 ) {
@@ -54,6 +59,39 @@ class ItemIconLoader(
                 null
             }
         }
+    }
+
+    /**
+     * 导出用：读取物品图标并把纯黑抠成透明。
+     * 模板 item 图底是黑的，导出时要透出画布白底；再在绘制处铺不透明白底，避免发透发灰。
+     * UI 仍走 [load]。
+     */
+    suspend fun loadRawAndroidBitmap(itemId: String): Bitmap? = withContext(Dispatchers.IO) {
+        val file = File(pathConfig.resourceDir, "template/items/$itemId.png")
+        if (!file.exists()) return@withContext null
+        runCatching {
+            val options = BitmapFactory.Options().apply {
+                inPreferredConfig = Bitmap.Config.ARGB_8888
+                inMutable = true
+            }
+            val bitmap = BitmapFactory.decodeFile(file.absolutePath, options) ?: return@runCatching null
+            processBlackToTransparentInPlace(bitmap)
+            bitmap
+        }.getOrNull()
+    }
+
+    /** 与 UI doProcess 一致：RGB 全 0 的像素 alpha 清零，黑底变透明。 */
+    private fun processBlackToTransparentInPlace(bitmap: Bitmap) {
+        val width = bitmap.width
+        val height = bitmap.height
+        val pixels = IntArray(width * height)
+        bitmap.getPixels(pixels, 0, width, 0, 0, width, height)
+        for (i in pixels.indices) {
+            if (pixels[i] and 0x00FFFFFF == 0) {
+                pixels[i] = 0
+            }
+        }
+        bitmap.setPixels(pixels, 0, width, 0, 0, width, height)
     }
 
     private fun doProcess(file: File): ImageBitmap? {

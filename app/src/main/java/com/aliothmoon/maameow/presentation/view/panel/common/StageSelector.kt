@@ -89,6 +89,9 @@ fun stageDisplayName(
  * 标题行：左侧区块名，右侧「已选关卡」徽章 + 展开/收起箭头；点击标题行切换折叠
  * 展开后显示分组标题 + 每个分组下的关卡自动换行平铺
  * 默认折叠
+ *
+ * 传 [customLabel] 时列表末尾多一个自定义入口（如库存保持的「自定义关卡」），
+ * 选中后由调用方决定在哪放出输入框；[customSelected] 只负责它的选中态。
  */
 @Composable
 internal fun GroupedStageButtonGroup(
@@ -98,7 +101,10 @@ internal fun GroupedStageButtonGroup(
     onItemSelected: (String) -> Unit,
     modifier: Modifier = Modifier,
     annihilationDisplayName: String? = null,
-    onRemove: (() -> Unit)? = null
+    onRemove: (() -> Unit)? = null,
+    customLabel: String? = null,
+    customSelected: Boolean = false,
+    onCustomSelected: (() -> Unit)? = null,
 ) {
     var expanded by remember { mutableStateOf(false) }
     val selectedDisplay = stageDisplayName(
@@ -198,6 +204,40 @@ internal fun GroupedStageButtonGroup(
                                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
                                 )
                             }
+                        }
+                    }
+                }
+
+                // 自定义入口：手输代码或别名，样式与上面的关卡胶囊一致
+                if (customLabel != null) {
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 4.dp)
+                    ) {
+                        Surface(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(16.dp))
+                                .clickable { onCustomSelected?.invoke() },
+                            color = if (customSelected) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
+                            },
+                            shape = RoundedCornerShape(16.dp)
+                        ) {
+                            Text(
+                                text = customLabel,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = if (customSelected) {
+                                    MaterialTheme.colorScheme.onPrimary
+                                } else {
+                                    MaterialTheme.colorScheme.onSurface
+                                },
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                            )
                         }
                     }
                 }

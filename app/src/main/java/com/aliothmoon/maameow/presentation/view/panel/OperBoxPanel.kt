@@ -243,7 +243,7 @@ fun OperBoxPanel(
 }
 
 @Composable
-private fun rememberOperBoxExportLabels(): OperBoxExportLabels {
+internal fun rememberOperBoxExportLabels(): OperBoxExportLabels {
     val name = stringResource(R.string.operbox_export_header_name)
     val id = stringResource(R.string.operbox_export_header_id)
     val rarity = stringResource(R.string.operbox_export_header_rarity)
@@ -318,7 +318,7 @@ private fun OperBoxHintRow(text: String) {
 }
 
 @Composable
-private fun OperatorRow(oper: OperBoxOperator) {
+internal fun OperatorRow(oper: OperBoxOperator) {
     val rarityColor = when (oper.rarity) {
         6 -> Color(0xFFFF6B35)
         5 -> Color(0xFFFFD700)
