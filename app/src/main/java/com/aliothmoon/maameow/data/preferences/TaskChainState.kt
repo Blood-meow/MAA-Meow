@@ -9,6 +9,8 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.aliothmoon.maameow.data.achievement.AchievementEvents
 import com.aliothmoon.maameow.data.achievement.AchievementRepository
+import com.aliothmoon.maameow.data.model.DepotMaintainConfig
+import com.aliothmoon.maameow.data.model.DepotMaintainPlan
 import com.aliothmoon.maameow.data.model.InfrastConfig
 import com.aliothmoon.maameow.data.model.MallConfig
 import com.aliothmoon.maameow.data.model.RecruitConfig
@@ -289,6 +291,69 @@ class TaskChainState(
                 Timber.w("updateNodeConfig: node %s not found", nodeId)
             }
         }
+    }
+
+    /**
+     * 增删改指定配置档的「库存保持」计划。
+     *
+     * 库存数据页允许直接点物品改目标库存，此时用户并没有停在任务配置页，
+     * 所以这里按 profileId 定位链——非活跃档也能改，活跃档走同一条写盘路径。
+     * 该档还没有库存保持节点时就地新建一个（启用态，否则计划不会执行）。
+     *
+     * @param nodeId 计划所属节点；null 或已不存在时取该档第一个库存保持节点（启用优先）
+     * @param transform 拿到该节点当前的 plans，返回新列表
+     * @return 实际写入的节点 ID；配置档不存在时返回空串
+     */
+    suspend fun updateDepotMaintainPlans(
+        profileId: String,
+        nodeId: String? = null,
+        transform: (List<DepotMaintainPlan>) -> List<DepotMaintainPlan>,
+    ): String {
+        _isLoaded.first { it }
+        val profiles = _profiles.value
+        val target = profiles.firstOrNull { it.id == profileId } ?: run {
+            Timber.w("updateDepotMaintainPlans: profile %s not found", profileId)
+            return ""
+        }
+        // 活跃档的最新链在 _chain 上，_profiles 里的那份可能是切档时的旧快照
+        val isActive = profileId == _profileId.value
+        val source = if (isActive) _chain.value else target.chain
+        val (updated, writtenNodeId) = source.applyDepotPlans(nodeId, transform)
+        if (isActive) {
+            _chain.value = updated
+        }
+        // 赋值前重读一次：运行中的回调可能刚从别的线程改过其它配置档的链，
+        // 用开头那份快照整体写回会把它吞掉
+        _profiles.value = _profiles.value.map { if (it.id == profileId) it.copy(chain = updated) else it }
+        doSync()
+        Timber.d("updateDepotMaintainPlans: profile=%s node=%s", profileId, writtenNodeId)
+        return writtenNodeId
+    }
+
+    private fun List<TaskChainNode>.applyDepotPlans(
+        nodeId: String?,
+        transform: (List<DepotMaintainPlan>) -> List<DepotMaintainPlan>,
+    ): Pair<List<TaskChainNode>, String> {
+        val nodes = toMutableList()
+        val idx = nodes.indexOfFirst { it.id == nodeId && it.config is DepotMaintainConfig }
+            .takeIf { it >= 0 }
+            ?: nodes.indexOfFirst { it.config is DepotMaintainConfig && it.enabled }
+                .takeIf { it >= 0 }
+            ?: nodes.indexOfFirst { it.config is DepotMaintainConfig }
+        if (idx < 0) {
+            val node = TaskChainNode(
+                id = UUID.randomUUID().toString(),
+                name = defaultTaskName(TaskTypeInfo.DEPOT_MAINTAIN),
+                enabled = true,
+                order = nodes.size,
+                config = DepotMaintainConfig(plans = transform(emptyList())),
+            )
+            nodes.add(node)
+            return nodes.toList() to node.id
+        }
+        val config = nodes[idx].config as DepotMaintainConfig
+        nodes[idx] = nodes[idx].copy(config = config.copy(plans = transform(config.plans)))
+        return nodes.toList() to nodes[idx].id
     }
 
     /** 以回调的节点 ID 定位，切换配置后也不会写到另一个信用任务 */
