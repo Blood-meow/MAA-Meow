@@ -404,6 +404,25 @@
     <string name="settings_import_config_title">导入配置</string>
     <string name="settings_import_config_desc">从文件恢复设置和任务配置</string>
 
+    <!-- depot maintain panel -->
+    <string name="depot_inventory_order_hint">已集齐的会跳过；拖动右侧手柄调整刷取顺序</string>
+    <string name="depot_inventory_order_drag">拖动排序</string>
+    <string name="depot_inventory_order_stage_closed">关卡未开放</string>
+    <string name="depot_inventory_maintain_title">库存保持计划</string>
+    <string name="depot_inventory_maintain_need">缺 %1$d</string>
+    <string name="depot_inventory_maintain_enough">已够</string>
+    <string name="depot_inventory_maintain_no_item">未选物品</string>
+    <string name="depot_inventory_maintain_zero_target">目标为 0</string>
+    <string name="depot_inventory_maintain_stage_required">未设关卡</string>
+    <string name="depot_inventory_maintain_stage_closed">关卡未开放（%1$s）</string>
+    <string name="depot_inventory_plan_new">新建库存保持计划</string>
+    <string name="depot_inventory_plan_current">当前库存 %1$s</string>
+    <string name="depot_inventory_plan_unsupported">该物品不能作为刷取目标，无法设置库存保持</string>
+    <string name="depot_inventory_plan_stage_custom">自定义关卡</string>
+    <string name="depot_inventory_plan_node_disabled">该任务未启用，计划不会执行</string>
+    <string name="depot_inventory_plan_save">保存</string>
+    <string name="depot_inventory_plan_remove">移除计划</string>
+
     <!-- settings: achievement section -->
     <string name="settings_section_achievement">成就</string>
     <string name="settings_achievement_snackbar_title">成就提示</string>
@@ -1309,8 +1328,6 @@
     <string name="panel_depot_use_auto_series_tip">未勾选时以 1 倍代理；勾选后按当前理智允许的最大倍率代理，单次掉落可能超过目标库存上限。</string>
     <string name="panel_depot_skip_during_activity">活动期间跳过</string>
     <string name="panel_depot_skip_during_resource">资源收集限时全天开放期间跳过</string>
-    <string name="panel_depot_add_plan">添加</string>
-    <string name="panel_depot_collapse_all">折叠</string>
     <string name="panel_depot_preset">预设</string>
     <string name="panel_depot_preset_chip_1">低级芯片（全职业）</string>
     <string name="panel_depot_preset_chip_2">高级芯片组（全职业）</string>
@@ -1330,15 +1347,13 @@
     <string name="panel_depot_use_expiring_medicine_tip">对全部计划生效，阈值固定 48 小时；与「理智作战」里可调天数的同名开关互不影响</string>
     <string name="panel_depot_summary_title">计划概览</string>
     <string name="panel_depot_summary_runnable">本次可执行 %1$d / %2$d</string>
-    <string name="panel_depot_summary_no_item">未选材料</string>
-    <string name="panel_depot_summary_zero_target">目标为 0</string>
-    <string name="panel_depot_summary_stage_required">需指定关卡</string>
-    <string name="panel_depot_summary_stage_closed">今日未开放</string>
-    <string name="panel_depot_summary_enough">库存已足</string>
+    <string name="panel_depot_section_planned">已有计划（%1$d）</string>
+    <string name="panel_depot_section_unplanned">暂无计划（%1$d）</string>
+    <string name="panel_depot_plan_removed">已移除「%1$s」</string>
+    <string name="panel_depot_undo_remove">撤销</string>
     <string name="panel_depot_target_inventory">目标库存</string>
     <string name="panel_depot_stone_count">最多使用 N 个源石</string>
     <string name="panel_depot_not_selected">未选择</string>
-    <string name="panel_depot_remove_plan">删除此计划</string>
 
     <!-- panel: mall -->
     <string name="panel_mall_advanced_options">高级选项</string>

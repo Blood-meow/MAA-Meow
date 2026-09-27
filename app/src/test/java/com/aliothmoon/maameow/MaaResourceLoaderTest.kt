@@ -44,7 +44,7 @@ class MaaResourceLoaderTest {
             assertTrue(result.isSuccess)
             coVerify(exactly = 1) { env.resourceDataManager.load("YoStarEN", "en-us") }
             coVerify(exactly = 1) { env.activityManager.load("YoStarEN") }
-            coVerify(exactly = 1) { env.itemHelper.load() }
+            coVerify(exactly = 1) { env.itemHelper.load("YoStarEN") }
         }
     }
 
@@ -323,7 +323,7 @@ class MaaResourceLoaderTest {
             val loadedDirs = mutableListOf<String>()
 
             coEvery { resourceDataManager.load(any(), any()) } returns Unit
-            coEvery { itemHelper.load() } returns Unit
+            coEvery { itemHelper.load(any()) } returns true
             coEvery { activityManager.load(any()) } returns Unit
             every { service.setup(any(), any()) } returns setupCode
             justRun { service.setForceFullscreenOnVirtualDisplay(any()) }

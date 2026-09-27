@@ -211,7 +211,8 @@ class MaaResourceLoader(
             withContext(Dispatchers.IO) {
                 listOf(
                     async { resourceDataManager.load(clientType, displayLanguage) },
-                    async { itemHelper.load() },
+                    // 物品索引也按客户端档读：全球服的名字在 global/{clientType}/resource 下
+                    async { itemHelper.load(clientType) },
                     async { activityManager.load(clientType) }
                 )
             }.awaitAll()
