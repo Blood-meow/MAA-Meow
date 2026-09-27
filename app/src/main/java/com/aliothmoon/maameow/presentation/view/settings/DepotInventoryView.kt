@@ -104,6 +104,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.aliothmoon.maameow.R
+import com.aliothmoon.maameow.data.model.profileNameUiText
 import com.aliothmoon.maameow.data.model.toolbox.OperBoxExportLabels
 import com.aliothmoon.maameow.data.repository.OperBoxSnapshot
 import com.aliothmoon.maameow.data.resource.ItemIconLoader
@@ -136,6 +137,7 @@ import com.aliothmoon.maameow.theme.MaaAnimatedVisibility
 import com.aliothmoon.maameow.theme.MaaDesignTokens
 import com.aliothmoon.maameow.theme.MaaMotion
 import com.aliothmoon.maameow.theme.OpaqueTheme
+import com.aliothmoon.maameow.utils.i18n.asString
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -201,7 +203,7 @@ fun DepotInventoryView(
         } else {
             DepotProfileDetailView(
                 row = rows.firstOrNull { it.id == profileId },
-                profileName = rows.firstOrNull { it.id == profileId }?.name ?: profileId,
+                profileName = profileNameUiText(rows.firstOrNull { it.id == profileId }?.name ?: profileId).asString(),
                 onBack = { viewModel.clearSelection() },
                 onExport = { exportProfileId = profileId },
                 onClear = { pendingClearProfileId = profileId },
@@ -215,7 +217,7 @@ fun DepotInventoryView(
         OpaqueTheme {
             DepotInventoryExportBottomSheet(
                 profileId = id,
-                titleLabel = rows.firstOrNull { it.id == id }?.name ?: id,
+                titleLabel = profileNameUiText(rows.firstOrNull { it.id == id }?.name ?: id).asString(),
                 exportScope = exportScope,
                 onDismiss = { exportProfileId = null },
                 viewModel = viewModel,
@@ -226,7 +228,7 @@ fun DepotInventoryView(
     }
 
     pendingClearProfileId?.let { id ->
-        val name = rows.firstOrNull { it.id == id }?.name ?: id
+        val name = profileNameUiText(rows.firstOrNull { it.id == id }?.name ?: id).asString()
         // 与其它确认框一致：玻璃配色下弹窗底色是半透明的，会透出底下的库存网格
         OpaqueTheme {
             AlertDialog(
@@ -451,7 +453,7 @@ private fun SwipeRevealProfileCard(
                     horizontalArrangement = Arrangement.spacedBy(MaaDesignTokens.Spacing.sm),
                 ) {
                     Text(
-                        text = row.name,
+                        text = profileNameUiText(row.name).asString(),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
                         maxLines = 1,
@@ -1051,7 +1053,7 @@ private fun FarmingOrderSectionHeader(section: DepotFarmingOrderSection) {
         verticalArrangement = Arrangement.spacedBy(2.dp),
     ) {
         Text(
-            text = section.nodeName,
+            text = section.nodeName.asString(),
             style = MaterialTheme.typography.titleSmall,
             fontWeight = FontWeight.SemiBold,
         )

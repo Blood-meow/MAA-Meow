@@ -1,5 +1,6 @@
 package com.aliothmoon.maameow.domain.service
 
+import android.content.Context
 import com.aliothmoon.maameow.data.repository.DepotRepository
 import com.aliothmoon.maameow.data.resource.ItemHelper
 import com.aliothmoon.maameow.data.resource.StageApCostHelper
@@ -7,6 +8,8 @@ import com.aliothmoon.maameow.domain.models.DropTarget
 import com.aliothmoon.maameow.maa.callback.SubTaskHandler
 import com.aliothmoon.maameow.maa.task.TaskSlot
 import com.aliothmoon.maameow.manager.RemoteServiceManager
+import com.aliothmoon.maameow.utils.i18n.UiText
+import com.aliothmoon.maameow.utils.i18n.resolve
 import timber.log.Timber
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.ceil
@@ -16,6 +19,7 @@ import kotlin.math.ceil
  * 直接走 [RemoteServiceManager] 改参，避免 Composition 构造环；回调线程同步执行。
  */
 class FightDropsRefresher(
+    private val appContext: Context,
     private val depotRepository: DepotRepository,
     private val itemHelper: ItemHelper,
     private val stageApCostHelper: StageApCostHelper,
@@ -60,7 +64,7 @@ class FightDropsRefresher(
         if (depotRepository.countOf(t.dropId) >= t.dropCount) return
         if (expireDays > provenExhaustedMedicineDays) {
             provenExhaustedMedicineDays = expireDays
-            Timber.i("临期药窗口已证明耗尽：%d 天（来自 %s）", expireDays, t.logLabel)
+            Timber.i("临期药窗口已证明耗尽：%d 天（来自 %s）", expireDays, t.logLabel.resolve(appContext))
         }
     }
 
@@ -125,7 +129,7 @@ class FightDropsRefresher(
         } else if (shortfall != null) {
             Timber.i(
                 "FightTask %d (%s) 理智不足跳过: 预估 %d < 关卡消耗 %d",
-                taskId, t.logLabel, shortfall.estimatedSanity, shortfall.apCost,
+                taskId, t.logLabel.resolve(appContext), shortfall.estimatedSanity, shortfall.apCost,
             )
             RefreshOutcome.SanityInsufficient(
                 logLabel = t.logLabel,
@@ -136,7 +140,7 @@ class FightDropsRefresher(
         } else {
             Timber.i(
                 "FightTask %d (%s) 重算缺口: %s 需要 %d（当前 %d / 目标 %d），下发%s",
-                taskId, t.logLabel, dropName, need, current, t.dropCount,
+                taskId, t.logLabel.resolve(appContext), dropName, need, current, t.dropCount,
                 if (ok) "成功" else "失败",
             )
             RefreshOutcome.Updated(
@@ -154,7 +158,7 @@ class FightDropsRefresher(
         data object Skipped : RefreshOutcome
 
         data class Sufficient(
-            val logLabel: String,
+            val logLabel: UiText,
             val dropName: String,
             val current: Int,
             val target: Int,
@@ -162,7 +166,7 @@ class FightDropsRefresher(
         ) : RefreshOutcome
 
         data class Updated(
-            val logLabel: String,
+            val logLabel: UiText,
             val dropName: String,
             val need: Int,
             val current: Int,
@@ -172,7 +176,7 @@ class FightDropsRefresher(
 
         /** 缺口还在，但理智跑不动，本任务整体跳过 */
         data class SanityInsufficient(
-            val logLabel: String,
+            val logLabel: UiText,
             val estimatedSanity: Int,
             val apCost: Int,
             val applied: Boolean,

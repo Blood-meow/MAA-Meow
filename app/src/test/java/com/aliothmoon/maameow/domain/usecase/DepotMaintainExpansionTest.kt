@@ -210,7 +210,11 @@ class DepotMaintainExpansionTest {
 
         assertEquals(listOf(MaaTaskType.DEPOT, MaaTaskType.FIGHT), result.params.map { it.type })
         assertEquals(
-            uiTextOf(R.string.runlog_task_with_detail, "材料补货", uiTextOf(R.string.maa_depot)),
+            uiTextOf(
+                R.string.runlog_task_with_detail,
+                UiText.Dynamic("材料补货"),
+                uiTextOf(R.string.maa_depot),
+            ),
             result.params.first().logName,
         )
         assertEquals(UiText.Dynamic("材料补货 #3"), result.params.last().logName)

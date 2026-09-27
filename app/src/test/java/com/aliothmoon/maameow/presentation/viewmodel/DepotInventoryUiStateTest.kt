@@ -8,6 +8,7 @@ import com.aliothmoon.maameow.data.model.TaskChainNode
 import com.aliothmoon.maameow.data.model.TaskParamProvider
 import com.aliothmoon.maameow.data.repository.DepotSnapshot
 import com.aliothmoon.maameow.data.resource.ItemInfo
+import com.aliothmoon.maameow.utils.i18n.UiText
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -170,7 +171,7 @@ class DepotInventoryUiStateTest {
             .toUi(node(id = "n1", enabled = false), 3, DepotSnapshot(), emptyMap()) { true }
 
         assertEquals("n1", ui.nodeId)
-        assertEquals("库存保持", ui.nodeName)
+        assertEquals(UiText.Dynamic("库存保持"), ui.nodeName)
         assertFalse(ui.node.nodeEnabled)
         assertEquals(3, ui.planIndex)
         // 物品查不到时回退成 ID，别显示空白
@@ -349,7 +350,7 @@ class DepotInventoryUiStateTest {
         val sections = plans.farmingOrderSections()
 
         assertEquals(listOf("a", "b"), sections.map { it.nodeId })
-        assertEquals(listOf("库存保持", "夜间库存"), sections.map { it.nodeName })
+        assertEquals(listOf(UiText.Dynamic("库存保持"), UiText.Dynamic("夜间库存")), sections.map { it.nodeName })
         assertEquals(listOf("30011", "30012"), sections[0].rows.map { it.plan.itemId })
         // 序号按节点各排各的，与运行日志里的 #N 同一口径
         assertEquals(listOf(1, 2), sections[0].rows.map { it.no })

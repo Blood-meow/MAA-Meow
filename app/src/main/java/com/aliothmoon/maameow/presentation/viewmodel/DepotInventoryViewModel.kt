@@ -14,6 +14,7 @@ import com.aliothmoon.maameow.data.model.DepotPlanOutcome
 import com.aliothmoon.maameow.data.model.TaskChainNode
 import com.aliothmoon.maameow.data.model.TaskProfile
 import com.aliothmoon.maameow.data.model.depotPlanOutcome
+import com.aliothmoon.maameow.data.model.nameUiText
 import com.aliothmoon.maameow.data.model.toolbox.OperBoxExportFormatter
 import com.aliothmoon.maameow.data.model.toolbox.OperBoxExportLabels
 import com.aliothmoon.maameow.data.model.toolbox.OperBoxOperator
@@ -29,6 +30,7 @@ import com.aliothmoon.maameow.data.resource.ActivityManager
 import com.aliothmoon.maameow.data.resource.ItemHelper
 import com.aliothmoon.maameow.data.resource.ItemIconLoader
 import com.aliothmoon.maameow.data.resource.ItemInfo
+import com.aliothmoon.maameow.utils.i18n.UiText
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -594,7 +596,7 @@ data class DepotProfileRow(
 data class DepotMaintainPlanUi(
     val nodeId: String,
     /** 所属节点名：一个配置档有多个库存保持节点时，刷取顺序页靠它分段 */
-    val nodeName: String,
+    val nodeName: UiText,
     val node: DepotPlanContext,
     /** 在该节点 plans 里的下标，0 起；写回时按它定位 */
     val planIndex: Int,
@@ -730,7 +732,7 @@ internal fun DepotMaintainPlan.toUi(
     val current = snap.items[dropId] ?: 0
     return DepotMaintainPlanUi(
         nodeId = node.id,
-        nodeName = node.name,
+        nodeName = node.nameUiText(),
         node = node.toPlanContext(),
         planIndex = index,
         plan = this,
@@ -813,7 +815,7 @@ data class DepotFarmingOrderRow(
 /** 刷取顺序页的一段：一个库存保持节点。节点在链上的顺序就是它执行的前后顺序。 */
 data class DepotFarmingOrderSection(
     val nodeId: String,
-    val nodeName: String,
+    val nodeName: UiText,
     val nodeEnabled: Boolean,
     val rows: List<DepotFarmingOrderRow>,
 )
