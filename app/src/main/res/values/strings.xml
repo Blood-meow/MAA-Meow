@@ -442,7 +442,6 @@
     <string name="depot_inventory_export_hide_profile">隐藏配置档名</string>
     <string name="depot_inventory_export_hide_profile_hint">PNG 图头不写配置档名，只保留时间与数据</string>
     <string name="depot_inventory_maintain_title">库存保持计划</string>
-    <string name="depot_inventory_maintain_progress">目标 %1$d / 当前 %2$d</string>
     <string name="depot_inventory_maintain_need">缺 %1$d</string>
     <string name="depot_inventory_maintain_enough">已够</string>
     <string name="depot_inventory_maintain_no_item">未选物品</string>
@@ -453,7 +452,7 @@
     <string name="depot_inventory_maintain_all_done">库存保持：已全部集齐</string>
     <string name="depot_inventory_maintain_unmet_count">库存保持：%1$d 项未集齐</string>
     <string name="depot_inventory_plan_new">新建库存保持计划</string>
-    <string name="depot_inventory_plan_current">当前库存 %1$d</string>
+    <string name="depot_inventory_plan_current">当前库存 %1$s</string>
     <string name="depot_inventory_plan_unsupported">该物品不能作为刷取目标，无法设置库存保持</string>
     <string name="depot_inventory_plan_stage_custom">自定义关卡</string>
     <string name="depot_inventory_plan_node_disabled">该任务未启用，计划不会执行</string>

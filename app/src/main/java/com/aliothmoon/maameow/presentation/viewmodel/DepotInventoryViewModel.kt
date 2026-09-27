@@ -131,6 +131,11 @@ class DepotInventoryViewModel(
             map[id] ?: DepotSnapshot()
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), DepotSnapshot())
 
+    /** 该档是否做过仓库识别：没识别过时「当前库存」是未知，不是 0（见 [depotProgressText]）。 */
+    val inventorySynced: StateFlow<Boolean> = depotSnapshot
+        .map { it.syncTimeMillis > 0L }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
+
     val operBoxSnapshot: StateFlow<OperBoxSnapshot> =
         combine(operBoxRepository.snapshots, selectedProfileId) { map, id ->
             map[id] ?: OperBoxSnapshot()
@@ -183,6 +188,16 @@ class DepotInventoryViewModel(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), DepotPlanContext())
 
     /**
+     * 库存数据页可以直接改的那份「库存保持」配置（开关 + 计划列表）。
+     *
+     * 与后台任务里那个节点共用同一份数据，这边改了那边立刻跟着变，不是副本。
+     * 该档还没有库存保持节点时给一份默认配置，改动写回时才由 [TaskChainState] 建节点。
+     */
+    val maintainConfig: StateFlow<DepotMaintainConfigUi> = selectedProfile
+        .map { profile -> profile?.chain?.depotMaintainConfigUi() ?: DepotMaintainConfigUi() }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), DepotMaintainConfigUi())
+
+    /**
      * 写入一条库存保持计划：该物品已有计划就地覆盖，没有则追加。
      * 配置档里还没有库存保持节点时由 [TaskChainState] 就地新建。
      *
@@ -231,6 +246,21 @@ class DepotInventoryViewModel(
             taskChainState.updateDepotMaintainPlans(profileId, nodeId) { plans ->
                 applyPlanOrder(plans, order)
             }
+        }
+    }
+
+    /**
+     * 写回整份库存保持配置（计划面板里的「常规设置 / 高级设置」）。
+     *
+     * [nodeId] 由界面给出，就是它显示那份配置时所属的节点；空串表示该档还没有节点，
+     * 交给 [TaskChainState] 新建一个。不在这里回查「第一个节点」——面板显示的是哪个节点，
+     * 改动就必须落到哪个节点上，否则改的是甲、生效的是乙，而且没有任何提示。
+     */
+    fun updateMaintainConfig(nodeId: String, config: DepotMaintainConfig) {
+        val profileId = selectedProfileId.value
+        if (profileId.isEmpty()) return
+        viewModelScope.launch {
+            taskChainState.updateDepotMaintainConfig(profileId, nodeId.ifEmpty { null }) { config }
         }
     }
 
@@ -598,6 +628,17 @@ data class DepotPlanContext(
     val nodeEnabled: Boolean = true,
 )
 
+/**
+ * 库存数据页要编辑的那份库存保持配置，外加它属于哪个节点。
+ *
+ * [nodeId] 为空串 = 该档还没有库存保持节点，界面拿到的是默认配置；
+ * 改动写回时由 [TaskChainState] 就地建节点，所以它不能当真实节点 ID 用。
+ */
+data class DepotMaintainConfigUi(
+    val nodeId: String = "",
+    val config: DepotMaintainConfig = DepotMaintainConfig(),
+)
+
 /** 网格的三段：有库存 → 未集齐 → 库存为 0（最后一段画得很淡） */
 data class DepotCellGroups(
     val stocked: List<DepotInventoryCellUi>,
@@ -719,6 +760,27 @@ internal fun List<TaskChainNode>.depotPlans(): List<DepotMaintainPlan> =
 internal fun List<TaskChainNode>.firstDepotNode(): TaskChainNode? =
     firstOrNull { it.config is DepotMaintainConfig && it.enabled }
         ?: firstOrNull { it.config is DepotMaintainConfig }
+
+/**
+ * 库存数据页要编辑的配置 + 它的落点节点，落点与 [firstDepotNode] 一致。
+ *
+ * 落点必须跟着界面走：一档可能挂了好几个库存保持节点，改错了不会报错，只会安静地不生效。
+ */
+internal fun List<TaskChainNode>.depotMaintainConfigUi(): DepotMaintainConfigUi =
+    firstDepotNode()?.let { node ->
+        DepotMaintainConfigUi(
+            nodeId = node.id,
+            config = node.config as? DepotMaintainConfig ?: DepotMaintainConfig(),
+        )
+    } ?: DepotMaintainConfigUi()
+
+/**
+ * 「当前 / 目标」，库存数据页与后台任务的库存保持概览共用这一份，两边永远同一口径。
+ *
+ * 没识别过仓库时当前值写「--」而不是 0：那时候缺多少算不准，写 0 会看着像真的一件都没有。
+ */
+internal fun depotProgressText(current: Int, target: Int, synced: Boolean): String =
+    "${if (synced) current.toString() else "--"} / $target"
 
 internal fun DepotSnapshot.toItemUiList(itemMap: Map<String, ItemInfo>): List<DepotInventoryItemUi> =
     items.asSequence()

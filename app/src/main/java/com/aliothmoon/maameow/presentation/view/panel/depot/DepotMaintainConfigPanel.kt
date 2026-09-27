@@ -41,7 +41,6 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -73,53 +72,26 @@ import com.aliothmoon.maameow.presentation.components.InlineActionRow
 import com.aliothmoon.maameow.presentation.components.InlineConfirmPanel
 import com.aliothmoon.maameow.presentation.components.SectionHeader
 import com.aliothmoon.maameow.presentation.view.panel.common.stageDisplayName
+import com.aliothmoon.maameow.presentation.viewmodel.depotProgressText
 import com.aliothmoon.maameow.theme.LocalReduceMotion
 import com.aliothmoon.maameow.theme.MaaAnimatedVisibility
 import com.aliothmoon.maameow.theme.MaaMotion
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
+/**
+ * 任务配置页里的库存保持面板：常规设置 / 高级设置两页。
+ *
+ * 两页的内容各自是独立组件（[DepotMaintainGeneralSection] / [DepotMaintainAdvancedSection]），
+ * 库存数据页的计划面板也直接嵌同一份 —— 只有一个实现，两处的行为不会漂。
+ */
 @Composable
 fun DepotMaintainConfigPanel(
     config: DepotMaintainConfig,
     onConfigChange: (DepotMaintainConfig) -> Unit,
     modifier: Modifier = Modifier,
-    depotRepository: DepotRepository = koinInject(),
-    itemHelper: ItemHelper = koinInject(),
-    activityManager: ActivityManager = koinInject(),
 ) {
-    val snapshot by depotRepository.snapshot.collectAsStateWithLifecycle()
-    // 物品下拉用「仓库识别认得出的那份」，名字映射用全表：老计划里可能存着已经不在
-    // 列表里的 id，全表兜底才不会又显示成 ID
-    val itemIndex by itemHelper.items.collectAsStateWithLifecycle()
-    val activityStages by activityManager.activityStages.collectAsStateWithLifecycle()
-
-    val stageGroups = rememberDepotStageGroups(activityManager)
-    val stageCodes = remember(stageGroups) { stageGroups.allStageCodes() }
-    val itemNameMap = remember(itemIndex) { itemIndex.mapValues { it.value.name } }
-    val planOutcomes = remember(config.plans, snapshot, activityStages) {
-        config.plans.map { plan ->
-            depotPlanOutcome(plan, snapshot.items[plan.dropId] ?: 0) {
-                activityManager.isStageOpen(it)
-            }
-        }
-    }
-    val itemIds = rememberDepotItemIds(itemHelper)
-
-    // 展开态是纯 UI 局部状态，不持久化；删除时重映射下标，避免落到相邻计划。
-    val expandedIndices = remember { mutableStateListOf<Int>() }
-    var presetPanelExpanded by remember { mutableStateOf(false) }
-    // 只在展开期间有效，应用或取消后清掉
-    var selectedPreset by remember { mutableStateOf<DepotMaintainPreset?>(null) }
-    var showClearConfirm by remember { mutableStateOf(false) }
-
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { 2 })
-    // 切页时收起就地展开的面板，免得回来时还挂着一个半途的确认
-    LaunchedEffect(pagerState.currentPage) {
-        presetPanelExpanded = false
-        selectedPreset = null
-        showClearConfirm = false
-    }
     val coroutineScope = rememberCoroutineScope()
     // 两页各自记滚动位置，切页来回不跳
     val generalScrollState = rememberScrollState()
@@ -164,37 +136,101 @@ fun DepotMaintainConfigPanel(
                 .fillMaxWidth()
                 .weight(1f),
         ) { page ->
+            // 页内容随 pager 一起被回收：切页回来时展开态、确认框自然是初始态，
+            // 不必再单写一遍「切页收起」
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(if (page == 0) generalScrollState else advancedScrollState)
                     .padding(bottom = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 when (page) {
-                    0 -> GeneralTab(
+                    0 -> DepotMaintainGeneralSection(
                         config = config,
                         onConfigChange = onConfigChange,
-                        planOutcomes = planOutcomes,
-                        stageGroups = stageGroups,
-                        stageCodes = stageCodes,
-                        itemIds = itemIds,
-                        itemNameMap = itemNameMap,
-                        inventory = snapshot.items,
-                        inventorySynced = snapshot.syncTimeMillis != 0L,
-                        expandedIndices = expandedIndices,
-                        presetPanelExpanded = presetPanelExpanded,
-                        onPresetPanelExpandedChange = { presetPanelExpanded = it },
-                        selectedPreset = selectedPreset,
-                        onSelectedPresetChange = { selectedPreset = it },
-                        showClearConfirm = showClearConfirm,
-                        onShowClearConfirmChange = { showClearConfirm = it },
                     )
 
-                    else -> AdvancedTab(config, onConfigChange)
+                    else -> DepotMaintainAdvancedSection(
+                        config = config,
+                        onConfigChange = onConfigChange,
+                    )
                 }
             }
         }
+    }
+}
+
+/**
+ * 常规设置：计划概览 + 增删/预设按钮 + 计划卡列表。
+ *
+ * 自带取数与局部展开态，调用方只要给配置和写回回调 —— 任务配置页的一页、
+ * 库存数据页计划面板里的一段，用的都是这一份。
+ */
+@Composable
+internal fun DepotMaintainGeneralSection(
+    config: DepotMaintainConfig,
+    onConfigChange: (DepotMaintainConfig) -> Unit,
+    modifier: Modifier = Modifier,
+    depotRepository: DepotRepository = koinInject(),
+    itemHelper: ItemHelper = koinInject(),
+    activityManager: ActivityManager = koinInject(),
+) {
+    val snapshot by depotRepository.snapshot.collectAsStateWithLifecycle()
+    // 物品下拉用「仓库识别认得出的那份」，名字映射用全表：老计划里可能存着已经不在
+    // 列表里的 id，全表兜底才不会又显示成 ID
+    val itemIndex by itemHelper.items.collectAsStateWithLifecycle()
+    val activityStages by activityManager.activityStages.collectAsStateWithLifecycle()
+
+    val stageGroups = rememberDepotStageGroups(activityManager)
+    val stageCodes = remember(stageGroups) { stageGroups.allStageCodes() }
+    val itemNameMap = remember(itemIndex) { itemIndex.mapValues { it.value.name } }
+    val planOutcomes = remember(config.plans, snapshot, activityStages) {
+        config.plans.map { plan ->
+            depotPlanOutcome(plan, snapshot.items[plan.dropId] ?: 0) {
+                activityManager.isStageOpen(it)
+            }
+        }
+    }
+    val itemIds = rememberDepotItemIds(itemHelper)
+
+    // 展开态是纯 UI 局部状态，不持久化；删除时重映射下标，避免落到相邻计划。
+    val expandedIndices = remember { mutableStateListOf<Int>() }
+    var presetPanelExpanded by remember { mutableStateOf(false) }
+    // 只在展开期间有效，应用或取消后清掉
+    var selectedPreset by remember { mutableStateOf<DepotMaintainPreset?>(null) }
+    var showClearConfirm by remember { mutableStateOf(false) }
+
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        GeneralTab(
+            config = config,
+            onConfigChange = onConfigChange,
+            planOutcomes = planOutcomes,
+            stageGroups = stageGroups,
+            stageCodes = stageCodes,
+            itemIds = itemIds,
+            itemNameMap = itemNameMap,
+            inventory = snapshot.items,
+            inventorySynced = snapshot.syncTimeMillis != 0L,
+            expandedIndices = expandedIndices,
+            presetPanelExpanded = presetPanelExpanded,
+            onPresetPanelExpandedChange = { presetPanelExpanded = it },
+            selectedPreset = selectedPreset,
+            onSelectedPresetChange = { selectedPreset = it },
+            showClearConfirm = showClearConfirm,
+            onShowClearConfirmChange = { showClearConfirm = it },
+        )
+    }
+}
+
+/** 高级设置：三组开关。任务配置页的一页、库存数据页计划面板里的一段共用这一份。 */
+@Composable
+internal fun DepotMaintainAdvancedSection(
+    config: DepotMaintainConfig,
+    onConfigChange: (DepotMaintainConfig) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        AdvancedTab(config, onConfigChange)
     }
 }
 
@@ -301,8 +337,11 @@ private fun PlanSummary(
                         )
                         // 未识别过库存时用「--」表达「无数据」，而非误导性的 0
                         DepotPlanOutcome.Runnable -> SummaryTag(
-                            text = (if (inventorySynced) "${inventory[plan.dropId] ?: 0}" else "--") +
-                                    " / ${plan.dropCount}",
+                            text = depotProgressText(
+                                current = inventory[plan.dropId] ?: 0,
+                                target = plan.dropCount,
+                                synced = inventorySynced,
+                            ),
                             color = MaterialTheme.colorScheme.onSurface,
                         )
                     }
@@ -322,7 +361,7 @@ private fun SummaryTag(text: String, color: Color) {
     )
 }
 
-/** 常规设置页：计划概览 + 增删按钮 + 计划卡列表 */
+/** 计划概览 + 增删按钮 + 计划卡列表；取数与展开态由 [DepotMaintainGeneralSection] 包住 */
 @Composable
 private fun ColumnScope.GeneralTab(
     config: DepotMaintainConfig,
@@ -342,13 +381,6 @@ private fun ColumnScope.GeneralTab(
     showClearConfirm: Boolean,
     onShowClearConfirmChange: (Boolean) -> Unit,
 ) {
-    val reduceMotion = LocalReduceMotion.current
-    val presetArrowRotation by animateFloatAsState(
-        targetValue = if (presetPanelExpanded) 180f else 0f,
-        animationSpec = MaaMotion.spec(reduceMotion, MaaMotion.Fast),
-        label = "presetArrow",
-    )
-
     if (config.plans.isNotEmpty()) {
         PlanSummary(
             plans = config.plans,

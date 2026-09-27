@@ -17,8 +17,8 @@ import org.junit.Test
 
 /**
  * 覆盖库存页真正参与渲染与写回的那几个纯函数：[toUi] / [unmetIn] / [depotPlans] /
- * [firstDepotNode] / [toPlanContext] / [buildInventoryCells] / [groupForDisplay] /
- * [farmingOrderSections] / [applyPlanOrder]。
+ * [firstDepotNode] / [depotMaintainConfigUi] / [depotProgressText] / [toPlanContext] /
+ * [buildInventoryCells] / [groupForDisplay] / [farmingOrderSections] / [applyPlanOrder]。
  *
  * 它们原来是 private，测试只能自己重算一遍 need/outcome，等于在测测试；
  * 现在抽成 internal 的顶层函数，测的就是线上跑的那份。
@@ -223,6 +223,68 @@ class DepotInventoryUiStateTest {
             listOf(TaskChainNode(id = "other", name = "信用收支", config = MallConfig()))
                 .firstDepotNode()
         )
+    }
+
+    /**
+     * 计划面板里的设置改的就是这个节点的配置：显示哪个节点，改动就得落到哪个节点上 —
+     * 落错了不报错，只是安静地不生效。
+     */
+    @Test
+    fun depotMaintainConfigUi_carriesNodeIdAndItsConfig() {
+        val disabled = node(
+            id = "disabled",
+            name = "旧节点",
+            enabled = false,
+            config = DepotMaintainConfig(),
+        )
+        val enabled = node(
+            id = "enabled",
+            name = "库存保持",
+            enabled = true,
+            config = DepotMaintainConfig(useAutoSeries = true, plans = listOf(plan())),
+        )
+
+        val ui = listOf(disabled, enabled).depotMaintainConfigUi()
+
+        assertEquals("enabled", ui.nodeId)
+        assertTrue(ui.config.useAutoSeries)
+        assertEquals(1, ui.config.plans.size)
+    }
+
+    /** 一档只有停用的库存保持节点时也要能改：落到那个节点上，不去碰别的节点 */
+    @Test
+    fun depotMaintainConfigUi_fallsBackToDisabledNode() {
+        val ui = listOf(node(id = "disabled", enabled = false, config = DepotMaintainConfig()))
+            .depotMaintainConfigUi()
+
+        assertEquals("disabled", ui.nodeId)
+    }
+
+    /** 还没有库存保持节点：给默认配置、nodeId 留空，写回时才由 TaskChainState 建节点 */
+    @Test
+    fun depotMaintainConfigUi_isEmptyWithoutDepotNode() {
+        val ui = listOf(TaskChainNode(id = "a", name = "信用收支", config = MallConfig()))
+            .depotMaintainConfigUi()
+
+        assertEquals("", ui.nodeId)
+        assertEquals(DepotMaintainConfig(), ui.config)
+    }
+
+    // ========== 进度文案 ==========
+
+    /** 与后台任务的计划概览同一份实现：当前在前、目标在后 */
+    @Test
+    fun depotProgressText_putsCurrentFirst() {
+        assertEquals("60 / 50", depotProgressText(current = 60, target = 50, synced = true))
+    }
+
+    /**
+     * 没识别过仓库时当前库存是未知，不是 0 —— 那时所有计划都会算成「一件都没有」，
+     * 写 0 会让人以为真的一件都没有
+     */
+    @Test
+    fun depotProgressText_writesDashWhenNotSynced() {
+        assertEquals("-- / 50", depotProgressText(current = 0, target = 50, synced = false))
     }
 
     @Test

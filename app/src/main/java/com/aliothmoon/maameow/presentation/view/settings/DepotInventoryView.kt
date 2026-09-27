@@ -5,6 +5,8 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.snap
@@ -116,6 +118,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.aliothmoon.maameow.R
+import com.aliothmoon.maameow.data.model.DepotMaintainConfig
 import com.aliothmoon.maameow.data.model.DepotMaintainPlan
 import com.aliothmoon.maameow.data.model.DepotPlanOutcome
 import com.aliothmoon.maameow.data.model.LogColorRole
@@ -130,6 +133,7 @@ import com.aliothmoon.maameow.presentation.components.SectionHeader
 import com.aliothmoon.maameow.presentation.components.TopAppBar
 import com.aliothmoon.maameow.presentation.view.panel.OperatorRow
 import com.aliothmoon.maameow.presentation.view.panel.ToolboxFileExporter
+import com.aliothmoon.maameow.presentation.view.panel.depot.DepotMaintainAdvancedSection
 import com.aliothmoon.maameow.presentation.view.panel.depot.DepotPlanFields
 import com.aliothmoon.maameow.presentation.view.panel.depot.MAX_TARGET_INVENTORY
 import com.aliothmoon.maameow.presentation.view.panel.depot.allStageCodes
@@ -141,12 +145,14 @@ import com.aliothmoon.maameow.presentation.viewmodel.DepotInventoryCellUi
 import com.aliothmoon.maameow.presentation.viewmodel.DepotInventoryViewModel
 import com.aliothmoon.maameow.presentation.viewmodel.DepotFarmingOrderRow
 import com.aliothmoon.maameow.presentation.viewmodel.DepotFarmingOrderSection
+import com.aliothmoon.maameow.presentation.viewmodel.DepotMaintainConfigUi
 import com.aliothmoon.maameow.presentation.viewmodel.DepotMaintainPlanUi
 import com.aliothmoon.maameow.presentation.viewmodel.DepotPlanContext
 import com.aliothmoon.maameow.presentation.viewmodel.DepotPngLabels
 import com.aliothmoon.maameow.presentation.viewmodel.DepotProfileRow
 import com.aliothmoon.maameow.presentation.viewmodel.OperBoxPngLabels
 import com.aliothmoon.maameow.presentation.viewmodel.depotCellKey
+import com.aliothmoon.maameow.presentation.viewmodel.depotProgressText
 import com.aliothmoon.maameow.presentation.viewmodel.farmingOrderSections
 import com.aliothmoon.maameow.presentation.viewmodel.groupForDisplay
 import com.aliothmoon.maameow.theme.LocalReduceMotion
@@ -551,6 +557,9 @@ private fun DepotProfileDetailView(
     val plans by viewModel.maintainPlans.collectAsStateWithLifecycle()
     val operBox by viewModel.operBoxSnapshot.collectAsStateWithLifecycle()
     val planContext by viewModel.planContext.collectAsStateWithLifecycle()
+    val maintainConfig by viewModel.maintainConfig.collectAsStateWithLifecycle()
+    // 没识别过仓库时当前库存是未知：格子、面板、刷取顺序都按「--」显示，别写 0
+    val synced by viewModel.inventorySynced.collectAsStateWithLifecycle()
     // 存格子的 key 而不是物品 id：同一物品配了多条计划时会有多格，按 id 找只会拿到第一格
     var planSheetCellKey by remember { mutableStateOf<String?>(null) }
 
@@ -630,6 +639,7 @@ private fun DepotProfileDetailView(
                 cells = cells,
                 plans = plans,
                 operBox = operBox,
+                synced = synced,
                 onCellClick = { planSheetCellKey = it.key },
                 // 刷取顺序页点一行也回到同一格的面板：那里只有计划，得按格子 key 找回它那一格
                 onPlanClick = { plan ->
@@ -647,10 +657,14 @@ private fun DepotProfileDetailView(
                 cell = cell,
                 // 已有计划就跟着它所属节点的开关走，新计划才用「第一个库存保持节点」的状态
                 context = cell.plan?.node ?: planContext,
+                maintainConfig = maintainConfig,
+                synced = synced,
                 onDismiss = { planSheetCellKey = null },
                 // 用点开时那一格上的计划当写回落点，不回查派生流
                 onSave = { plan -> viewModel.savePlan(cell.plan, plan) },
                 onRemove = { viewModel.removePlan(cell.plan) },
+                // 设置写回面板上显示的那个节点，不是回查出来的「第一个节点」
+                onConfigChange = { viewModel.updateMaintainConfig(maintainConfig.nodeId, it) },
             )
         }
     }
@@ -662,6 +676,7 @@ private fun InventoryDetailBody(
     cells: List<DepotInventoryCellUi>,
     plans: List<DepotMaintainPlanUi>,
     operBox: OperBoxSnapshot,
+    synced: Boolean,
     onCellClick: (DepotInventoryCellUi) -> Unit,
     onPlanClick: (DepotMaintainPlanUi) -> Unit,
     onReorderPlans: (String, List<Int>) -> Unit,
@@ -695,6 +710,7 @@ private fun InventoryDetailBody(
                 0 -> DepotItemsPage(
                     cells = cells,
                     iconLoader = iconLoader,
+                    synced = synced,
                     onCellClick = onCellClick,
                     emptyCollapsed = emptyCollapsed,
                     onToggleEmpty = { emptyCollapsed = !emptyCollapsed },
@@ -709,6 +725,7 @@ private fun InventoryDetailBody(
                 else -> DepotFarmingOrderPage(
                     plans = plans,
                     iconLoader = iconLoader,
+                    synced = synced,
                     onPlanClick = onPlanClick,
                     onReorder = onReorderPlans,
                 )
@@ -768,6 +785,7 @@ private fun DetailPageTabs(
 private fun DepotItemsPage(
     cells: List<DepotInventoryCellUi>,
     iconLoader: ItemIconLoader,
+    synced: Boolean,
     onCellClick: (DepotInventoryCellUi) -> Unit,
     emptyCollapsed: Boolean,
     onToggleEmpty: () -> Unit,
@@ -808,7 +826,12 @@ private fun DepotItemsPage(
         horizontalArrangement = Arrangement.spacedBy(CellGap),
     ) {
         items(groups.stocked, key = { "stocked-${it.key}" }) { cell ->
-            InventoryItemCell(cell = cell, iconLoader = iconLoader, onClick = onCellClick)
+            InventoryItemCell(
+                cell = cell,
+                iconLoader = iconLoader,
+                synced = synced,
+                onClick = onCellClick,
+            )
         }
         if (groups.unmet.isNotEmpty()) {
             item(span = { GridItemSpan(maxLineSpan) }, key = "unmet-break") {
@@ -819,7 +842,12 @@ private fun DepotItemsPage(
                 )
             }
             items(groups.unmet, key = { "unmet-${it.key}" }) { cell ->
-                InventoryItemCell(cell = cell, iconLoader = iconLoader, onClick = onCellClick)
+                InventoryItemCell(
+                    cell = cell,
+                    iconLoader = iconLoader,
+                    synced = synced,
+                    onClick = onCellClick,
+                )
             }
         }
         if (groups.empty.isNotEmpty()) {
@@ -840,6 +868,7 @@ private fun DepotItemsPage(
                     InventoryItemCell(
                         cell = cell,
                         iconLoader = iconLoader,
+                        synced = synced,
                         onClick = onCellClick,
                         dimmed = true,
                     )
@@ -950,10 +979,10 @@ private fun CellSectionBreak(
 }
 
 /**
- * 一格库存：图标下面是「目标/当前」，未集齐标红、已集齐标绿。
+ * 一格库存：图标下面是「当前 / 目标」，未集齐标红、已集齐标绿。
  *
  * 库存和库存保持是同一件事，所以不分成两个区块：没配计划的物品显示纯数量，
- * 配了计划的直接显示目标与当前，红色就代表还差。
+ * 配了计划的直接显示当前与目标，红色就代表还差。
  *
  * @param dimmed 库存为 0 的格子压淡，但仍然可点——点它就是给这个材料加计划
  * @param modifier 交给调用方挂 [RevealCell] 之类的条目级动效
@@ -962,6 +991,7 @@ private fun CellSectionBreak(
 private fun InventoryItemCell(
     cell: DepotInventoryCellUi,
     iconLoader: ItemIconLoader,
+    synced: Boolean,
     onClick: (DepotInventoryCellUi) -> Unit,
     dimmed: Boolean = false,
     modifier: Modifier = Modifier,
@@ -1008,7 +1038,7 @@ private fun InventoryItemCell(
             } else {
                 // 格子只有 ~80dp 宽，目标能到 10 位；不省略号的话会被从中间硬裁
                 Text(
-                    text = "${plan.target}/${cell.count}",
+                    text = depotProgressText(cell.count, plan.target, synced),
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Bold,
                     color = accent,
@@ -1125,6 +1155,7 @@ private fun OperBoxPage(
 private fun DepotFarmingOrderPage(
     plans: List<DepotMaintainPlanUi>,
     iconLoader: ItemIconLoader,
+    synced: Boolean,
     onPlanClick: (DepotMaintainPlanUi) -> Unit,
     onReorder: (String, List<Int>) -> Unit,
 ) {
@@ -1180,6 +1211,7 @@ private fun DepotFarmingOrderPage(
                         DepotFarmingOrderRow(
                             row = row,
                             isDragging = isDragging,
+                            synced = synced,
                             iconLoader = iconLoader,
                             onClick = { onPlanClick(row.plan) },
                             onDragStarted = {
@@ -1237,6 +1269,7 @@ private fun orderKey(row: DepotFarmingOrderRow): String =
 private fun ReorderableListItemScope.DepotFarmingOrderRow(
     row: DepotFarmingOrderRow,
     isDragging: Boolean,
+    synced: Boolean,
     iconLoader: ItemIconLoader,
     onClick: () -> Unit,
     onDragStarted: () -> Unit,
@@ -1300,11 +1333,7 @@ private fun ReorderableListItemScope.DepotFarmingOrderRow(
                     overflow = TextOverflow.Ellipsis,
                 )
                 Text(
-                    text = stringResource(
-                        R.string.depot_inventory_maintain_progress,
-                        plan.target,
-                        plan.current,
-                    ),
+                    text = depotProgressText(plan.current, plan.target, synced),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
@@ -1365,9 +1394,12 @@ private enum class DepotPlanSheetMode { UNSUPPORTED, SUMMARY, EDITOR }
 private fun DepotMaintainPlanSheet(
     cell: DepotInventoryCellUi,
     context: DepotPlanContext,
+    maintainConfig: DepotMaintainConfigUi,
+    synced: Boolean,
     onDismiss: () -> Unit,
     onSave: (DepotMaintainPlan) -> Unit,
     onRemove: () -> Unit,
+    onConfigChange: (DepotMaintainConfig) -> Unit,
     itemHelper: ItemHelper = koinInject(),
     activityManager: ActivityManager = koinInject(),
     iconLoader: ItemIconLoader = koinInject(),
@@ -1385,7 +1417,7 @@ private fun DepotMaintainPlanSheet(
     val maintainable = existing != null || cell.id in itemIds
 
     // 没计划的物品不直接铺表单：先出一张只讲「是什么、现在有多少」的摘要卡。
-    // 直接进表单会凭空算出一个「目标 144 / 当前 144 · 已够」的计划，
+    // 直接进表单会凭空算出一个「144 / 144 · 已够」的计划，
     // 看着像已经配好了，其实什么都没配。
     var creating by remember(cell.id) { mutableStateOf(false) }
     val mode = when {
@@ -1438,7 +1470,14 @@ private fun DepotMaintainPlanSheet(
 
     // 玻璃背景下面板会透出底下的库存网格，这里换回不透明配色
     OpaqueTheme {
-        ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheetState) {
+        ModalBottomSheet(
+            onDismissRequest = onDismiss,
+            sheetState = sheetState,
+            // M3 的面板默认取 surfaceContainerLow，而本 App 的配色只定义了 surface 一族，
+            // 那一档会落回 M3 基线的紫调中性色，和页面底色（background）不是一个颜色。
+            // 面板要跟页面同色，就直接取 background。
+            containerColor = MaterialTheme.colorScheme.background,
+        ) {
             // 摘要卡 → 编辑表单是同一张面板换形态：横向推入推出，高度交给 SizeTransform 收放，
             // 参数与本文件导出面板的 一级↔二级 完全一致；系统关掉动画时直接换
             AnimatedContent(
@@ -1495,14 +1534,13 @@ private fun DepotMaintainPlanSheet(
                             )
                             Text(
                                 text = if (editing) {
-                                    // 与格子上的「目标/当前」同一个顺序
-                                    stringResource(
-                                        R.string.depot_inventory_maintain_progress,
-                                        draftTarget,
-                                        cell.count,
-                                    )
+                                    // 与格子、与后台任务的计划概览同一个顺序、同一份实现
+                                    depotProgressText(cell.count, draftTarget, synced)
                                 } else {
-                                    stringResource(R.string.depot_inventory_plan_current, cell.count)
+                                    stringResource(
+                                        R.string.depot_inventory_plan_current,
+                                        if (synced) "${cell.count}" else "--",
+                                    )
                                 },
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -1636,9 +1674,84 @@ private fun DepotMaintainPlanSheet(
                                 Text(stringResource(R.string.depot_inventory_plan_save))
                             }
                         }
+
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+
+                        DepotMaintainSettings(
+                            config = maintainConfig.config,
+                            onConfigChange = onConfigChange,
+                        )
                     }
                 }
             }
+        }
+    }
+}
+
+/**
+ * 计划面板里的「高级设置」。
+ *
+ * 内容与后台任务的库存保持面板完全同一份实现、同一条链上的同一个节点 —— 在哪边改都一样。
+ * 默认收起：这张卡片主要是配一条计划的，设置是顺路改的，不该一进来就把保存按钮顶到屏幕外。
+ */
+@Composable
+private fun DepotMaintainSettings(
+    config: DepotMaintainConfig,
+    onConfigChange: (DepotMaintainConfig) -> Unit,
+) {
+    var advancedExpanded by remember { mutableStateOf(false) }
+
+    SettingsExpander(
+        expanded = advancedExpanded,
+        onToggle = { advancedExpanded = !advancedExpanded },
+    ) {
+        DepotMaintainAdvancedSection(
+            config = config,
+            onConfigChange = onConfigChange,
+        )
+    }
+}
+
+/** 就地展开的「高级设置」分组：按钮 + 箭头，展开内容从按钮下面长出来 */
+@Composable
+private fun SettingsExpander(
+    expanded: Boolean,
+    onToggle: () -> Unit,
+    content: @Composable () -> Unit,
+) {
+    val arrowRotation by animateFloatAsState(
+        targetValue = if (expanded) 180f else 0f,
+        animationSpec = MaaMotion.spec(LocalReduceMotion.current, MaaMotion.Fast),
+        label = "depotSettingsArrow",
+    )
+
+    OutlinedButton(
+        onClick = onToggle,
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(8.dp),
+    ) {
+        Text(stringResource(R.string.common_tab_advanced))
+        Spacer(modifier = Modifier.width(6.dp))
+        Icon(
+            Icons.Default.KeyboardArrowDown,
+            contentDescription = null,
+            modifier = Modifier
+                .size(18.dp)
+                .rotate(arrowRotation),
+        )
+    }
+
+    MaaAnimatedVisibility(
+        visible = expanded,
+        enter = expandVertically(),
+        exit = shrinkVertically(),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = MaaDesignTokens.Spacing.xs),
+        ) {
+            content()
         }
     }
 }
@@ -1724,7 +1837,12 @@ private fun DepotInventoryExportBottomSheet(
         }
     }
 
-    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheetState) {
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        // 与库存保持面板同一个理由：默认的 surfaceContainerLow 是 M3 基线的紫调，跟页面底色对不上
+        containerColor = MaterialTheme.colorScheme.background,
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()

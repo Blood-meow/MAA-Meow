@@ -330,17 +330,38 @@ class TaskChainState(
         profileId: String,
         nodeId: String? = null,
         transform: (List<DepotMaintainPlan>) -> List<DepotMaintainPlan>,
+    ): String = updateDepotMaintainConfig(profileId, nodeId) {
+        it.copy(plans = transform(it.plans))
+    }
+
+    /**
+     * 改指定配置档某个「库存保持」节点的整份配置。
+     *
+     * 计划之外的开关（更新仓库、理智药、自动代理倍率……）原先只能在任务配置页改，
+     * 库存数据页的计划面板也要改它们，所以补上这条入口：定位、新建节点、写盘
+     * 全部复用同一条路径，两边改的必然是同一条链上的同一个节点。
+     *
+     * @param nodeId 目标节点。null = 取该档第一个库存保持节点（启用优先），没有就建一个；
+     *   非 null = 必须命中该节点，找不到就整笔放弃——退回「第一个库存保持节点」会把
+     *   改动落到另一个节点的配置上
+     * @param transform 拿到该节点当前的配置，返回新配置；**整份替换**，想保留的字段要自己带上
+     * @return 实际写入的节点 ID；配置档或节点不存在时返回空串
+     */
+    suspend fun updateDepotMaintainConfig(
+        profileId: String,
+        nodeId: String? = null,
+        transform: (DepotMaintainConfig) -> DepotMaintainConfig,
     ): String {
         _isLoaded.first { it }
         return locked {
             val target = _profiles.value.firstOrNull { it.id == profileId } ?: run {
-                Timber.w("updateDepotMaintainPlans: profile %s not found", profileId)
+                Timber.w("updateDepotMaintainConfig: profile %s not found", profileId)
                 return@locked ""
             }
             // 活跃档的最新链在 _chain 上；非活跃档只能读 _profiles 里那份
             val isActive = profileId == _profileId.value
             val source = if (isActive) _chain.value else target.chain
-            val updated = source.applyDepotPlans(nodeId, transform) ?: return@locked ""
+            val updated = source.applyDepotConfig(nodeId, transform) ?: return@locked ""
             val (nodes, writtenNodeId) = updated
             if (isActive) {
                 _chain.value = nodes
@@ -348,25 +369,25 @@ class TaskChainState(
             _profiles.value =
                 _profiles.value.map { if (it.id == profileId) it.copy(chain = nodes) else it }
             doSync()
-            Timber.d("updateDepotMaintainPlans: profile=%s node=%s", profileId, writtenNodeId)
+            Timber.d("updateDepotMaintainConfig: profile=%s node=%s", profileId, writtenNodeId)
             writtenNodeId
         }
     }
 
     /** @return null = 目标节点已不存在，调用方应放弃这次写入 */
-    private fun List<TaskChainNode>.applyDepotPlans(
+    private fun List<TaskChainNode>.applyDepotConfig(
         nodeId: String?,
-        transform: (List<DepotMaintainPlan>) -> List<DepotMaintainPlan>,
+        transform: (DepotMaintainConfig) -> DepotMaintainConfig,
     ): Pair<List<TaskChainNode>, String>? {
         val nodes = toMutableList()
         if (nodeId != null) {
             val idx = nodes.indexOfFirst { it.id == nodeId && it.config is DepotMaintainConfig }
             if (idx < 0) {
-                Timber.w("applyDepotPlans: 库存保持节点 %s 已不存在，放弃写入", nodeId)
+                Timber.w("applyDepotConfig: 库存保持节点 %s 已不存在，放弃写入", nodeId)
                 return null
             }
             val config = nodes[idx].config as DepotMaintainConfig
-            nodes[idx] = nodes[idx].copy(config = config.copy(plans = transform(config.plans)))
+            nodes[idx] = nodes[idx].copy(config = transform(config))
             return nodes.toList() to nodes[idx].id
         }
         val existing = nodes.indexOfFirst { it.config is DepotMaintainConfig && it.enabled }
@@ -374,8 +395,7 @@ class TaskChainState(
             ?: nodes.indexOfFirst { it.config is DepotMaintainConfig }
         if (existing >= 0) {
             val config = nodes[existing].config as DepotMaintainConfig
-            nodes[existing] =
-                nodes[existing].copy(config = config.copy(plans = transform(config.plans)))
+            nodes[existing] = nodes[existing].copy(config = transform(config))
             return nodes.toList() to nodes[existing].id
         }
         val node = TaskChainNode(
@@ -383,7 +403,7 @@ class TaskChainState(
             name = defaultTaskName(TaskTypeInfo.DEPOT_MAINTAIN),
             enabled = true,
             order = nodes.size,
-            config = DepotMaintainConfig(plans = transform(emptyList())),
+            config = transform(DepotMaintainConfig()),
         )
         nodes.add(node)
         return nodes.toList() to node.id
