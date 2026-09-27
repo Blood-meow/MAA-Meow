@@ -42,7 +42,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.aliothmoon.maameow.R
 import com.aliothmoon.maameow.data.model.TaskChainNode
+import com.aliothmoon.maameow.data.model.nameUiText
 import com.aliothmoon.maameow.theme.MaaAnimatedVisibility
+import com.aliothmoon.maameow.utils.i18n.asString
 import sh.calvin.reorderable.ReorderableColumn
 
 /**
@@ -267,7 +269,7 @@ private fun TaskNodeRow(
             }
             Spacer(modifier = Modifier.width(6.dp))
             Text(
-                text = node.name,
+                text = node.nameUiText().asString(),
                 style = MaterialTheme.typography.bodyMedium,
                 color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
                 fontWeight = if (isSelected) FontWeight.Medium else FontWeight.Normal,

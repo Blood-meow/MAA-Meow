@@ -285,7 +285,7 @@ val appModule = module {
     singleOf(::OperBoxYituliuSync)
     single { PlanSideTaskRunner(androidContext(), get(), get()) }
     singleOf(::TaskChainStatusTracker)
-    singleOf(::FightDropsRefresher)
+    single { FightDropsRefresher(androidContext(), get(), get(), get(), get()) }
     singleOf(::TaskChainHandler)
     singleOf(::SubTaskHandler)
     single<AppAliveChecker> { RemoteAppAliveChecker() }

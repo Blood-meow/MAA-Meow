@@ -82,21 +82,21 @@ class TaskChainHandler(
                 sessionLogger.append(
                     appContext.getString(
                         R.string.runlog_depot_plan_inventory_enough,
-                        outcome.logLabel,
+                        outcome.logLabel.resolve(appContext),
                         outcome.dropName,
                         outcome.current,
                         outcome.target,
                     ),
                     LogLevel.INFO,
                 )
-                outcome.logLabel to outcome.applied
+                outcome.logLabel.resolve(appContext) to outcome.applied
             }
 
             is FightDropsRefresher.RefreshOutcome.Updated -> {
                 sessionLogger.append(
                     appContext.getString(
                         R.string.runlog_depot_plan_inventory_insufficient,
-                        outcome.logLabel,
+                        outcome.logLabel.resolve(appContext),
                         outcome.dropName,
                         outcome.current,
                         outcome.target,
@@ -104,20 +104,20 @@ class TaskChainHandler(
                     ),
                     LogLevel.INFO,
                 )
-                outcome.logLabel to outcome.applied
+                outcome.logLabel.resolve(appContext) to outcome.applied
             }
 
             is FightDropsRefresher.RefreshOutcome.SanityInsufficient -> {
                 sessionLogger.append(
                     appContext.getString(
                         R.string.runlog_depot_plan_sanity_insufficient,
-                        outcome.logLabel,
+                        outcome.logLabel.resolve(appContext),
                         outcome.estimatedSanity,
                         outcome.apCost,
                     ),
                     LogLevel.INFO,
                 )
-                outcome.logLabel to outcome.applied
+                outcome.logLabel.resolve(appContext) to outcome.applied
             }
         }
         if (!applied) {

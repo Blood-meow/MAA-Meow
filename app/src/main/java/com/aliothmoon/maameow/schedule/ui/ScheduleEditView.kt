@@ -66,6 +66,7 @@ import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.aliothmoon.maameow.R
+import com.aliothmoon.maameow.data.model.displayName
 import com.aliothmoon.maameow.manager.PermissionManager
 import com.aliothmoon.maameow.presentation.LocalToaster
 import com.aliothmoon.maameow.presentation.components.SectionHeader
@@ -504,7 +505,7 @@ fun ScheduleEditView(
                             FilterChip(
                                 selected = profile.id == state.selectedProfileId,
                                 onClick = { viewModel.onSelectProfile(profile.id) },
-                                label = { Text(profile.name) },
+                                label = { Text(profile.displayName(LocalContext.current)) },
                                 colors = FilterChipDefaults.filterChipColors(
                                     selectedContainerColor = MaterialTheme.colorScheme.primary,
                                     selectedLabelColor = MaterialTheme.colorScheme.onPrimary
@@ -513,10 +514,11 @@ fun ScheduleEditView(
                         }
                     }
                     // 显示选中 Profile 的已启用任务摘要
+                    val context = LocalContext.current
                     val selectedProfile = state.profiles.find { it.id == state.selectedProfileId }
                     val enabledTasks = selectedProfile?.chain
                         ?.filter { it.enabled }
-                        ?.joinToString("、") { it.name }
+                        ?.joinToString("、") { it.displayName(context) }
                     if (!enabledTasks.isNullOrEmpty()) {
                         Text(
                             text = stringResource(R.string.schedule_enabled_tasks, enabledTasks),

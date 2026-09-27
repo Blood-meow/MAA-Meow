@@ -1,5 +1,6 @@
 package com.aliothmoon.maameow.domain.models
 
+import com.aliothmoon.maameow.utils.i18n.UiText
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
@@ -7,7 +8,7 @@ import kotlinx.serialization.json.put
  * 目标库存刷新快照，只活在 [com.aliothmoon.maameow.domain.service.FightDropsRefresher]。
  * 整表字段是为了 SetTaskParams 整表重放，避免冲掉 medicine/stone/series。
  *
- * @param logLabel 库存保持=计划序号，理智作战=节点名
+ * @param logLabel 库存保持=计划序号，理智作战=节点名（延迟到写日志时按语言解析）
  */
 data class DropTarget(
     val dropId: String,
@@ -16,7 +17,7 @@ data class DropTarget(
     val medicine: Int,
     val stone: Int,
     val series: Int,
-    val logLabel: String,
+    val logLabel: UiText,
     val medicineExpireDays: Int? = null,
     val drGrandet: Boolean = false,
     val report: ReportOptions = ReportOptions.DEFAULT,
