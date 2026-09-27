@@ -16,14 +16,13 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -38,7 +37,6 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -55,14 +53,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.DragIndicator
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Inventory2
-import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -73,7 +68,6 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
@@ -83,11 +77,9 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -96,63 +88,47 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.aliothmoon.maameow.R
-import com.aliothmoon.maameow.data.model.DepotMaintainConfig
-import com.aliothmoon.maameow.data.model.DepotMaintainPlan
-import com.aliothmoon.maameow.data.model.DepotPlanOutcome
-import com.aliothmoon.maameow.data.model.LogColorRole
 import com.aliothmoon.maameow.data.model.toolbox.OperBoxExportLabels
 import com.aliothmoon.maameow.data.repository.OperBoxSnapshot
-import com.aliothmoon.maameow.data.resource.ActivityManager
-import com.aliothmoon.maameow.data.resource.ItemHelper
 import com.aliothmoon.maameow.data.resource.ItemIconLoader
-import com.aliothmoon.maameow.data.resource.StageAliasMapper
 import com.aliothmoon.maameow.domain.service.ToolboxExportFileType
-import com.aliothmoon.maameow.presentation.components.SectionHeader
 import com.aliothmoon.maameow.presentation.components.TopAppBar
 import com.aliothmoon.maameow.presentation.view.panel.OperatorRow
 import com.aliothmoon.maameow.presentation.view.panel.ToolboxFileExporter
-import com.aliothmoon.maameow.presentation.view.panel.depot.DepotMaintainAdvancedSection
-import com.aliothmoon.maameow.presentation.view.panel.depot.DepotPlanFields
-import com.aliothmoon.maameow.presentation.view.panel.depot.MAX_TARGET_INVENTORY
-import com.aliothmoon.maameow.presentation.view.panel.depot.allStageCodes
-import com.aliothmoon.maameow.presentation.view.panel.depot.rememberDepotItemIds
-import com.aliothmoon.maameow.presentation.view.panel.depot.rememberDepotStageGroups
+import com.aliothmoon.maameow.presentation.view.panel.depot.DepotCellGap
+import com.aliothmoon.maameow.presentation.view.panel.depot.DepotItemCell
+import com.aliothmoon.maameow.presentation.view.panel.depot.DepotItemCellUi
+import com.aliothmoon.maameow.presentation.view.panel.depot.DepotPlanEditorSheet
+import com.aliothmoon.maameow.presentation.view.panel.depot.DepotPlanOrderColumn
+import com.aliothmoon.maameow.presentation.view.panel.depot.DepotSectionBreak
+import com.aliothmoon.maameow.presentation.view.panel.depot.depotItemColumns
+import com.aliothmoon.maameow.presentation.view.panel.depot.toOrderEntry
 import com.aliothmoon.maameow.presentation.view.panel.rememberOperBoxExportLabels
 import com.aliothmoon.maameow.presentation.view.panel.rememberSafToolboxFileExporter
 import com.aliothmoon.maameow.presentation.viewmodel.DepotInventoryCellUi
 import com.aliothmoon.maameow.presentation.viewmodel.DepotInventoryViewModel
-import com.aliothmoon.maameow.presentation.viewmodel.DepotFarmingOrderRow
 import com.aliothmoon.maameow.presentation.viewmodel.DepotFarmingOrderSection
-import com.aliothmoon.maameow.presentation.viewmodel.DepotMaintainConfigUi
 import com.aliothmoon.maameow.presentation.viewmodel.DepotMaintainPlanUi
-import com.aliothmoon.maameow.presentation.viewmodel.DepotPlanContext
 import com.aliothmoon.maameow.presentation.viewmodel.DepotPngLabels
 import com.aliothmoon.maameow.presentation.viewmodel.DepotProfileRow
 import com.aliothmoon.maameow.presentation.viewmodel.OperBoxPngLabels
 import com.aliothmoon.maameow.presentation.viewmodel.depotCellKey
-import com.aliothmoon.maameow.presentation.viewmodel.depotProgressText
 import com.aliothmoon.maameow.presentation.viewmodel.farmingOrderSections
 import com.aliothmoon.maameow.presentation.viewmodel.groupForDisplay
 import com.aliothmoon.maameow.theme.LocalReduceMotion
@@ -160,27 +136,14 @@ import com.aliothmoon.maameow.theme.MaaAnimatedVisibility
 import com.aliothmoon.maameow.theme.MaaDesignTokens
 import com.aliothmoon.maameow.theme.MaaMotion
 import com.aliothmoon.maameow.theme.OpaqueTheme
-import com.aliothmoon.maameow.theme.themedColor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
-import sh.calvin.reorderable.ReorderableColumn
-import sh.calvin.reorderable.ReorderableListItemScope
 import java.text.DateFormat
 import java.util.Date
 import kotlin.math.roundToInt
-
-/** 库存为 0 的格子压到多淡；太淡就看不出是什么材料了 */
-private const val EMPTY_CELL_ALPHA = 0.32f
-
-/**
- * 格子之间的竖缝。挂到每个条目自己身上，而不是交给网格的 verticalArrangement：
- * 「库存为 0」那段收起时要让格子真的缩到 0 高，挂在条目外面的间距缩不掉，
- * 二十来行攒下来就是一百多 dp 的空档。
- */
-private val CellGap = 6.dp
 
 /** 「库存为 0」那段标题行的 key：展开时要按它把这一段顶回眼前 */
 private const val EMPTY_BREAK_KEY = "empty-break"
@@ -653,12 +616,18 @@ private fun DepotProfileDetailView(
 
     planSheetCellKey?.let { cellKey ->
         cells.firstOrNull { it.key == cellKey }?.let { cell ->
-            DepotMaintainPlanSheet(
-                cell = cell,
+            DepotPlanEditorSheet(
+                itemId = cell.id,
+                itemName = cell.name,
+                count = cell.count,
+                existing = cell.plan?.plan,
+                existingOutcome = cell.plan?.outcome,
                 // 已有计划就跟着它所属节点的开关走，新计划才用「第一个库存保持节点」的状态
                 context = cell.plan?.node ?: planContext,
-                maintainConfig = maintainConfig,
+                config = maintainConfig.config,
                 synced = synced,
+                // 这一页的物品由点开的格子定死，不给换
+                allowItemPick = false,
                 onDismiss = { planSheetCellKey = null },
                 // 用点开时那一格上的计划当写回落点，不回查派生流
                 onSave = { plan -> viewModel.savePlan(cell.plan, plan) },
@@ -816,32 +785,20 @@ private fun DepotItemsPage(
             scope.launch { gridState.animateScrollToItem(headerIndex) }
         }
     }
-    LazyVerticalGrid(
-        state = gridState,
-        columns = GridCells.Adaptive(minSize = 92.dp),
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = MaaDesignTokens.Spacing.md),
-        contentPadding = PaddingValues(top = 6.dp, bottom = MaaDesignTokens.Spacing.sm),
-        horizontalArrangement = Arrangement.spacedBy(CellGap),
-    ) {
-        items(groups.stocked, key = { "stocked-${it.key}" }) { cell ->
-            InventoryItemCell(
-                cell = cell,
-                iconLoader = iconLoader,
-                synced = synced,
-                onClick = onCellClick,
-            )
-        }
-        if (groups.unmet.isNotEmpty()) {
-            item(span = { GridItemSpan(maxLineSpan) }, key = "unmet-break") {
-                CellSectionBreak(
-                    textRes = R.string.depot_inventory_section_unmet,
-                    count = groups.unmet.size,
-                    color = MaterialTheme.colorScheme.error,
-                )
-            }
-            items(groups.unmet, key = { "unmet-${it.key}" }) { cell ->
+    // 一行几格按可用宽度算，跟后台任务的格子同一条公式（见 depotItemColumns）。
+    // 列数得先知道宽度，所以这里套一层 BoxWithConstraints
+    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+        val columns = depotItemColumns(maxWidth - MaaDesignTokens.Spacing.md * 2)
+        LazyVerticalGrid(
+            state = gridState,
+            columns = GridCells.Fixed(columns),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = MaaDesignTokens.Spacing.md),
+            contentPadding = PaddingValues(top = 6.dp, bottom = MaaDesignTokens.Spacing.sm),
+            horizontalArrangement = Arrangement.spacedBy(DepotCellGap),
+        ) {
+            items(groups.stocked, key = { "stocked-${it.key}" }) { cell ->
                 InventoryItemCell(
                     cell = cell,
                     iconLoader = iconLoader,
@@ -849,29 +806,46 @@ private fun DepotItemsPage(
                     onClick = onCellClick,
                 )
             }
-        }
-        if (groups.empty.isNotEmpty()) {
-            item(span = { GridItemSpan(maxLineSpan) }, key = EMPTY_BREAK_KEY) {
-                CellSectionBreak(
-                    textRes = R.string.depot_inventory_section_empty,
-                    count = groups.empty.size,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    collapsed = emptyCollapsed,
-                    onToggle = toggleEmpty,
-                )
-            }
-            // 收着的时候这些格子也留在列表里，只是高度为 0 ——
-            // 这样展开、收起两边都能做「从标题行底下长出来」，
-            // 而不是整片凭空出现、或者整片瞬间消失
-            itemsIndexed(groups.empty, key = { _, it -> "empty-${it.key}" }) { index, cell ->
-                RevealCell(visible = !emptyCollapsed, index = index) {
+            if (groups.unmet.isNotEmpty()) {
+                item(span = { GridItemSpan(maxLineSpan) }, key = "unmet-break") {
+                    DepotSectionBreak(
+                        textRes = R.string.depot_inventory_section_unmet,
+                        count = groups.unmet.size,
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
+                items(groups.unmet, key = { "unmet-${it.key}" }) { cell ->
                     InventoryItemCell(
                         cell = cell,
                         iconLoader = iconLoader,
                         synced = synced,
                         onClick = onCellClick,
-                        dimmed = true,
                     )
+                }
+            }
+            if (groups.empty.isNotEmpty()) {
+                item(span = { GridItemSpan(maxLineSpan) }, key = EMPTY_BREAK_KEY) {
+                    DepotSectionBreak(
+                        textRes = R.string.depot_inventory_section_empty,
+                        count = groups.empty.size,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        collapsed = emptyCollapsed,
+                        onToggle = toggleEmpty,
+                    )
+                }
+                // 收着的时候这些格子也留在列表里，只是高度为 0 ——
+                // 这样展开、收起两边都能做「从标题行底下长出来」，
+                // 而不是整片凭空出现、或者整片瞬间消失
+                itemsIndexed(groups.empty, key = { _, it -> "empty-${it.key}" }) { index, cell ->
+                    RevealCell(visible = !emptyCollapsed, index = index) {
+                        InventoryItemCell(
+                            cell = cell,
+                            iconLoader = iconLoader,
+                            synced = synced,
+                            onClick = onCellClick,
+                            dimmed = true,
+                        )
+                    }
                 }
             }
         }
@@ -910,81 +884,10 @@ private fun RevealCell(
 }
 
 /**
- * 分段行：一条横线加组标题，把网格断成几段。
+ * 一格库存：网格里的 [DepotInventoryCellUi] 换成共用的格子模型。
  *
- * [onToggle] 非空时整行可点，整行最右多一个跟着 [collapsed] 转 180° 的箭头。
- * 折叠语义跟 CollapsibleSection 保持一致：收起时箭头朝下，
- * 播报文案复用 common_expand / common_collapse 那一对。
- */
-@Composable
-private fun CellSectionBreak(
-    textRes: Int,
-    count: Int,
-    color: Color,
-    collapsed: Boolean = false,
-    onToggle: (() -> Unit)? = null,
-) {
-    val expandLabel = stringResource(R.string.common_expand)
-    val collapseLabel = stringResource(R.string.common_collapse)
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = MaaDesignTokens.Spacing.sm, bottom = CellGap),
-    ) {
-        HorizontalDivider(color = color.copy(alpha = 0.4f))
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .then(
-                    if (onToggle == null) {
-                        Modifier
-                    } else {
-                        Modifier.clickable(
-                            role = Role.Button,
-                            onClickLabel = if (collapsed) expandLabel else collapseLabel,
-                            onClick = onToggle,
-                        )
-                    }
-                )
-                .padding(
-                    top = MaaDesignTokens.Spacing.xs,
-                    bottom = 2.dp,
-                ),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                text = stringResource(textRes, count),
-                style = MaterialTheme.typography.labelLarge,
-                color = color,
-            )
-            if (onToggle != null) {
-                // 箭头贴到整行最右：它是「这行能展开」的提示，跟着标题走会被当成标题的一部分
-                Spacer(modifier = Modifier.weight(1f))
-                val arrowRotation by animateFloatAsState(
-                    targetValue = if (collapsed) 0f else 180f,
-                    animationSpec = MaaMotion.spec(LocalReduceMotion.current, MaaMotion.Fast),
-                    label = "depot-section-arrow",
-                )
-                Icon(
-                    imageVector = Icons.Default.KeyboardArrowDown,
-                    contentDescription = if (collapsed) expandLabel else collapseLabel,
-                    tint = color,
-                    modifier = Modifier
-                        .size(18.dp)
-                        .rotate(arrowRotation),
-                )
-            }
-        }
-    }
-}
-
-/**
- * 一格库存：图标下面是「当前 / 目标」，未集齐标红、已集齐标绿。
+ * 格子的样子在 [DepotItemCell] 里，后台任务库存保持面板的「已有计划 / 暂无计划」两组用的是同一份。
  *
- * 库存和库存保持是同一件事，所以不分成两个区块：没配计划的物品显示纯数量，
- * 配了计划的直接显示当前与目标，红色就代表还差。
- *
- * @param dimmed 库存为 0 的格子压淡，但仍然可点——点它就是给这个材料加计划
  * @param modifier 交给调用方挂 [RevealCell] 之类的条目级动效
  */
 @Composable
@@ -996,91 +899,20 @@ private fun InventoryItemCell(
     dimmed: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
-    val plan = cell.plan
-    val unmet = cell.unmet
-    val accent = when {
-        plan == null -> MaterialTheme.colorScheme.onSurfaceVariant
-        unmet -> MaterialTheme.colorScheme.error
-        else -> LogColorRole.SUCCESS.themedColor()
-    }
-    Surface(
-        shape = RoundedCornerShape(MaaDesignTokens.CornerRadius.inner),
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-        border = plan?.let { BorderStroke(1.dp, accent.copy(alpha = 0.5f)) },
-        modifier = modifier
-            // 竖缝挂在自己身上，收起时才缩得干净（见 CellGap）
-            .padding(bottom = CellGap)
-            .fillMaxWidth()
-            .alpha(if (dimmed) EMPTY_CELL_ALPHA else 1f)
-            .clickable { onClick(cell) },
-    ) {
-        Column(
-            modifier = Modifier.padding(horizontal = 6.dp, vertical = 6.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(2.dp),
-        ) {
-            ItemIcon(itemId = cell.id, contentDescription = cell.name, size = 44.dp, loader = iconLoader)
-            Text(
-                text = cell.name,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-            if (plan == null) {
-                Text(
-                    text = "${cell.count}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Bold,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            } else {
-                // 格子只有 ~80dp 宽，目标能到 10 位；不省略号的话会被从中间硬裁
-                Text(
-                    text = depotProgressText(cell.count, plan.target, synced),
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = accent,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                if (unmet) {
-                    Text(
-                        text = stringResource(R.string.depot_inventory_maintain_need, plan.need),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = accent,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun ItemIcon(
-    itemId: String,
-    contentDescription: String?,
-    size: Dp,
-    loader: ItemIconLoader,
-) {
-    val icon by produceState<ImageBitmap?>(initialValue = null, itemId) {
-        value = loader.load(itemId)
-    }
-    val bitmap = icon
-    if (bitmap != null) {
-        Image(
-            bitmap = bitmap,
-            contentDescription = contentDescription,
-            modifier = Modifier
-                .height(size)
-                .width(size),
-        )
-    } else {
-        Spacer(Modifier.size(size))
-    }
+    DepotItemCell(
+        cell = DepotItemCellUi(
+            key = cell.key,
+            itemId = cell.id,
+            name = cell.name,
+            count = cell.count,
+            target = cell.plan?.target,
+        ),
+        synced = synced,
+        iconLoader = iconLoader,
+        dimmed = dimmed,
+        modifier = modifier,
+        onClick = { onClick(cell) },
+    )
 }
 
 @Composable
@@ -1165,7 +997,6 @@ private fun DepotFarmingOrderPage(
     }
     // 只有落手（onSettle）那一次才改这份；拖动期间由库自己拿 offset 摆位
     var sections by remember(plans) { mutableStateOf(plans.farmingOrderSections()) }
-    val haptic = LocalHapticFeedback.current
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -1185,42 +1016,27 @@ private fun DepotFarmingOrderPage(
             // 节点 ID 单独取出来：落手回调要按它回查当时的 sections，不能闭包住组合时那一份
             val nodeId = section.nodeId
             FarmingOrderSectionHeader(section)
-            // 这里用 ReorderableColumn 而不是 Lazy 那一版：Lazy 版要求每滑过一格就把数据重排一次，
-            // 一次拖动能把整页重组几十遍（图标也跟着重开取图），滑起来就是一卡一卡的。
-            // 这一版拖动期间只动它自己内部的 offset，而且是画的时候才读（不走重组），
-            // 等到落手、位移动画播完，才回调一次 onSettle。后台任务列表用的就是它。
+            // 一段一个列表：跨段拖动会把计划挪进另一个库存保持节点、连带换掉那个节点的
+            // 药/石/连战设置，不是这一页该做的事；分开之后跨段在结构上就拖不过去。
             //
-            // 一段一个 ReorderableColumn：跨段拖动会把计划挪进另一个库存保持节点、
-            // 连带换掉那个节点的药/石/连战设置，不是这一页该做的事；分开之后跨段在结构上就拖不过去。
-            ReorderableColumn(
-                list = section.rows,
-                onSettle = { from, to ->
-                    val current = sections.firstOrNull { it.nodeId == nodeId } ?: return@ReorderableColumn
+            // 行的样子、进度口径、去向文案、拖动行为都在 DepotPlanOrderList 里，
+            // 后台任务的库存保持计划概览用的是同一份，两边不会各长各的。
+            val entries = remember(section.rows) { section.rows.map { it.toOrderEntry() } }
+            DepotPlanOrderColumn(
+                entries = entries,
+                synced = synced,
+                iconLoader = iconLoader,
+                onClick = { index -> section.rows.getOrNull(index)?.let { onPlanClick(it.plan) } },
+                onMove = { from, to ->
+                    val current = sections.firstOrNull { it.nodeId == nodeId }
+                        ?: return@DepotPlanOrderColumn
                     val rows = current.rows.toMutableList().also { it.add(to, it.removeAt(from)) }
                     // 先换本地这份：库已经把它摆到位了，数据不跟着换就会停在拖过去的样子。
                     // 同时写回磁盘，等 plans 重新发一遍再对齐
                     sections = sections.map { if (it.nodeId == nodeId) it.copy(rows = rows) else it }
                     onReorder(nodeId, rows.map { it.plan.planIndex })
                 },
-                verticalArrangement = Arrangement.spacedBy(MaaDesignTokens.Spacing.sm),
-            ) { _, row, isDragging ->
-                // key 让重排时这一组的组合能整体挪过去而不是重建：
-                // 重建的话 ItemIcon 的 produceState 会从 null 重来，图标闪一下
-                key(orderKey(row)) {
-                    ReorderableItem {
-                        DepotFarmingOrderRow(
-                            row = row,
-                            isDragging = isDragging,
-                            synced = synced,
-                            iconLoader = iconLoader,
-                            onClick = { onPlanClick(row.plan) },
-                            onDragStarted = {
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            },
-                        )
-                    }
-                }
-            }
+            )
         }
     }
 }
@@ -1249,119 +1065,6 @@ private fun FarmingOrderSectionHeader(section: DepotFarmingOrderSection) {
     }
 }
 
-/**
- * 拖拽用的稳定 key：同一物品可能配了多条计划，得带上节点与下标。
- *
- * 行、分段标题、提示行各用各的前缀：标题是 `order-head-<节点>`、行是 `order-row-<节点>-<下标>`，
- * 两者拼出来永远不同。以前行前缀写成 `order-<节点>-<下标>`，只要有个节点的 ID 正好是
- * 「另一个节点的 ID + '-' + 下标」，标题就会和某一行撞 key —— LazyColumn 撞 key 是直接抛异常。
- * 节点 ID 一般是 UUID，撞不上，但导入的配置里可能是任意字符串，没必要留着这条隐患。
- */
-private fun orderKey(row: DepotFarmingOrderRow): String =
-    "order-row-${row.plan.nodeId}-${row.plan.planIndex}"
-
-/**
- * 刷取顺序里的一行：序号 + 图标 + 名称/进度 + 去向，最右是拖拽手柄。
- *
- * 只有手柄能拖，行的其余区域保持点击语义（点开同一格的面板改目标）。
- */
-@Composable
-private fun ReorderableListItemScope.DepotFarmingOrderRow(
-    row: DepotFarmingOrderRow,
-    isDragging: Boolean,
-    synced: Boolean,
-    iconLoader: ItemIconLoader,
-    onClick: () -> Unit,
-    onDragStarted: () -> Unit,
-) {
-    val plan = row.plan
-    // 已集齐的会被跳过，标绿；未集齐的才是真要去刷的，用正常前景色；
-    // 其余是「配了也跑不起来」，按错误色标出来
-    val accent = when (plan.outcome) {
-        DepotPlanOutcome.Enough -> LogColorRole.SUCCESS.themedColor()
-        DepotPlanOutcome.Runnable -> MaterialTheme.colorScheme.onSurface
-        else -> MaterialTheme.colorScheme.error
-    }
-    Surface(
-        shape = RoundedCornerShape(MaaDesignTokens.CornerRadius.inner),
-        color = if (isDragging) {
-            MaterialTheme.colorScheme.surfaceVariant
-        } else {
-            MaterialTheme.colorScheme.surface
-        },
-        border = BorderStroke(
-            1.dp,
-            if (isDragging) {
-                MaterialTheme.colorScheme.primary
-            } else {
-                MaterialTheme.colorScheme.outlineVariant
-            },
-        ),
-        shadowElevation = if (isDragging) 4.dp else 0.dp,
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = MaaDesignTokens.Spacing.sm, end = 2.dp, top = 4.dp, bottom = 4.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(MaaDesignTokens.Spacing.sm),
-        ) {
-            Text(
-                text = "${row.no}",
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.End,
-                // 只给下限：定死 18dp 时三位数会折行，把整行撑高
-                modifier = Modifier.widthIn(min = 18.dp),
-            )
-            ItemIcon(
-                itemId = plan.itemId,
-                contentDescription = plan.itemName,
-                size = 32.dp,
-                loader = iconLoader,
-            )
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = plan.itemName,
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = accent,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                Text(
-                    text = depotProgressText(plan.current, plan.target, synced),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
-            Text(
-                text = planOutcomeLabel(plan, short = true),
-                style = MaterialTheme.typography.bodyMedium,
-                color = accent,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                textAlign = TextAlign.End,
-                modifier = Modifier.widthIn(max = 104.dp),
-            )
-            Icon(
-                imageVector = Icons.Default.DragIndicator,
-                contentDescription = stringResource(R.string.depot_inventory_order_drag),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier
-                    .size(32.dp)
-                    .draggableHandle(onDragStarted = { onDragStarted() })
-                    .padding(6.dp),
-            )
-        }
-    }
-}
-
 @Composable
 private fun DetailEmptyText(textRes: Int) {
     Text(
@@ -1373,427 +1076,6 @@ private fun DetailEmptyText(textRes: Int) {
         textAlign = TextAlign.Center,
     )
 }
-
-// ============================== 库存保持设置面板 ==============================
-
-/**
- * 面板的三种形态。声明顺序就是「越往后越深」，切换方向按它算：
- * 摘要卡 → 编辑表单是往前推，反着来（目前没有这条路）就往回推。
- */
-private enum class DepotPlanSheetMode { UNSUPPORTED, SUMMARY, EDITOR }
-
-/**
- * 点库存格子后弹出的库存保持设置。
- *
- * 物品已经由点击定死，这里只改「保到多少、去哪刷」；
- * 保存时写回该配置档的库存保持节点，没有节点就新建一个。
- * 保存/移除都先把面板滑下去再落库，动画与展开时对称。
- */
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun DepotMaintainPlanSheet(
-    cell: DepotInventoryCellUi,
-    context: DepotPlanContext,
-    maintainConfig: DepotMaintainConfigUi,
-    synced: Boolean,
-    onDismiss: () -> Unit,
-    onSave: (DepotMaintainPlan) -> Unit,
-    onRemove: () -> Unit,
-    onConfigChange: (DepotMaintainConfig) -> Unit,
-    itemHelper: ItemHelper = koinInject(),
-    activityManager: ActivityManager = koinInject(),
-    iconLoader: ItemIconLoader = koinInject(),
-) {
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    val scope = rememberCoroutineScope()
-
-    // 关卡表与材料表都是全 App 同一份，别再各写一遍过滤逻辑（见 DepotPlanFields）
-    val stageGroups = rememberDepotStageGroups(activityManager)
-    val stageCodes = remember(stageGroups) { stageGroups.allStageCodes() }
-    val itemIds = rememberDepotItemIds(itemHelper)
-    val existing = cell.plan
-    // 已经有计划的物品永远可编辑：老数据里可能留着识别集合之外的物品（比如赤金），
-    // 只按列表放行的话那条计划在这一页既改不了也删不掉
-    val maintainable = existing != null || cell.id in itemIds
-
-    // 没计划的物品不直接铺表单：先出一张只讲「是什么、现在有多少」的摘要卡。
-    // 直接进表单会凭空算出一个「144 / 144 · 已够」的计划，
-    // 看着像已经配好了，其实什么都没配。
-    var creating by remember(cell.id) { mutableStateOf(false) }
-    val mode = when {
-        !maintainable -> DepotPlanSheetMode.UNSUPPORTED
-        existing != null || creating -> DepotPlanSheetMode.EDITOR
-        else -> DepotPlanSheetMode.SUMMARY
-    }
-    val reduceMotion = LocalReduceMotion.current
-
-    var draft by remember(cell.id, existing?.plan) {
-        mutableStateOf(
-            existing?.plan ?: DepotMaintainPlan(
-                dropId = cell.id,
-                // 默认保到现在的数量：不抬高目标就不会凭空多刷
-                dropCount = cell.count.coerceAtLeast(1),
-            ),
-        )
-    }
-
-    // 关卡列表里选「自定义关卡」才放出输入框；已有计划用的是列表外的代码时默认就是它。
-    // 只按 cell.id 初始化：这是用户意图，不能被关卡表的热更新重置掉。
-    var customStage by remember(cell.id) {
-        mutableStateOf(
-            existing?.plan?.stage?.let { it.isNotBlank() && it !in stageCodes } ?: false,
-        )
-    }
-
-    // 数字框被清空时（中间态）不要静默沿用上一个值，直接禁掉保存
-    var targetBlank by remember(cell.id) { mutableStateOf(false) }
-
-    // 面板收起来之后才落库：先滑下去再改数据，动画期间不会看到标题/按钮跳变
-    var closing by remember { mutableStateOf(false) }
-    val closeWithAnimation: (() -> Unit) -> Unit = { action ->
-        if (!closing) {
-            closing = true
-            scope.launch {
-                try {
-                    sheetState.hide()
-                } finally {
-                    onDismiss()
-                    action()
-                }
-            }
-        }
-    }
-
-    // 目标库存跟着草稿实时算，改数字时右上的「已够/缺多少」立刻跟着变
-    val draftTarget = draft.dropCount.coerceIn(1, MAX_TARGET_INVENTORY)
-    val short = draftTarget > cell.count
-
-    // 玻璃背景下面板会透出底下的库存网格，这里换回不透明配色
-    OpaqueTheme {
-        ModalBottomSheet(
-            onDismissRequest = onDismiss,
-            sheetState = sheetState,
-            // M3 的面板默认取 surfaceContainerLow，而本 App 的配色只定义了 surface 一族，
-            // 那一档会落回 M3 基线的紫调中性色，和页面底色（background）不是一个颜色。
-            // 面板要跟页面同色，就直接取 background。
-            containerColor = MaterialTheme.colorScheme.background,
-        ) {
-            // 摘要卡 → 编辑表单是同一张面板换形态：横向推入推出，高度交给 SizeTransform 收放，
-            // 参数与本文件导出面板的 一级↔二级 完全一致；系统关掉动画时直接换
-            AnimatedContent(
-                targetState = mode,
-                transitionSpec = {
-                    if (reduceMotion) {
-                        (EnterTransition.None togetherWith ExitTransition.None).using(null)
-                    } else {
-                        val forward = targetState.ordinal > initialState.ordinal
-                        val spec = tween<IntOffset>(MaaMotion.Medium, easing = MaaMotion.Emphasized)
-                        // 推 1/3 屏：面板里换的是「一整屏设置」，只挪一点点会被当成直接换掉了
-                        val enter = slideInHorizontally(animationSpec = spec) {
-                            if (forward) it / 3 else -it / 3
-                        } + fadeIn(tween(durationMillis = MaaMotion.Fast, easing = MaaMotion.Linear))
-                        val exit = slideOutHorizontally(animationSpec = spec) {
-                            if (forward) -it / 3 else it / 3
-                        } + fadeOut(tween(durationMillis = MaaMotion.Fast, easing = MaaMotion.Linear))
-                        (enter togetherWith exit).using(SizeTransform())
-                    }
-                },
-                label = "depot-plan-mode",
-                modifier = Modifier.fillMaxWidth(),
-            ) { current ->
-                val editing = current == DepotPlanSheetMode.EDITOR
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .verticalScroll(rememberScrollState())
-                        .navigationBarsPadding()
-                        .padding(
-                            start = MaaDesignTokens.Spacing.lg,
-                            end = MaaDesignTokens.Spacing.lg,
-                            bottom = MaaDesignTokens.Spacing.lg,
-                        ),
-                    verticalArrangement = Arrangement.spacedBy(MaaDesignTokens.Spacing.sm),
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(MaaDesignTokens.Spacing.md),
-                    ) {
-                        ItemIcon(
-                            itemId = cell.id,
-                            contentDescription = cell.name,
-                            size = 40.dp,
-                            loader = iconLoader,
-                        )
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = cell.name,
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.SemiBold,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                            )
-                            Text(
-                                text = if (editing) {
-                                    // 与格子、与后台任务的计划概览同一个顺序、同一份实现
-                                    depotProgressText(cell.count, draftTarget, synced)
-                                } else {
-                                    stringResource(
-                                        R.string.depot_inventory_plan_current,
-                                        if (synced) "${cell.count}" else "--",
-                                    )
-                                },
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-                        // 已够/缺多少贴在面板最右，两行高的大字，绿=够 红=缺。
-                        // 只在编辑态出现：没有计划时谈「够不够」是空话
-                        if (editing) {
-                            Text(
-                                text = if (short) {
-                                    stringResource(
-                                        R.string.depot_inventory_maintain_need,
-                                        draftTarget - cell.count,
-                                    )
-                                } else {
-                                    stringResource(R.string.depot_inventory_maintain_enough)
-                                },
-                                style = MaterialTheme.typography.headlineLarge,
-                                fontWeight = FontWeight.Bold,
-                                color = if (short) {
-                                    MaterialTheme.colorScheme.error
-                                } else {
-                                    LogColorRole.SUCCESS.themedColor()
-                                },
-                                textAlign = TextAlign.End,
-                                maxLines = 2,
-                                overflow = TextOverflow.Ellipsis,
-                                // 无约束的话 10 位缺口会先把左边的物品名挤没
-                                modifier = Modifier.widthIn(max = 132.dp),
-                            )
-                        }
-                    }
-
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-
-                    if (current == DepotPlanSheetMode.UNSUPPORTED) {
-                        Text(
-                            text = stringResource(R.string.depot_inventory_plan_unsupported),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.error,
-                        )
-                    } else if (current == DepotPlanSheetMode.SUMMARY) {
-                        // 摘要卡到此为止：设置留到下一屏，按钮是卡片唯一的出口
-                        Button(
-                            onClick = { creating = true },
-                            modifier = Modifier.fillMaxWidth(),
-                            contentPadding = PaddingValues(horizontal = 8.dp),
-                        ) {
-                            Text(stringResource(R.string.depot_inventory_plan_new))
-                        }
-                    } else {
-                        SectionHeader(
-                            title = if (existing == null) {
-                                stringResource(R.string.depot_inventory_plan_new)
-                            } else {
-                                stringResource(R.string.depot_inventory_maintain_title)
-                            },
-                        )
-
-                        // 字段本体与任务配置页共用一份，见 DepotPlanFields
-                        DepotPlanFields(
-                            plan = draft,
-                            onPlanChange = { draft = it },
-                            stageGroups = stageGroups,
-                            stageCodes = stageCodes,
-                            customStageCode = customStage,
-                            onCustomStageSelected = { customStage = true },
-                            showStageListWithCustom = true,
-                            onStageSelected = {
-                                draft = draft.copy(stage = it)
-                                customStage = false
-                            },
-                            onTargetBlankChange = { targetBlank = it },
-                        )
-
-                        existing?.let { PlanOutcomeHint(it) }
-
-                        // 手输的关卡码可能写错或今天没开，提前说一声，别等跑起来才发现被跳过
-                        if (draft.stage.isNotBlank() && !activityManager.isStageOpen(draft.stage)) {
-                            Text(
-                                text = stringResource(
-                                    R.string.depot_inventory_maintain_stage_closed,
-                                    draft.stage,
-                                ),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.error,
-                            )
-                        }
-
-                        if (!context.nodeEnabled) {
-                            Text(
-                                text = stringResource(R.string.depot_inventory_plan_node_disabled),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.error,
-                            )
-                        }
-
-                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(MaaDesignTokens.Spacing.sm),
-                        ) {
-                            if (existing != null) {
-                                OutlinedButton(
-                                    onClick = { closeWithAnimation(onRemove) },
-                                    modifier = Modifier.weight(1f),
-                                    contentPadding = PaddingValues(horizontal = 8.dp),
-                                ) {
-                                    Text(stringResource(R.string.depot_inventory_plan_remove))
-                                }
-                            }
-                            Button(
-                                onClick = {
-                                    closeWithAnimation {
-                                        onSave(
-                                            draft.copy(
-                                                dropCount = draftTarget,
-                                                // 点「保存」时输入框可能还带着焦点，别名在这里兜一次
-                                                stage = StageAliasMapper
-                                                    .mapToStageCode(draft.stage, stageCodes),
-                                            ),
-                                        )
-                                    }
-                                },
-                                // 目标框空着就别让保存，免得把上一次的数字当成新目标写进去
-                                enabled = !targetBlank,
-                                modifier = Modifier.weight(1f),
-                                contentPadding = PaddingValues(horizontal = 8.dp),
-                            ) {
-                                Text(stringResource(R.string.depot_inventory_plan_save))
-                            }
-                        }
-
-                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-
-                        DepotMaintainSettings(
-                            config = maintainConfig.config,
-                            onConfigChange = onConfigChange,
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-/**
- * 计划面板里的「高级设置」。
- *
- * 内容与后台任务的库存保持面板完全同一份实现、同一条链上的同一个节点 —— 在哪边改都一样。
- * 默认收起：这张卡片主要是配一条计划的，设置是顺路改的，不该一进来就把保存按钮顶到屏幕外。
- */
-@Composable
-private fun DepotMaintainSettings(
-    config: DepotMaintainConfig,
-    onConfigChange: (DepotMaintainConfig) -> Unit,
-) {
-    var advancedExpanded by remember { mutableStateOf(false) }
-
-    SettingsExpander(
-        expanded = advancedExpanded,
-        onToggle = { advancedExpanded = !advancedExpanded },
-    ) {
-        DepotMaintainAdvancedSection(
-            config = config,
-            onConfigChange = onConfigChange,
-        )
-    }
-}
-
-/** 就地展开的「高级设置」分组：按钮 + 箭头，展开内容从按钮下面长出来 */
-@Composable
-private fun SettingsExpander(
-    expanded: Boolean,
-    onToggle: () -> Unit,
-    content: @Composable () -> Unit,
-) {
-    val arrowRotation by animateFloatAsState(
-        targetValue = if (expanded) 180f else 0f,
-        animationSpec = MaaMotion.spec(LocalReduceMotion.current, MaaMotion.Fast),
-        label = "depotSettingsArrow",
-    )
-
-    OutlinedButton(
-        onClick = onToggle,
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(8.dp),
-    ) {
-        Text(stringResource(R.string.common_tab_advanced))
-        Spacer(modifier = Modifier.width(6.dp))
-        Icon(
-            Icons.Default.KeyboardArrowDown,
-            contentDescription = null,
-            modifier = Modifier
-                .size(18.dp)
-                .rotate(arrowRotation),
-        )
-    }
-
-    MaaAnimatedVisibility(
-        visible = expanded,
-        enter = expandVertically(),
-        exit = shrinkVertically(),
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = MaaDesignTokens.Spacing.xs),
-        ) {
-            content()
-        }
-    }
-}
-
-/** 已保存计划里那些「配了也跑不起来」的原因，与运行日志同一套口径。 */
-@Composable
-private fun PlanOutcomeHint(plan: DepotMaintainPlanUi) {
-    // 能跑的计划，缺口由 DepotPlanFields 按草稿实时算
-    if (plan.outcome == DepotPlanOutcome.Enough || plan.outcome == DepotPlanOutcome.Runnable) return
-    Text(
-        text = planOutcomeLabel(plan),
-        style = MaterialTheme.typography.bodySmall,
-        color = MaterialTheme.colorScheme.error,
-    )
-}
-
-/**
- * 一条计划的去向文案：会去刷 → 缺多少；已集齐 → 已够；其余是配了也跑不起来的原因。
- *
- * @param short 列表里的窄格子用短标签（「关卡未开放」）；面板里带上关卡号，
- *   省得用户再回去对是哪一关
- */
-@Composable
-private fun planOutcomeLabel(plan: DepotMaintainPlanUi, short: Boolean = false): String =
-    when (plan.outcome) {
-        DepotPlanOutcome.NoItem -> stringResource(R.string.depot_inventory_maintain_no_item)
-        DepotPlanOutcome.ZeroTarget ->
-            stringResource(R.string.depot_inventory_maintain_zero_target)
-
-        DepotPlanOutcome.StageRequired ->
-            stringResource(R.string.depot_inventory_maintain_stage_required)
-
-        DepotPlanOutcome.StageClosed -> if (short) {
-            stringResource(R.string.depot_inventory_order_stage_closed)
-        } else {
-            stringResource(R.string.depot_inventory_maintain_stage_closed, plan.plan.stage)
-        }
-
-        DepotPlanOutcome.Enough -> stringResource(R.string.depot_inventory_maintain_enough)
-        DepotPlanOutcome.Runnable ->
-            stringResource(R.string.depot_inventory_maintain_need, plan.need)
-    }
 
 // ============================== 导出 ==============================
 

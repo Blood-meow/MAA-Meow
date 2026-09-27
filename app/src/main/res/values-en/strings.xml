@@ -1308,8 +1308,6 @@
     <string name="panel_depot_use_auto_series_tip">When unchecked, runs at 1×; when checked, runs at the highest series multiplier allowed by current sanity, so drops from a single run may exceed the target inventory limit.</string>
     <string name="panel_depot_skip_during_activity">Skip during event</string>
     <string name="panel_depot_skip_during_resource">Skip while the resource collection event is active</string>
-    <string name="panel_depot_add_plan">Add</string>
-    <string name="panel_depot_collapse_all">Collapse</string>
     <string name="panel_depot_preset">Preset</string>
     <string name="panel_depot_preset_chip_1">Chips (All Classes)</string>
     <string name="panel_depot_preset_chip_2">Chip Packs (All Classes)</string>
@@ -1329,15 +1327,13 @@
     <string name="panel_depot_use_expiring_medicine_tip">Applies to all plans with a fixed 48-hour threshold; independent of the similarly named option in the Fight task, whose threshold is adjustable</string>
     <string name="panel_depot_summary_title">Plan overview</string>
     <string name="panel_depot_summary_runnable">%1$d / %2$d will run</string>
-    <string name="panel_depot_summary_no_item">No item</string>
-    <string name="panel_depot_summary_zero_target">Target is 0</string>
-    <string name="panel_depot_summary_stage_required">Stage required</string>
-    <string name="panel_depot_summary_stage_closed">Closed today</string>
-    <string name="panel_depot_summary_enough">Target met</string>
+    <string name="panel_depot_section_planned">Planned (%1$d)</string>
+    <string name="panel_depot_section_unplanned">No plan (%1$d)</string>
+    <string name="panel_depot_plan_removed">Removed "%1$s"</string>
+    <string name="panel_depot_undo_remove">Undo</string>
     <string name="panel_depot_target_inventory">Target inventory</string>
     <string name="panel_depot_stone_count">Use up to N Originite Prime</string>
     <string name="panel_depot_not_selected">Not selected</string>
-    <string name="panel_depot_remove_plan">Remove this plan</string>
 
     <!-- panel: mall -->
     <string name="panel_mall_advanced_options">Advanced Options</string>
