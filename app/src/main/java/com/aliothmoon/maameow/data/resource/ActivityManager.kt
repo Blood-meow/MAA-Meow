@@ -1,6 +1,7 @@
 package com.aliothmoon.maameow.data.resource
 
 import android.content.Context
+import androidx.annotation.StringRes
 import com.aliothmoon.maameow.R
 import com.aliothmoon.maameow.data.api.MaaApiService
 import com.aliothmoon.maameow.data.model.activity.ActivityStage
@@ -79,10 +80,11 @@ class ActivityManager(
     }
 
     /**
-     * 获取当前鹰角历星期几的中文名
+     * 获取当前鹰角历星期几的名称资源
      */
-    fun getYjDayOfWeekName(): String {
-        return ServerTimezone.getYjDayOfWeekName(chainState.clientType)
+    @StringRes
+    fun getYjDayOfWeekRes(): Int {
+        return ServerTimezone.getYjDayOfWeekRes(chainState.clientType)
     }
 
     suspend fun load(clientType: String) {
@@ -270,7 +272,8 @@ class ActivityManager(
             val isOpen = mergedInfo?.isStageOpen(today) ?: stage.isOpenOn(today)
             StageItem(
                 code = stage.code,
-                displayName = stage.displayName,
+                displayName = stage.code,
+                displayNameRes = stage.displayNameRes,
                 isActivityStage = false,
                 isOpenToday = isOpen,
                 dropGroups = stage.dropGroups
@@ -361,10 +364,10 @@ class ActivityManager(
                 val activity = if (isResourceStage(stage.code)) resourceCollection else null
                 result[stage.code] = MergedStageInfo(
                     code = stage.code,
-                    displayName = stage.displayName,
+                    displayName = stage.code,
                     openDays = stage.openDays,
                     activity = activity,
-                    tip = stage.tip,
+                    tipRes = stage.tipRes,
                     dropGroups = stage.dropGroups
                 )
             }
@@ -577,8 +580,9 @@ class ActivityManager(
             }
 
             // 4. 常规关卡提示
-            if (stageInfo.tip.isNotEmpty()) {
-                lines.add(stageInfo.tip)
+            val tip = stageInfo.tipRes?.let { context.getString(it) }.orEmpty()
+            if (tip.isNotEmpty()) {
+                lines.add(tip)
             }
 
             // 5. 分组库存（技能书、芯片等），格式同 WPF DropGroups，缺失项口径见 hasSyncedInventory

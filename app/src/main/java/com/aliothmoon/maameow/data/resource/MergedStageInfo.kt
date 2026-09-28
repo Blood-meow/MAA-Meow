@@ -1,5 +1,6 @@
 package com.aliothmoon.maameow.data.resource
 
+import androidx.annotation.StringRes
 import com.aliothmoon.maameow.data.model.activity.StageActivityInfo
 import java.time.DayOfWeek
 
@@ -8,11 +9,11 @@ import java.time.DayOfWeek
  */
 data class MergedStageInfo(
     val code: String,                               // 关卡代码 (value)
-    val displayName: String,                        // 显示名称
+    val displayName: String,                        // 显示名称（活动关卡为服务端文案）
     val openDays: List<DayOfWeek> = emptyList(),    // 空 = 每天开放
     val activity: StageActivityInfo? = null,        // 活动信息
     val drop: String? = null,                       // 掉落物品 ID
-    val tip: String = "",                           // 关卡提示信息
+    @StringRes val tipRes: Int? = null,             // 关卡提示的字符串资源（常驻资源本）
     val dropGroups: List<List<String>> = emptyList() // 分组掉落物品 ID（技能书、芯片/芯片组等）
 ) {
     /**
