@@ -2656,4 +2656,30 @@ MAA will not end an in-progress exploration early because this option is uncheck
     <string name="panel_switch_theme_candidate">Theme candidate %1$d</string>
     <string name="panel_switch_theme_add">Add theme candidate</string>
     <string name="panel_switch_theme_remove">Remove theme candidate %1$d</string>
+
+    <!-- 关卡名称（常驻资源本/芯片本，见 StageInfo.STAGE_DISPLAY_NAME_RES） -->
+    <string name="stage_name_ce_6">LMD-6/5</string>
+    <string name="stage_name_ap_5">Purchase Certificate-5</string>
+    <string name="stage_name_ca_5">Skill Summary-5</string>
+    <string name="stage_name_ls_6">EXP-6/5</string>
+    <string name="stage_name_sk_5">Carbon-5</string>
+    <string name="stage_name_pr_a_1">Medic/Defender Chip</string>
+    <string name="stage_name_pr_a_2">Medic/Defender Chip Pack</string>
+    <string name="stage_name_pr_b_1">Caster/Sniper Chip</string>
+    <string name="stage_name_pr_b_2">Caster/Sniper Chip Pack</string>
+    <string name="stage_name_pr_c_1">Vanguard/Supporter Chip</string>
+    <string name="stage_name_pr_c_2">Vanguard/Supporter Chip Pack</string>
+    <string name="stage_name_pr_d_1">Guard/Specialist Chip</string>
+    <string name="stage_name_pr_d_2">Guard/Specialist Chip Pack</string>
+
+    <!-- 关卡提示（见 StageInfo.STAGE_TIP_RES） -->
+    <string name="stage_tip_ce_6">CE-6: LMD</string>
+    <string name="stage_tip_ap_5">AP-5: Purchase Certificate</string>
+    <string name="stage_tip_ca_5">CA-5: Skill Summary</string>
+    <string name="stage_tip_ls_6">LS-6: EXP</string>
+    <string name="stage_tip_sk_5">SK-5: Carbon</string>
+    <string name="stage_tip_pr_a_1">PR-A-1/2: Medic &amp; Defender Chip</string>
+    <string name="stage_tip_pr_b_1">PR-B-1/2: Caster &amp; Sniper Chip</string>
+    <string name="stage_tip_pr_c_1">PR-C-1/2: Vanguard &amp; Supporter Chip</string>
+    <string name="stage_tip_pr_d_1">PR-D-1/2: Guard &amp; Specialist Chip</string>
 </resources>

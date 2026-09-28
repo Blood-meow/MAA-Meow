@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import com.aliothmoon.maameow.R
 import com.aliothmoon.maameow.data.resource.StageAliasMapper
 import com.aliothmoon.maameow.data.resource.StageGroup
+import com.aliothmoon.maameow.data.resource.localizedDisplayName
 import com.aliothmoon.maameow.presentation.components.ITextFieldWithFocus
 import com.aliothmoon.maameow.theme.MaaAnimatedVisibility
 
@@ -68,7 +69,9 @@ internal fun StageBadge(
  * 关卡代码 → 展示文案（选关徽章、计划摘要等唯一入口）：
  * - 空串 → [emptyLabel]（默认「当前/上次」）
  * - Annihilation 且提供了 [annihilationDisplayName] → 用该名
- * - 否则在 [stageGroups] 里查 displayName，查不到回退代码本身
+ * - 否则在 [stageGroups] 里查该关卡，优先 [StageItem.displayNameRes]（常驻资源本/芯片本，
+ *   随界面语言切换），无资源时回退 [StageItem.displayName]（活动关卡为服务端文案），
+ *   都查不到回退代码本身
  */
 @Composable
 fun stageDisplayName(
@@ -79,9 +82,12 @@ fun stageDisplayName(
 ): String = when {
     code.isEmpty() -> emptyLabel
     code == "Annihilation" && annihilationDisplayName != null -> annihilationDisplayName
-    else -> stageGroups.firstNotNullOfOrNull { group ->
-        group.stages.firstOrNull { it.code == code }?.displayName
-    } ?: code
+    else -> {
+        val stage = stageGroups.firstNotNullOfOrNull { group ->
+            group.stages.firstOrNull { it.code == code }
+        }
+        stage?.localizedDisplayName() ?: code
+    }
 }
 
 /**
@@ -193,7 +199,7 @@ internal fun GroupedStageButtonGroup(
                                     text = if (stage.code == "Annihilation" && annihilationDisplayName != null) {
                                         annihilationDisplayName
                                     } else {
-                                        stage.displayName
+                                        stage.localizedDisplayName()
                                     },
                                     style = MaterialTheme.typography.bodySmall,
                                     color = when {
