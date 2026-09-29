@@ -80,9 +80,9 @@ import org.koin.compose.koinInject
  * 一条库存保持计划的详情设置面板。
  *
  * 库存数据页点一格、后台任务的库存保持清单点一行，弹出来的都是这一份 —— 字段、校验、
- * 保存/移除的节奏只有一处实现，两边不会各长各的。两边唯一的差别是写回落到哪里，
+ * 保存/移除的节奏只有一处实现，两边不会各长各的。两边的差别一是写回落到哪里，
  * 由调用方在 [onSave] / [onRemove] / [onConfigChange] 里决定（那边走 ViewModel 按节点+下标定位，
- * 这边直接改当前节点的计划列表）。
+ * 这边直接改当前节点的计划列表）；二是高级设置的展示范围，由 [showExecutionOptions] 决定。
  *
  * 面板的三种形态。声明顺序就是「越往后越深」，切换方向按它算：
  * 摘要卡 → 编辑表单是往前推，反着来（目前没有这条路）就往回推。
@@ -98,6 +98,9 @@ private enum class DepotPlanSheetMode { UNSUPPORTED, SUMMARY, EDITOR }
  * @param existingOutcome 已有计划在本次运行里的去向，用来提示「配了也跑不起来」；null = 没有计划
  * @param allowItemPick 面板里能不能换物品。任务配置页可以（一条计划换物品是常事），
  *   库存数据页不行 —— 那里的物品由点开的格子定死
+ * @param showExecutionOptions 高级设置里是否展示执行类选项（任务行为 / 连战 / 药石共 8 项）。
+ *   后台任务路径为 true；库存数据页传 false，只留「自定义关卡代码」
+ *   （那一页只改「保到多少、去哪刷」，执行类选项在那里看不出效果）
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -115,6 +118,7 @@ internal fun DepotPlanEditorSheet(
     onSave: (DepotMaintainPlan) -> Unit,
     onRemove: () -> Unit,
     onConfigChange: (DepotMaintainConfig) -> Unit,
+    showExecutionOptions: Boolean = true,
     itemHelper: ItemHelper = koinInject(),
     activityManager: ActivityManager = koinInject(),
     iconLoader: ItemIconLoader = koinInject(),
@@ -405,6 +409,7 @@ internal fun DepotPlanEditorSheet(
                         DepotMaintainSettings(
                             config = config,
                             onConfigChange = onConfigChange,
+                            showExecutionOptions = showExecutionOptions,
                         )
                     }
                 }
@@ -416,13 +421,16 @@ internal fun DepotPlanEditorSheet(
 /**
  * 计划面板里的「高级设置」。
  *
- * 内容与后台任务的库存保持面板完全同一份实现、同一条链上的同一个节点 —— 在哪边改都一样。
+ * 与后台任务的库存保持面板同一份实现、同一条链上的同一个节点 —— 在哪边改都一样。
+ * 库存数据页只留「自定义关卡代码」一项：那一页只改「保到多少、去哪刷」，
+ * 执行类选项（任务行为 / 连战 / 药石）在那里看不出效果（见 DepotMaintainAdvancedSection）。
  * 默认收起：这张卡片主要是配一条计划的，设置是顺路改的，不该一进来就把保存按钮顶到屏幕外。
  */
 @Composable
 private fun DepotMaintainSettings(
     config: DepotMaintainConfig,
     onConfigChange: (DepotMaintainConfig) -> Unit,
+    showExecutionOptions: Boolean,
 ) {
     var advancedExpanded by remember { mutableStateOf(false) }
 
@@ -433,6 +441,7 @@ private fun DepotMaintainSettings(
         DepotMaintainAdvancedSection(
             config = config,
             onConfigChange = onConfigChange,
+            showExecutionOptions = showExecutionOptions,
         )
     }
 }

@@ -636,6 +636,8 @@ private fun DepotProfileDetailView(
                 onRemove = { viewModel.removePlan(cell.plan) },
                 // 设置写回面板上显示的那个节点，不是回查出来的「第一个节点」
                 onConfigChange = { viewModel.updateMaintainConfig(maintainConfig.nodeId, it) },
+                // 这一页只改「保到多少、去哪刷」，执行类选项在这里看不出效果，不展示
+                showExecutionOptions = false,
             )
         }
     }

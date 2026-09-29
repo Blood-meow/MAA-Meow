@@ -174,15 +174,24 @@ fun DepotMaintainConfigPanel(
  *
  * 计划详情面板里的一段 —— 任务配置页与库存数据页点格子进的都是那一个面板，
  * 所以这份设置也只有一处实现。
+ *
+ * @param showExecutionOptions 是否展示执行类选项（任务行为 / 连战 / 药石共 8 项）。
+ *   库存数据页传 false：那一页只改「保到多少、去哪刷」，执行类选项在那里看不出效果，
+ *   只留「自定义关卡代码」（它决定这一页的关卡编辑是按钮列表还是输入框）。
  */
 @Composable
 internal fun DepotMaintainAdvancedSection(
     config: DepotMaintainConfig,
     onConfigChange: (DepotMaintainConfig) -> Unit,
     modifier: Modifier = Modifier,
+    showExecutionOptions: Boolean = true,
 ) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        AdvancedTab(config, onConfigChange)
+        if (showExecutionOptions) {
+            AdvancedTab(config, onConfigChange)
+        } else {
+            CustomStageCodeOption(config, onConfigChange)
+        }
     }
 }
 
@@ -672,12 +681,7 @@ private fun ColumnScope.AdvancedTab(
         modifier = Modifier.padding(top = 4.dp),
     )
 
-    CheckBoxWithExpandableTip(
-        checked = config.customStageCode,
-        onCheckedChange = { onConfigChange(config.copy(customStageCode = it)) },
-        label = stringResource(R.string.panel_fight_custom_stage_code),
-        tipText = stringResource(R.string.panel_fight_custom_stage_code_tip),
-    )
+    CustomStageCodeOption(config, onConfigChange)
 
     CheckBoxWithExpandableTip(
         checked = config.useAutoSeries,
@@ -708,5 +712,25 @@ private fun ColumnScope.AdvancedTab(
         onCheckedChange = { onConfigChange(config.copy(useExpiringMedicine = it)) },
         label = stringResource(R.string.panel_depot_use_expiring_medicine),
         tipText = stringResource(R.string.panel_depot_use_expiring_medicine_tip),
+    )
+}
+
+/**
+ * 「自定义关卡代码」单项。
+ *
+ * 它是高级设置里唯一纯 UI 的开关：[DepotMaintainConfig.toTaskParams] 不读它，
+ * 它只决定计划编辑器的关卡栏是「分组按钮列表」还是「自由输入框」（见 DepotPlanFields）。
+ * 所以库存数据页的高级设置只留它一项（执行类选项在那页看不出效果）。
+ */
+@Composable
+private fun CustomStageCodeOption(
+    config: DepotMaintainConfig,
+    onConfigChange: (DepotMaintainConfig) -> Unit,
+) {
+    CheckBoxWithExpandableTip(
+        checked = config.customStageCode,
+        onCheckedChange = { onConfigChange(config.copy(customStageCode = it)) },
+        label = stringResource(R.string.panel_fight_custom_stage_code),
+        tipText = stringResource(R.string.panel_fight_custom_stage_code_tip),
     )
 }
