@@ -1,8 +1,11 @@
 package com.aliothmoon.maameow.data.api
 
+import com.aliothmoon.maameow.R
 import com.aliothmoon.maameow.data.api.model.MirrorChyanData
 import com.aliothmoon.maameow.data.api.model.MirrorChyanResponse
 import com.aliothmoon.maameow.data.model.update.UpdateError
+import com.aliothmoon.maameow.utils.i18n.LocalizedException
+import com.aliothmoon.maameow.utils.i18n.uiTextOf
 import com.aliothmoon.maameow.utils.JsonUtils
 import timber.log.Timber
 
@@ -28,7 +31,9 @@ class MirrorChyanApiClient(private val httpClient: HttpClientHelper) {
 
             response.use { resp ->
                 if (resp.code == 500) {
-                    throw MirrorChyanBizException(500, "更新服务不可用")
+                    // 消息体留空：UpdateError.fromCode(500) 固定映射到
+                    // R.string.update_error_service_unavailable，这里传的串永远不会展示
+                    throw MirrorChyanBizException(500, null)
                 }
 
                 val body = kotlin.runCatching {
@@ -39,7 +44,8 @@ class MirrorChyanApiClient(private val httpClient: HttpClientHelper) {
                     throw MirrorChyanBizException(body.code, body.msg)
                 }
 
-                body.data ?: throw MirrorChyanBizException(-1, "数据为空")
+                // 同上：fromCode(-1) 固定映射到 R.string.update_error_empty_data
+                body.data ?: throw MirrorChyanBizException(-1, null)
             }
         }.onFailure { e ->
             Timber.e(e, "MirrorChyan API 请求失败: $api")
@@ -54,4 +60,5 @@ class MirrorChyanBizException(val bizCode: Int, override val message: String?) :
 }
 
 /** CDK 未配置异常 */
-class CdkRequiredException : Exception("请输入正确的 CDK")
+class CdkRequiredException :
+    LocalizedException(uiTextOf(R.string.update_error_cdk_required))
