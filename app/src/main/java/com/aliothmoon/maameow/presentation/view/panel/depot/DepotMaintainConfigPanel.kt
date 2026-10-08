@@ -684,11 +684,21 @@ private fun ColumnScope.AdvancedTab(
     CustomStageCodeOption(config, onConfigChange)
 
     CheckBoxWithExpandableTip(
-        checked = config.useAutoSeries,
-        onCheckedChange = { onConfigChange(config.copy(useAutoSeries = it)) },
-        label = stringResource(R.string.panel_depot_use_auto_series),
-        tipText = stringResource(R.string.panel_depot_use_auto_series_tip),
+        checked = config.useExpectedDropRate,
+        onCheckedChange = { onConfigChange(config.copy(useExpectedDropRate = it)) },
+        label = stringResource(R.string.panel_depot_use_expected_drop_rate),
+        tipText = stringResource(R.string.panel_depot_use_expected_drop_rate_tip),
     )
+
+    // 期望模式按「单次进图」折算次数，倍率会改变单次收益，故开启时不再展示 AUTO 开关
+    if (!config.useExpectedDropRate) {
+        CheckBoxWithExpandableTip(
+            checked = config.useAutoSeries,
+            onCheckedChange = { onConfigChange(config.copy(useAutoSeries = it)) },
+            label = stringResource(R.string.panel_depot_use_auto_series),
+            tipText = stringResource(R.string.panel_depot_use_auto_series_tip),
+        )
+    }
 
     SectionHeader(
         title = stringResource(R.string.panel_depot_group_sanity),

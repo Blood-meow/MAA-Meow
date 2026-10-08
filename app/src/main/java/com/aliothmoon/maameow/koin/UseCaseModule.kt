@@ -25,6 +25,7 @@ val useCaseModule = module {
             depotRepository = get(),
             operBoxRepository = get(),
             itemHelper = get(),
+            dropRateProvider = get(),
             dropsRefresher = get(),
             appSettingsManager = get(),
             relocatePath = get<MaaPathConfig>()::toCorePath,

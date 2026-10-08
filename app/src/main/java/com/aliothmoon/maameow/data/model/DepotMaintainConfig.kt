@@ -64,8 +64,13 @@ data class DepotMaintainConfig(
     val updateDepot: Boolean = true,
     val onlyFirstInsufficientPlan: Boolean = false,
     val customStageCode: Boolean = false,
-    /** false→series=1；true→series=0（AUTO）。对齐 WPF UseAutoSeries。 */
+    /** false→series=1；true→series=0（AUTO）。对齐 WPF UseAutoSeries。期望模式下恒为 1 */
     val useAutoSeries: Boolean = false,
+    /**
+     * 按期望掉率刷取：用企鹅物流统计把缺口折算成战斗次数（缺口 ÷ 单次期望，四舍五入），
+     * 而非逐场刷到掉够。掉率数据缺失时该计划回退逐场刷。
+     */
+    val useExpectedDropRate: Boolean = false,
     val skipDuringActivity: Boolean = false,
     val skipDuringResourceCollection: Boolean = false,
     /** 关掉后各计划隐藏理智药行，且一律按 0 下发 */
@@ -124,6 +129,8 @@ data class DepotMaintainConfig(
         for (d in decisions) {
             if (d.index > logUpTo) break
             ctx.appendLog(d.logText(ctx), d.logLevel())
+            // 期望模式的折算明细紧跟在该计划后面，便于核对次数怎么来的
+            d.expectedLogText(ctx)?.let { ctx.appendLog(it, LogLevel.TRACE) }
         }
 
         val chosen = if (onlyFirstInsufficientPlan) runnable.take(1) else runnable
@@ -221,15 +228,40 @@ data class DepotMaintainConfig(
             stage = plan.stage,
             medicine = if (useMedicine && plan.useMedicine) plan.medicineCount else 0,
             stone = if (useStone && plan.useStone) plan.stoneCount else 0,
-            series = if (useAutoSeries) 0 else 1,
+            // 期望次数按「单次」折算，倍率必须固定 1 倍，否则次数与期望对不上
+            series = if (useExpectedDropRate) 1 else if (useAutoSeries) 0 else 1,
             logLabel = uiTextDynamic(no.toString()),
             medicineExpireDays = if (useExpiringMedicine) EXPIRING_MEDICINE_DAYS else null,
             report = ctx.report,
+            dropRate = if (useExpectedDropRate) {
+                ctx.dropRateProvider.getRate(plan.stage, plan.dropId)
+            } else {
+                null
+            },
         )
+
+        /** 期望模式的日志：掉率与折算次数；无数据时说明回退原因 */
+        fun expectedLogText(ctx: TaskParamContext): UiText? {
+            if (!useExpectedDropRate) return null
+            val t = target(ctx)
+            val rate = t.dropRate
+                ?: return uiTextOf(R.string.runlog_depot_plan_no_drop_rate, no)
+            // 次数走 DropTarget 的同一实现，免得日志与实际下发的 times 算法漂移
+            val runs = t.expectedTimes(need) ?: 1
+            return uiTextOf(
+                R.string.runlog_depot_plan_expected_runs,
+                no, ctx.itemHelper.getItemInfo(plan.dropId)?.name ?: plan.dropId,
+                formatRate(rate), runs,
+            )
+        }
     }
 
     companion object {
         /** 临期药阈值，对齐上游 DepotMaintainTask.ExpiringMedicineDays，不开放给用户调 */
         const val EXPIRING_MEDICINE_DAYS = 2
+
+        /** 掉率的展示形态：百分比保留一位小数，固定 Locale 免得小数点随系统语言变 */
+        fun formatRate(rate: Double): String =
+            String.format(java.util.Locale.US, "%.1f%%", rate * 100)
     }
 }

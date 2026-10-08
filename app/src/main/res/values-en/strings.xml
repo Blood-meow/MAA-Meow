@@ -1313,6 +1313,8 @@
     <string name="panel_depot_update_before_start_tip">Runs depot recognition first to refresh inventory data; each plan recomputes its deficit from the latest inventory when it starts, so this recognition takes effect immediately</string>
     <string name="panel_depot_use_auto_series">Auto Series</string>
     <string name="panel_depot_use_auto_series_tip">When unchecked, runs at 1×; when checked, runs at the highest series multiplier allowed by current sanity, so drops from a single run may exceed the target inventory limit.</string>
+    <string name="panel_depot_use_expected_drop_rate">Run by expected drop rate</string>
+    <string name="panel_depot_use_expected_drop_rate_tip">Estimates the number of runs from Penguin Stats drop rates (shortfall ÷ per-run expectation, rounded); it stops once enough has dropped and the surplus counts toward the next material. Plans without drop-rate data fall back to running until enough. Fixed at 1× series so the run count matches the expectation.</string>
     <string name="panel_depot_skip_during_activity">Skip during event</string>
     <string name="panel_depot_skip_during_resource">Skip while the resource collection event is active</string>
     <string name="panel_depot_preset">Preset</string>
@@ -2407,6 +2409,8 @@ MAA will not end an in-progress exploration early because this option is uncheck
     <string name="runlog_depot_plan_stage_not_open">#%1$d: stage \'%2$s\' is not open</string>
     <string name="runlog_depot_plan_inventory_enough">%1$s: %2$s sufficient %3$d/%4$d</string>
     <string name="runlog_depot_plan_inventory_insufficient">%1$s: %2$s insufficient %3$d/%4$d, need %5$d more</string>
+    <string name="runlog_depot_plan_expected_runs">#%1$d: %2$s at expected drop rate %3$s, planning %4$d runs</string>
+    <string name="runlog_depot_plan_no_drop_rate">#%1$d: no drop-rate data, running until enough instead</string>
     <string name="runlog_fight_inventory_unavailable">Task \"%1$s\" uses target inventory, but no inventory data is currently available, so it was skipped. Update it via \"Toolbox - Depot Recognition\"</string>
     <string name="runlog_fight_stage_unavailable">%1$s: no stage open today (primary %2$s), fight task skipped</string>
     <string name="runlog_depot_set_params_failed">%1$s: failed to update task params; original params will be used</string>

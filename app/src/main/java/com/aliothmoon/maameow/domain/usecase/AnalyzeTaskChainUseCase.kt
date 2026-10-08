@@ -2,6 +2,7 @@ package com.aliothmoon.maameow.domain.usecase
 
 import com.aliothmoon.maameow.constant.Packages
 import com.aliothmoon.maameow.data.model.CollectingPreflightLogSink
+import com.aliothmoon.maameow.data.model.DepotMaintainConfig
 import com.aliothmoon.maameow.data.model.FightConfig
 import com.aliothmoon.maameow.data.model.LogLevel
 import com.aliothmoon.maameow.data.model.TaskChainNode
@@ -13,6 +14,7 @@ import com.aliothmoon.maameow.data.repository.DepotRepository
 import com.aliothmoon.maameow.data.repository.OperBoxRepository
 import com.aliothmoon.maameow.data.resource.ActivityManager
 import com.aliothmoon.maameow.data.resource.ItemHelper
+import com.aliothmoon.maameow.data.resource.PenguinDropRateProvider
 import com.aliothmoon.maameow.data.resource.ResourceDataManager
 import com.aliothmoon.maameow.data.resource.ServerTimezone
 import com.aliothmoon.maameow.domain.models.MallCreditFightAvailability
@@ -25,8 +27,12 @@ import com.aliothmoon.maameow.domain.models.TaskFallbackChain
 import com.aliothmoon.maameow.maa.task.TaskSlot
 import com.aliothmoon.maameow.utils.i18n.UiText
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withTimeoutOrNull
 import timber.log.Timber
 import java.time.DayOfWeek
+
+/** 期望掉率准备的等待上限：断网时不能让启动卡在 OkHttp 的读超时上，取不到就回退逐场刷 */
+private const val DROP_RATE_PREPARE_TIMEOUT_MS = 20_000L
 
 class AnalyzeTaskChainUseCase(
     private val taskChainState: TaskChainState,
@@ -35,6 +41,7 @@ class AnalyzeTaskChainUseCase(
     private val depotRepository: DepotRepository,
     private val operBoxRepository: OperBoxRepository,
     private val itemHelper: ItemHelper,
+    private val dropRateProvider: PenguinDropRateProvider,
     private val dropsRefresher: FightDropsRefresher,
     private val appSettingsManager: AppSettingsManager,
     private val relocatePath: (String) -> String = { it },
@@ -70,6 +77,16 @@ class AnalyzeTaskChainUseCase(
             reportToYituliu = appSettingsManager.reportToYituliu.value,
             penguinId = appSettingsManager.penguinId.value,
         )
+
+        // 期望掉率要在展开前备好：toTaskParams 是同步的，不能在里面联网。
+        // 没人开启该模式时完全不联网（有磁盘缓存时也只是读文件）。
+        // 首次拉取约 2MB，断网时必须给个上限，否则启动会被 OkHttp 超时拖住一两分钟；
+        // 超时/取不到就让它保持 null，各计划自动回退逐场刷。
+        if (nodes.any { (it.config as? DepotMaintainConfig)?.useExpectedDropRate == true }) {
+            withTimeoutOrNull(DROP_RATE_PREPARE_TIMEOUT_MS) {
+                dropRateProvider.prepare(report.server)
+            }
+        }
         val log = CollectingPreflightLogSink()
         val fallbacks = mutableMapOf<TaskSlot, TaskFallbackChain>()
         val sideTasks = mutableListOf<PlanSideTask>()
@@ -88,6 +105,7 @@ class AnalyzeTaskChainUseCase(
                 depotRepository = depotRepository,
                 operBoxRepository = operBoxRepository,
                 resourceDataManager = resourceDataManager,
+                dropRateProvider = dropRateProvider,
                 dropsRefresher = dropsRefresher,
                 logSink = log,
                 report = report,

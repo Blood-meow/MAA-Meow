@@ -11,6 +11,7 @@ import com.aliothmoon.maameow.data.repository.DepotRepository
 import com.aliothmoon.maameow.data.resource.ActivityManager
 import com.aliothmoon.maameow.data.resource.ItemHelper
 import com.aliothmoon.maameow.data.resource.ItemInfo
+import com.aliothmoon.maameow.data.resource.PenguinDropRateProvider
 import com.aliothmoon.maameow.domain.models.TaskCandidate
 import com.aliothmoon.maameow.domain.models.TaskFallbackChain
 import com.aliothmoon.maameow.maa.task.MaaTaskParams
@@ -38,6 +39,7 @@ class DepotMaintainExpansionTest {
     private val depotRepository: DepotRepository = mockk()
     private val activityManager: ActivityManager = mockk()
     private val itemHelper: ItemHelper = mockk()
+    private val dropRateProvider: PenguinDropRateProvider = mockk()
 
     private data class Expansion(
         val params: List<MaaTaskParams>,
@@ -51,6 +53,8 @@ class DepotMaintainExpansionTest {
         resourceCollectionOpen: Boolean = false,
         openStages: Set<String> = setOf(STAGE),
         clientType: String = "Official",
+        /** key 形如 "1-7|30011"；未列出的组合返回 null＝无掉率数据 */
+        dropRates: Map<String, Double> = emptyMap(),
     ): Expansion {
         every { depotRepository.countOf(any()) } answers { inventory[firstArg()] ?: 0 }
         every { activityManager.isActivityOpen() } returns activityOpen
@@ -59,6 +63,9 @@ class DepotMaintainExpansionTest {
         every { itemHelper.getItemInfo(any()) } answers {
             if (firstArg<String>() == ITEM) ItemInfo(id = ITEM, name = "源岩") else null
         }
+        every { dropRateProvider.getRate(any(), any()) } answers {
+            dropRates["${firstArg<String>()}|${secondArg<String>()}"]
+        }
         val sink = CollectingPreflightLogSink()
         val context = testTaskParamContext(
             node = testTaskChainNode(name = "材料补货"),
@@ -66,6 +73,7 @@ class DepotMaintainExpansionTest {
             activityManager = activityManager,
             depotRepository = depotRepository,
             itemHelper = itemHelper,
+            dropRateProvider = dropRateProvider,
             logSink = sink,
         )
         val params = toTaskParams(context)
@@ -87,6 +95,7 @@ class DepotMaintainExpansionTest {
         updateDepot: Boolean = false,
         customStageCode: Boolean = false,
         useAutoSeries: Boolean = false,
+        useExpectedDropRate: Boolean = false,
         skipDuringActivity: Boolean = false,
         skipDuringResourceCollection: Boolean = false,
         useMedicine: Boolean = true,
@@ -96,6 +105,7 @@ class DepotMaintainExpansionTest {
         updateDepot = updateDepot,
         customStageCode = customStageCode,
         useAutoSeries = useAutoSeries,
+        useExpectedDropRate = useExpectedDropRate,
         skipDuringActivity = skipDuringActivity,
         skipDuringResourceCollection = skipDuringResourceCollection,
         useMedicine = useMedicine,
@@ -445,6 +455,70 @@ class DepotMaintainExpansionTest {
 
         val auto = config(plan(), useAutoSeries = true).expand()
         assertEquals(0, auto.params[0].json()["series"]!!.jsonPrimitive.content.toInt())
+    }
+
+    /**
+     * 期望模式：次数 = 缺口 ÷ 单次期望掉率，四舍五入。
+     * 掉率 0.4 时缺 8 → 20 次；缺 5 → 12.5 → 13 次（用户口径，含浮点补偿）
+     */
+    @Test
+    fun expectedDropRate_timesFromShortfall() {
+        val eight = config(plan(dropCount = 8), useExpectedDropRate = true)
+            .expand(dropRates = mapOf("$STAGE|$ITEM" to 0.4))
+        assertEquals(20, eight.params[0].json()["times"]!!.jsonPrimitive.content.toInt())
+
+        val five = config(plan(dropCount = 5), useExpectedDropRate = true)
+            .expand(dropRates = mapOf("$STAGE|$ITEM" to 0.4))
+        assertEquals(13, five.params[0].json()["times"]!!.jsonPrimitive.content.toInt())
+    }
+
+    /** 四舍五入而非向上取整：4.4→4、4.5→5 */
+    @Test
+    fun expectedDropRate_roundsToNearest() {
+        val below = config(plan(dropCount = 22), useExpectedDropRate = true)
+            .expand(dropRates = mapOf("$STAGE|$ITEM" to 5.0))
+        assertEquals(4, below.params[0].json()["times"]!!.jsonPrimitive.content.toInt())
+
+        val half = config(plan(dropCount = 9), useExpectedDropRate = true)
+            .expand(dropRates = mapOf("$STAGE|$ITEM" to 2.0))
+        assertEquals(5, half.params[0].json()["times"]!!.jsonPrimitive.content.toInt())
+    }
+
+    /** 期望次数按「单次」折算，倍率必须固定 1 倍，否则次数与期望对不上 */
+    @Test
+    fun expectedDropRate_forcesSeriesOne() {
+        val result = config(plan(), useAutoSeries = true, useExpectedDropRate = true)
+            .expand(dropRates = mapOf("$STAGE|$ITEM" to 1.0))
+        assertEquals(1, result.params[0].json()["series"]!!.jsonPrimitive.content.toInt())
+    }
+
+    /** 无掉率数据 → 回退逐场刷（times=MAX），并在同一条计划后说明原因 */
+    @Test
+    fun expectedDropRate_fallsBackWhenRateMissing() {
+        val result = config(plan(), useExpectedDropRate = true).expand()
+        assertEquals(Int.MAX_VALUE, result.params[0].json()["times"]!!.jsonPrimitive.content.toInt())
+        assertTrue(result.logs.resIds().contains(R.string.runlog_depot_plan_no_drop_rate))
+    }
+
+    /** 折算明细写进日志：序号、物品、掉率百分比、次数 */
+    @Test
+    fun expectedDropRate_logsComputedRuns() {
+        val result = config(plan(dropCount = 8), useExpectedDropRate = true)
+            .expand(dropRates = mapOf("$STAGE|$ITEM" to 0.4))
+
+        assertTrue(result.logs.resIds().contains(R.string.runlog_depot_plan_expected_runs))
+        assertEquals(
+            listOf(1, "源岩", "40.0%", 20),
+            logArgsOf(result.logs, R.string.runlog_depot_plan_expected_runs),
+        )
+    }
+
+    /** 掉率高于缺口时至少刷 1 次，不能折算成 0 次 */
+    @Test
+    fun expectedDropRate_neverZeroRuns() {
+        val result = config(plan(dropCount = 1), useExpectedDropRate = true)
+            .expand(dropRates = mapOf("$STAGE|$ITEM" to 3.0))
+        assertEquals(1, result.params[0].json()["times"]!!.jsonPrimitive.content.toInt())
     }
 
     /**

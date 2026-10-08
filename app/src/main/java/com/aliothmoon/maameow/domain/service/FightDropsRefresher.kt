@@ -58,6 +58,9 @@ class FightDropsRefresher(
     fun onTaskCompleted(taskId: Int) {
         val slot = registry[taskId] ?: return
         val t = targets[slot] ?: return
+        // 期望模式下发的是有限次数，跑满 N 次没达标属概率波动，
+        // 不能当「窗口内临期药用完」的证据，否则后续任务会被误跳
+        if (t.dropRate != null) return
         val expireDays = t.medicineExpireDays ?: 0
         if (expireDays <= 0 || t.dropId.isBlank() || t.dropCount <= 0) return
         // 已达标说明结束原因与理智无关，不构成耗尽证明
